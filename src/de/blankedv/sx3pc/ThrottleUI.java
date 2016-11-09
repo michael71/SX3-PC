@@ -26,7 +26,7 @@ import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
  *
  * @author mblank
  */
-public class ThrottleUI extends javax.swing.JFrame {
+public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener {
 
     private boolean forward = true;
     private int speed = 0;
@@ -80,7 +80,7 @@ public class ThrottleUI extends javax.swing.JFrame {
                 int rotation = e.getWheelRotation();
                 int amount = e.getScrollAmount();
                 //System.out.println("rot" + rotation + " amount" + amount);
-                if (rotation > 0) {
+                if (rotation < 0) {
                     speedUp();
                     sendeLoco();
                 } else {
@@ -382,5 +382,10 @@ public class ThrottleUI extends javax.swing.JFrame {
         setLocation(prefs.getInt(myInst+"windowX", 200), prefs.getInt(myInst+"windowY", 200));
         lok_adr=prefs.getInt(myInst+"adr",1);
         //setSize(prefs.getInt("width", 500),prefs.getInt("height",300));
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

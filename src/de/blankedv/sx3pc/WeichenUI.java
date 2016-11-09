@@ -52,13 +52,9 @@ public class WeichenUI extends javax.swing.JFrame {
         if (DEBUG) System.out.println("constr. w adr="+w_adr+"/SX"+sxbusControl);
         jComboBox1.setSelectedIndex(w_adr);  // index starts from 0, addresses start also at 0
         wl.add(this);
-        this.setTitle(bundle.getString("TurnoutEtc"));
+        this.setTitle(bundle.getString("TurnoutEtc")+ "  [SX"+sxbusControl+"]");
         lblAddress.setText(bundle.getString("Address"));
-        if (sxbusControl == 1) {
-            labelSX1.setVisible(true);
-        } else {
-            labelSX1.setVisible(false);
-        }
+        
         update(); // from SX Bus data
         this.setVisible(true);
     }
@@ -82,7 +78,6 @@ public class WeichenUI extends javax.swing.JFrame {
         jCheckBox6 = new javax.swing.JCheckBox();
         jCheckBox7 = new javax.swing.JCheckBox();
         jCheckBox8 = new javax.swing.JCheckBox();
-        labelSX1 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -91,6 +86,7 @@ public class WeichenUI extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
+        lblSum = new javax.swing.JLabel();
 
         setTitle("Weichen, Signale, AUX");
         setResizable(false);
@@ -103,7 +99,6 @@ public class WeichenUI extends javax.swing.JFrame {
         lblAddress.setText("Adr");
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111" }));
-        jComboBox1.setSelectedIndex(80);
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -158,8 +153,6 @@ public class WeichenUI extends javax.swing.JFrame {
             }
         });
 
-        labelSX1.setText("SX1");
-
         jLabel1.setText("  1");
 
         jLabel2.setText("  2");
@@ -176,15 +169,21 @@ public class WeichenUI extends javax.swing.JFrame {
 
         jLabel8.setText("  8");
 
+        lblSum.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblSum.setText("sum");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(50, 50, 50)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(labelSX1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(lblSum, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jCheckBox1)
@@ -217,12 +216,12 @@ public class WeichenUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jCheckBox8)
                     .addComponent(jLabel8))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(16, 16, 16)
                     .addComponent(lblAddress)
-                    .addContainerGap(377, Short.MAX_VALUE)))
+                    .addContainerGap(345, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -240,22 +239,23 @@ public class WeichenUI extends javax.swing.JFrame {
                         .addComponent(jCheckBox1))
                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(labelSX1)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel8))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel2)
+                        .addComponent(jLabel3)
+                        .addComponent(jLabel4)
+                        .addComponent(jLabel5)
+                        .addComponent(jLabel6)
+                        .addComponent(jLabel7)
+                        .addComponent(jLabel8))
+                    .addComponent(lblSum, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(25, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(22, 22, 22)
                     .addComponent(lblAddress)
-                    .addContainerGap(40, Short.MAX_VALUE)))
+                    .addContainerGap(52, Short.MAX_VALUE)))
         );
 
         pack();
@@ -375,8 +375,8 @@ public class WeichenUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel labelSX1;
     private javax.swing.JLabel lblAddress;
+    private javax.swing.JLabel lblSum;
     // End of variables declaration//GEN-END:variables
 
     private void update() {
@@ -390,6 +390,7 @@ public class WeichenUI extends javax.swing.JFrame {
         if ((data & 0x20) == 0x20) { jCheckBox6.setSelected(true);  } else { jCheckBox6.setSelected(false); }
         if ((data & 0x40) == 0x40) { jCheckBox7.setSelected(true);  } else { jCheckBox7.setSelected(false); }
         if ((data & 0x80) == 0x80) { jCheckBox8.setSelected(true);  } else { jCheckBox8.setSelected(false); }
+        lblSum.setText("Val="+data);
     }
 
     private void savePrefs() {

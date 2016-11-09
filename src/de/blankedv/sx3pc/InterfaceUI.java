@@ -30,7 +30,7 @@ import javax.swing.border.TitledBorder;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    static final String VERSION = "1.1 - 27 Aug 2015";   // program version, displayed in HELP window
+    static final String VERSION = "1.2 - 08 Nov 2016";   // program version, displayed in HELP window
     static final int SXMAX = 112;  // maximal angezeigt im Monitor
     static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
     static boolean DEBUG = false;

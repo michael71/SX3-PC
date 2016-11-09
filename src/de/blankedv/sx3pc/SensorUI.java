@@ -25,6 +25,7 @@ public class SensorUI extends javax.swing.JFrame {
 
     private int s_adr;
     private ImageIcon green, red;
+    private int sum = 0;  //decimal sum of the set bits
 
     static List<SensorUI> sl = new ArrayList<SensorUI>();  //Liste, damit alle Fenster die Updates bekommen
     static int sensorUIInstances = 0;
@@ -47,22 +48,16 @@ public class SensorUI extends javax.swing.JFrame {
     /** Creates new form SensorUI */
     public SensorUI() {
         initComponents();
-        green = new javax.swing.ImageIcon(getClass().getResource("/my/sx3/icons/greendot.png"));
-        red = new javax.swing.ImageIcon(getClass().getResource("/my/sx3/icons/reddot.png"));
+        green = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/greendot.png"));
+        red = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/reddot.png"));
         sl.add(this);
         myInstance = sensorUIInstances++;
         loadPrefs(); //myInstance is used here.
         jComboBox1.setSelectedIndex(s_adr-1);  // index starts from 0, addresses +1
         if (DEBUG) System.out.println("s adr="+s_adr);
-        this.setTitle(bundle.getString("Sensor"));
+        this.setTitle(bundle.getString("Sensor")+ "  [SX"+sxbusControl+"]");
         lblAddress.setText(bundle.getString("Address"));
-        if (sxbusControl == 1) {
-            labelSX1.setText("SX1");
-            labelSX1.setVisible(true);
-        } else {
-            //labelSX1.setText("SX0");
-            labelSX1.setVisible(false);
-        }
+       
         this.setVisible(true);
         this.update();
     }
@@ -94,7 +89,7 @@ public class SensorUI extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        labelSX1 = new javax.swing.JLabel();
+        lblSum = new javax.swing.JLabel();
 
         setTitle("Belegtmelder");
         setResizable(false);
@@ -145,7 +140,8 @@ public class SensorUI extends javax.swing.JFrame {
 
         jLabel16.setText("  8");
 
-        labelSX1.setText("SX1");
+        lblSum.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblSum.setText("sum");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -153,12 +149,15 @@ public class SensorUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblAddress)
-                .addGap(4, 4, 4)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(labelSX1)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblAddress)
+                        .addGap(4, 4, 4)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(lblSum, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -221,8 +220,8 @@ public class SensorUI extends javax.swing.JFrame {
                     .addComponent(jLabel14)
                     .addComponent(jLabel15)
                     .addComponent(jLabel16)
-                    .addComponent(labelSX1))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lblSum))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         pack();
@@ -269,8 +268,8 @@ public class SensorUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JLabel labelSX1;
     private javax.swing.JLabel lblAddress;
+    private javax.swing.JLabel lblSum;
     // End of variables declaration//GEN-END:variables
 
     private void update() {
@@ -292,6 +291,7 @@ public class SensorUI extends javax.swing.JFrame {
         else jLabel8.setIcon(green) ;
         if ((data & 0x80) != 0)  jLabel9.setIcon(red) ;
         else jLabel9.setIcon(green) ;
+        lblSum.setText("Val="+data);
     }
 
      private void savePrefs() {

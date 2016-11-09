@@ -117,8 +117,12 @@ public class SXnetSession implements Runnable {
             if (adr != ERROR) {
                 checkSXlist(adr);
                 String res = "";
-                if (adr > 127) {
-                    res = "X " + adr + " " + sxData[adr][1];
+                if (adr > 127)  {
+                    if (adr < 256) {
+                       res = "X " + adr + " " + sxData[adr-128][1];
+                    } else {
+                        res = "";
+                    }
                 } else {
                     res = "X " + adr + " " + sxData[adr][0];
                 }
