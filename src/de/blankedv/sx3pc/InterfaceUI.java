@@ -32,6 +32,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     static final String VERSION = "1.2 - 08 Nov 2016";   // program version, displayed in HELP window
     static final int SXMAX = 112;  // maximal angezeigt im Monitor
+    static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
     static boolean DEBUG = false;
     static boolean doUpdateFlag = false;
