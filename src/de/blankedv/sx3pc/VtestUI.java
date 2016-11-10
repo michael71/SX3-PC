@@ -23,7 +23,7 @@ import static de.blankedv.sx3pc.InterfaceUI.*;
  * @author mblank
  */
 public class VtestUI extends javax.swing.JFrame {
-
+    private static final long serialVersionUID = 5313123456412L;
     private int sensorAdr;
     private int locoAdr;
     private Preferences prefs;

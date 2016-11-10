@@ -143,7 +143,7 @@ public class EditSensorListUI extends javax.swing.JDialog {
         // save all selected addresses
        // List<String> selAdr = listOfAddresses.getSelectedValues().toString();
        StringBuilder sel= new StringBuilder("");
-       for (Object o : listOfAddresses.getSelectedValues()) {
+       for (Object o : listOfAddresses.getSelectedValuesList()) {
            sel.append(o);
            sel.append(";");
        }

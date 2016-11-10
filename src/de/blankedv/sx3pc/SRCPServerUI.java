@@ -31,7 +31,7 @@ import static de.blankedv.sx3pc.InterfaceUI.*;
  */
 public class SRCPServerUI extends javax.swing.JFrame {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5313123456416L;
     private ServerSocket s;
     static SRCPServer server;
     private static final int SRCP_PORT = 4303;

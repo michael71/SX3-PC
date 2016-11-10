@@ -89,7 +89,7 @@ public class SettingsUI extends javax.swing.JFrame {
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        comboSelectSerialPort = new javax.swing.JComboBox();
+        comboSelectSerialPort = new javax.swing.JComboBox<>();
         cbBaudrate = new javax.swing.JComboBox();
         lblSerial = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -146,7 +146,7 @@ public class SettingsUI extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Selectrix Interface", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Ubuntu", 0, 15))); // NOI18N
 
-        comboSelectSerialPort.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboSelectSerialPort.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         cbBaudrate.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "4800", "9600", "19200", "38400", "57600" }));
         cbBaudrate.addActionListener(new java.awt.event.ActionListener() {
@@ -328,7 +328,7 @@ public class SettingsUI extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbEnableLanbahn)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap(24, Short.MAX_VALUE))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -555,7 +555,7 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JComboBox comboBusmode;
     private javax.swing.JComboBox comboLocale;
     private javax.swing.JComboBox comboSXBusControl;
-    private javax.swing.JComboBox comboSelectSerialPort;
+    private javax.swing.JComboBox<String> comboSelectSerialPort;
     private javax.swing.JComboBox comboSelectType;
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
