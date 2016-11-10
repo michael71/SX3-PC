@@ -193,27 +193,27 @@ public class LanbahnUI extends javax.swing.JFrame {
                         if (cmd.length >= 4) {
                             String name = cmd[1];
                             if (name.contains("FUNKR")) {  // only "FUNKR" is a "lanbahn FREDI"
-                                
-                            String ipDevice = cmd[2];
-                            int batt = Integer.parseInt(cmd[3]);
-                            int rssi = Integer.parseInt(cmd[4]);
-                            if (dev1.isEmpty()) {
-                                dev1 = name;
-                                lblDevice1Info.setText(dev1);
-                                setBatteryDisplay(progBattery1, batt);
-                                setRSSIDisplay(progRSSI1, rssi);
-                            } else if (dev1.equalsIgnoreCase(name)) {
-                                setBatteryDisplay(progBattery1, batt);  // update battery status
-                                setRSSIDisplay(progRSSI1, rssi);
-                            } else if (dev2.isEmpty()) {
-                                dev2 = name;
-                                lblDevice2Info.setText(dev2);
-                                setRSSIDisplay(progRSSI2, rssi);
-                                setBatteryDisplay(progBattery2, batt);
-                            } else if (dev2.equalsIgnoreCase(name)) {
-                                setBatteryDisplay(progBattery2, batt); // update battery status
-                                setRSSIDisplay(progRSSI2, rssi);
-                            }
+
+                                String ipDevice = cmd[2];
+                                int batt = Integer.parseInt(cmd[3]);
+                                int rssi = Integer.parseInt(cmd[4]);
+                                if (dev1.isEmpty()) {
+                                    dev1 = name;
+                                    lblDevice1Info.setText(dev1);
+                                    setBatteryDisplay(progBattery1, batt);
+                                    setRSSIDisplay(progRSSI1, rssi);
+                                } else if (dev1.equalsIgnoreCase(name)) {
+                                    setBatteryDisplay(progBattery1, batt);  // update battery status
+                                    setRSSIDisplay(progRSSI1, rssi);
+                                } else if (dev2.isEmpty()) {
+                                    dev2 = name;
+                                    lblDevice2Info.setText(dev2);
+                                    setRSSIDisplay(progRSSI2, rssi);
+                                    setBatteryDisplay(progBattery2, batt);
+                                } else if (dev2.equalsIgnoreCase(name)) {
+                                    setBatteryDisplay(progBattery2, batt); // update battery status
+                                    setRSSIDisplay(progRSSI2, rssi);
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -235,12 +235,12 @@ public class LanbahnUI extends javax.swing.JFrame {
                 p.setForeground(Color.green);
             }
         }
-        
+
         private void setRSSIDisplay(javax.swing.JProgressBar p, int rssi) {
-             p.setValue(rssi);
-            if (rssi < -75) {
+            p.setValue(rssi);
+            if (rssi < -80) {
                 p.setForeground(Color.red);
-            } else if (rssi < -70) {
+            } else if (rssi < -72) {
                 p.setForeground(Color.yellow);
             } else {
                 p.setForeground(Color.green);
@@ -347,11 +347,11 @@ public class LanbahnUI extends javax.swing.JFrame {
         progBattery2.setMinimum(3300);
 
         progRSSI1.setMaximum(-40);
-        progRSSI1.setMinimum(-80);
+        progRSSI1.setMinimum(-85);
         progRSSI1.setOrientation(1);
 
         progRSSI2.setMaximum(-40);
-        progRSSI2.setMinimum(-80);
+        progRSSI2.setMinimum(-85);
         progRSSI2.setOrientation(1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
