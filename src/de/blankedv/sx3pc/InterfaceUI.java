@@ -659,7 +659,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         } else {
             loc = Locale.ENGLISH;
         }
-        bundle = ResourceBundle.getBundle("resources", loc);
+        bundle = ResourceBundle.getBundle("de/blankedv/sx3pc/resources/resources", loc);
         if (DEBUG) {
             System.out.println("lang=" + loc.toString());
         }
