@@ -41,6 +41,9 @@ public class LanbahnUI extends javax.swing.JFrame {
 
     private String dev1 = "";
     private String dev2 = "";
+    
+    private long announceTimer = 0;
+    
 
     /**
      * Creates new form LanbahnUI
@@ -53,7 +56,6 @@ public class LanbahnUI extends javax.swing.JFrame {
 
         loadPrefs();
 
-        List<InetAddress> myip = NIC.getmyip();   // only the first one will be used
         if (!myip.isEmpty()) {
             for (int ch = 0; ch < SXMAX2 + 1; ch++) {
                 sxDataCopy[ch][0] = sxData[ch][0];
@@ -122,9 +124,11 @@ public class LanbahnUI extends javax.swing.JFrame {
 
                     message = message.replace("\n", "");
                     String ipAddr = packet.getAddress().toString().substring(1);
-                    lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
-                    //lanbahnTa.append(message + "\n");
-                    lbMessage2SX(message, ipAddr);
+                    // don't react on "self" messages
+                    if (!isOwnIP(ipAddr)) {
+                        lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
+                        lbMessage2SX(message, ipAddr);
+                    }
 
                 }
                 System.out.println("lanbahn Server closing.");
@@ -246,11 +250,23 @@ public class LanbahnUI extends javax.swing.JFrame {
                 p.setForeground(Color.green);
             }
         }
+        
+        private boolean isOwnIP(String ip) {
+            //System.out.println(ip);
+            for (int i=0; i < myip.size(); i++) {
+                //System.out.println(myip.get(i).toString());
+                if (myip.get(i).toString().contains(ip)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     class MCSendTask extends TimerTask {
-
+        
         public void run() {
+            
             int bus;
             for (int ch = 0; ch < SXMAX2 + 1; ch++) {
                 if (sxData[ch][0] != sxDataCopy[ch][0]) {
@@ -260,7 +276,10 @@ public class LanbahnUI extends javax.swing.JFrame {
                     sendMCChannel(ch, 0, sxDataCopy[ch][0]);
                     //ms.send(packet); //sendMessage("X " + i + " " + sxDataCopy[ch][bus]);
                 }
-
+            }
+            if (System.currentTimeMillis() > announceTimer) {
+                sendMCAnnounce();
+                announceTimer = System.currentTimeMillis() + 1000*10;   // every 10 secs
             }
             try {
                 Thread.sleep(300);  // send update only every 300msecs
@@ -275,6 +294,30 @@ public class LanbahnUI extends javax.swing.JFrame {
                 return;
             }
             String msg = "S " + ch + " " + d;
+
+            byte[] buf = new byte[256];
+
+            buf = msg.getBytes();
+
+            DatagramPacket packet;
+            packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
+
+            System.out.println("lanbahn " + msg);
+            try {
+                multicastsocket.send(packet);
+            } catch (IOException ex) {
+                Logger.getLogger(LanbahnUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        private void sendMCAnnounce() {
+            if (multicastsocket == null) {
+                System.out.println("Error: multicast socket is NULL");
+                return;
+            }
+            if (myip.isEmpty()) return;
+            
+            String msg = "A SX3PC " + myip.get(0).getHostAddress();
 
             byte[] buf = new byte[256];
 

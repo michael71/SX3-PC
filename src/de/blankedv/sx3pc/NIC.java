@@ -1,4 +1,5 @@
 package de.blankedv.sx3pc;
+import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
 import java.net.*;
 import java.util.*;
 
@@ -26,13 +27,16 @@ class NIC {
 
 		while (interfaces.hasMoreElements()) {
 			NetworkInterface ifc = interfaces.nextElement();
+                        //if (DEBUG) System.out.println("Network Interface="+ifc.getName());
 			Enumeration<InetAddress> addressesOfAnInterface = ifc.getInetAddresses();
 
 			while (addressesOfAnInterface.hasMoreElements()) {
 				InetAddress address = addressesOfAnInterface.nextElement();
+                                //if (DEBUG) System.out.println("has address=" + address.getHostAddress());
                 // look for IPv4 addresses which are not==127.0.0.1
-				if (!address.equals(localhost) && !address.toString().contains(":")) {
+				if (!address.equals(localhost) && !address.toString().contains(":") && (!ifc.getName().toString().contains("vir"))) {
 					addrList.add(address);
+                                        if (DEBUG) System.out.println("not local, not ipv6, not virtual =" + address.getHostAddress());
 				//	System.out.println("FOUND ADDRESS ON NIC: " + address.getHostAddress());
 
 				}

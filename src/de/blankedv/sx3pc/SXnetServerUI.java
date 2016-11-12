@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 
 import static de.blankedv.sx3pc.InterfaceUI.running;
+import static de.blankedv.sx3pc.InterfaceUI.myip;
 
 /**
  *
@@ -31,15 +32,19 @@ public class SXnetServerUI extends javax.swing.JFrame {
      * Creates new form SRCPServerUI
      */
     public SXnetServerUI() {
+       
+        
         initComponents();
         loadPrefs();
-        List<InetAddress> myip = NIC.getmyip();   // only the first one will be used
+        
         if (!myip.isEmpty()) {
             try {
                 s = new ServerSocket(SXNET_PORT);
                 // s = new ServerSocket(SXNET_PORT,0,myip.get(0));  
                 // only listen on 1 address on multi homed systems
                 System.out.println("new sxnet server socket "+myip.get(0)+ ":" + SXNET_PORT);
+                //title.s
+                
             } catch (IOException ex) {
                 System.out.println("could not open server socket on port=" + SXNET_PORT + " - closing SXnet window.");
                 JOptionPane.showMessageDialog(null, "could not open SXnet server socket!\n" + ex.toString(), "Error", JOptionPane.OK_CANCEL_OPTION);
@@ -106,7 +111,8 @@ public class SXnetServerUI extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("accepting SX net clients at port " + SXNET_PORT);
+        
+        jLabel1.setText("accepting SX net clients at " + myip.get(0).getHostAddress() + ":" +SXNET_PORT);
 
         taClients.setColumns(20);
         taClients.setEditable(false);

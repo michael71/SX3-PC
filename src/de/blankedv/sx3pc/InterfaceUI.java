@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -30,32 +31,34 @@ import javax.swing.border.TitledBorder;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    static final String VERSION = "1.3 - 10 Nov 2016";   // program version, displayed in HELP window
-    static final int SXMAX = 112;  // maximal angezeigt im Monitor
-    static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
-    static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
-    static boolean DEBUG = false;
-    static boolean doUpdateFlag = false;
-    static boolean running = true;
-    static InterfaceUI sx;
-    static SXInterface sxi;
-    static SettingsUI settingsWindow;
-    static int[][] sxData = new int[SXMAX2 + 1][2];   // the [0]=SX0, [1]=SX1
-    static boolean twoBusses = false;
+    public static final String VERSION = "1.31 - 12 Nov 2016";   // program version, displayed in HELP window
+    public static final int SXMAX = 112;  // maximal angezeigt im Monitor
+    public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
+    public static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
+    public static boolean DEBUG = false;
+    public static boolean doUpdateFlag = false;
+    public static boolean running = true;
+    public static InterfaceUI sx;
+    public static SXInterface sxi;
+    public static SettingsUI settingsWindow;
+    public static int[][] sxData = new int[SXMAX2 + 1][2];   // the [0]=SX0, [1]=SX1
+    public static boolean twoBusses = false;
     // locos always control on SX0, "schalten/melden" on SX0 or SX1
-    static int sxbusControl = 0;
-    static MonitorUI sxmon = null;
-    static MonitorUI sxmon1 = null;  // for SX1
-    static SRCPServerUI srcpserver;
-    static SXnetServerUI sxnetserver;
-    static LanbahnUI lanbahnserver;
-    static ResourceBundle bundle;
-    static boolean pollingIsRunning = false;
-    static LocoProgUI locoprog = null;
-    static VtestUI vtest = null;
-    static int timeoutCounter = 0;
-    static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
-    static boolean connectionOK = false;  // watchdog for connection
+    public static int sxbusControl = 0;
+    public static MonitorUI sxmon = null;
+    public static MonitorUI sxmon1 = null;  // for SX1
+    public static SRCPServerUI srcpserver;
+    public static SXnetServerUI sxnetserver;
+    public static List<InetAddress> myip;
+    public static LanbahnUI lanbahnserver;
+    public static ResourceBundle bundle;
+    public static boolean pollingIsRunning = false;
+    public static LocoProgUI locoprog = null;
+    public static VtestUI vtest = null;
+    public static int timeoutCounter = 0;
+    public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
+    public static boolean connectionOK = false;  // watchdog for connection
+    
     OutputStream outputStream;
     InputStream inputStream;
     private Boolean sxiConnected = false;
@@ -80,6 +83,10 @@ public class InterfaceUI extends javax.swing.JFrame {
      */
     public InterfaceUI() {
 
+        // get network info
+        myip = NIC.getmyip();   // only the first one will be used
+        System.out.println("Number of usable Network Interfaces="+myip.size());
+        
         loadWindowPrefs();
 
         initComponents();
@@ -119,16 +126,23 @@ public class InterfaceUI extends javax.swing.JFrame {
         btnSxMonitor.setEnabled(!pollingFlag); // disable for standard trix interface
         addToPlist((Integer) 127);  // Power Status wird immer abgefragt.
         setVisible(true);
-        if (enableSxnet) {
-           sxnetserver = new SXnetServerUI();
-        }
-        if (enableSrcp) {
-        //    srcpserver = new SRCPServerUI();
-        }
-        if (enableLanbahn) {
-           lanbahnserver = new LanbahnUI();
-        }
         
+        // get network info
+        myip = NIC.getmyip();   // only the first one will be used
+        System.out.println("Number of usable Network Interfaces="+myip.size());
+        
+        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
+            if (enableSxnet) {
+                sxnetserver = new SXnetServerUI();
+            }
+            if (enableSrcp) {
+                //    srcpserver = new SRCPServerUI();
+            }
+            if (enableLanbahn) {
+                lanbahnserver = new LanbahnUI();
+            }
+        }
+
         initTimer();
     }
 
