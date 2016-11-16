@@ -30,13 +30,18 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbLight" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbHorn" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="btnStop" alignment="0" max="32767" attributes="1"/>
-                  <Component id="btnChangeDir" alignment="0" max="32767" attributes="1"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Component id="btnChangeDir" alignment="0" pref="128" max="32767" attributes="1"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbLight" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbHorn" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
                       <Component id="lblAddress" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="comboSelAddress" min="-2" pref="70" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -84,7 +89,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lblAddress">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Adr"/>
+        <Property name="text" type="java.lang.String" value="Addr"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="comboSelAddress">
@@ -228,7 +233,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbLight">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Licht"/>
+        <Property name="text" type="java.lang.String" value="Light"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbLightActionPerformed"/>
@@ -260,7 +265,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="labelDir">
       <Properties>
-        <Property name="text" type="java.lang.String" value="?"/>
+        <Property name="text" type="java.lang.String" value="  ?"/>
         <Property name="horizontalTextPosition" type="int" value="4"/>
       </Properties>
     </Component>

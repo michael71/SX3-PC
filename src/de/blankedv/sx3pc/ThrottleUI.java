@@ -65,10 +65,6 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
         loadPrefs(); //myInstance is used here.
         comboSelAddress.setSelectedIndex(lok_adr - 1);  // index starts from 0, addresses +1
 
-        this.setTitle(bundle.getString("Throttle"));
-        lblAddress.setText(bundle.getString("Address"));
-        cbHorn.setText(bundle.getString("Horn"));
-        cbLight.setText(bundle.getString("Light"));
 
         update(); // from SX Bus data
         this.setVisible(true);
@@ -127,7 +123,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
             }
         });
 
-        lblAddress.setText("Adr");
+        lblAddress.setText("Addr");
 
         comboSelAddress.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111" }));
         comboSelAddress.addActionListener(new java.awt.event.ActionListener() {
@@ -153,7 +149,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
             }
         });
 
-        cbLight.setText("Licht");
+        cbLight.setText("Light");
         cbLight.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbLightActionPerformed(evt);
@@ -181,7 +177,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
             }
         });
 
-        labelDir.setText("?");
+        labelDir.setText("  ?");
         labelDir.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -191,13 +187,16 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbLight)
-                    .addComponent(cbHorn)
                     .addComponent(btnStop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnChangeDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnChangeDir, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbLight)
+                            .addComponent(cbHorn))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblAddress)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(comboSelAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

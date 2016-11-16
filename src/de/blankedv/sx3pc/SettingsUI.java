@@ -102,8 +102,6 @@ public class SettingsUI extends javax.swing.JFrame {
         lblControl = new javax.swing.JLabel();
         lblLocoSX0 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        lblLocale = new javax.swing.JLabel();
-        comboLocale = new javax.swing.JComboBox();
         cbEnableSrcp = new javax.swing.JCheckBox();
         cbDebug = new javax.swing.JCheckBox();
         btnSensorList = new javax.swing.JButton();
@@ -257,15 +255,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
-        lblLocale.setText("Sprache");
-
-        comboLocale.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "English", "Deutsch" }));
-        comboLocale.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboLocaleActionPerformed(evt);
-            }
-        });
-
         cbEnableSrcp.setText("SRCP Server");
 
         cbDebug.setText("Debug Mode");
@@ -289,16 +278,11 @@ public class SettingsUI extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(btnSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 200, Short.MAX_VALUE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblLocale)
-                            .addComponent(comboLocale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cbDebug)
-                        .addGap(56, 56, 56)))
+                        .addContainerGap()
+                        .addComponent(cbDebug)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbEnableSrcp)
                     .addComponent(cbEnableSxnet)
@@ -308,18 +292,12 @@ public class SettingsUI extends javax.swing.JFrame {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(lblLocale)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboLocale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(cbEnableSrcp)
-                            .addComponent(cbDebug))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cbEnableSxnet)))
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbEnableSrcp)
+                    .addComponent(cbDebug))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cbEnableSxnet)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
@@ -375,7 +353,6 @@ public class SettingsUI extends javax.swing.JFrame {
         prefs.putBoolean("enableDebug", cbDebug.isSelected());
 
         prefs.putInt("sxbusControl",comboSXBusControl.getSelectedIndex());
-        prefs.put("locale", comboLocale.getSelectedItem().toString());
         
         if (comboSelectSerialPort.getItemCount() >= 1) {
             prefs.put("commPort", comboSelectSerialPort.getSelectedItem().toString());
@@ -396,10 +373,10 @@ public class SettingsUI extends javax.swing.JFrame {
         System.out.println("saving enableSxnet="+cbEnableSxnet.isSelected());
         System.out.println("saving enableLanbahn="+cbEnableLanbahn.isSelected());
         System.out.println("saving enableDebug="+cbDebug.isSelected());
-        System.out.println("saving locale="+comboLocale.getSelectedItem().toString());
+
         }
 
-        JOptionPane.showMessageDialog(this,bundle.getString("NeedsRestart"));
+        JOptionPane.showMessageDialog(this,"Needs Restart" );
         settingsWindow = null;
         dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -416,20 +393,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
     private void cbSimulationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSimulationActionPerformed
     }//GEN-LAST:event_cbSimulationActionPerformed
-
-    private void comboLocaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboLocaleActionPerformed
-        int sel = comboLocale.getSelectedIndex();
-        Locale loc;
-        if (sel == 0) {
-            loc = Locale.ENGLISH;
-        } else {
-            loc = Locale.GERMAN;
-        }
-
-	bundle = ResourceBundle.getBundle("resources", loc);
-	i18n();
-
-    }//GEN-LAST:event_comboLocaleActionPerformed
 
     private void btnSensorListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSensorListActionPerformed
         new EditSensorListUI(this, true);
@@ -485,25 +448,20 @@ public class SettingsUI extends javax.swing.JFrame {
         }
     }
     private void i18n() {
-        this.setTitle(bundle.getString("Settings"));
-        lblLocale.setText(bundle.getString("Locale"));
-	lblSerial.setText(bundle.getString("SelSerial"));
-	cbEnableSrcp.setText(bundle.getString("EnSRCP"));
-        cbEnableSxnet.setText(bundle.getString("EnSxnet"));
-        btnSave.setText(bundle.getString("SaveSettings"));
-        btnCancel.setText(bundle.getString("Cancel"));
+        this.setTitle("Settings");
+
+	lblSerial.setText("Select Serial Port");
+	cbEnableSrcp.setText("Enable SRCP");
+        cbEnableSxnet.setText("Enable Sxnet");
+        btnSave.setText("Save Settings");
+        btnCancel.setText("Cancel");
 
     }
 
     private void loadPrefs() {
         prefs.getInt("Sett.windowX", getX());
         prefs.getInt("Sett.windowY", getY());
-        String l = prefs.get("locale","Deutsch");
-        if (l.contains("Deu")) {
-            comboLocale.setSelectedIndex(1);
-        } else {
-             comboLocale.setSelectedIndex(0);
-        }
+       
     }
 
     private void savePrefs() {
@@ -553,7 +511,6 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox cbEnableSxnet;
     private javax.swing.JCheckBox cbSimulation;
     private javax.swing.JComboBox comboBusmode;
-    private javax.swing.JComboBox comboLocale;
     private javax.swing.JComboBox comboSXBusControl;
     private javax.swing.JComboBox<String> comboSelectSerialPort;
     private javax.swing.JComboBox comboSelectType;
@@ -563,7 +520,6 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JLabel lblControl;
-    private javax.swing.JLabel lblLocale;
     private javax.swing.JLabel lblLoco;
     private javax.swing.JLabel lblLocoSX0;
     private javax.swing.JLabel lblSerial;

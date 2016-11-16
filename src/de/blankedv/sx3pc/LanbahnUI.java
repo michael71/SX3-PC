@@ -36,7 +36,7 @@ public class LanbahnUI extends javax.swing.JFrame {
     // Preferences
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     protected Thread t;
-    protected RegisterJMDNSService serv;
+    //protected RegisterJMDNSService serv;
     byte[] buf = new byte[1000];
 
     private String dev1 = "";
@@ -80,7 +80,7 @@ public class LanbahnUI extends javax.swing.JFrame {
             timer.schedule(new MCSendTask(), 1000, 1000);
 
             setVisible(true);
-            new Thread(new RegisterJMDNSService("lanbahn", LANBAHN_PORT, myip.get(0), this)).start();
+            // new Thread(new RegisterJMDNSService("lanbahn", LANBAHN_PORT, myip.get(0), this)).start();
         } else {
             System.out.println("no network adapter, cannot listen to lanbahn messages.");
         }

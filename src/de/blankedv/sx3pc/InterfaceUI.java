@@ -9,19 +9,16 @@ import java.awt.event.ActionListener;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
-import javax.swing.border.TitledBorder;
 
 /**
  * This class is the SX3 MAIN class and starts all other UI-windows.
@@ -31,7 +28,7 @@ import javax.swing.border.TitledBorder;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.32 - 13 Nov 2016";   // program version, displayed in HELP window
+    public static final String VERSION = "1.34 - 14 Nov 2016";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
@@ -51,7 +48,6 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static SXnetServerUI sxnetserver;
     public static List<InetAddress> myip;
     public static LanbahnUI lanbahnserver;
-    public static ResourceBundle bundle;
     public static boolean pollingIsRunning = false;
     public static LocoProgUI locoprog = null;
     public static VtestUI vtest = null;
@@ -90,7 +86,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         loadWindowPrefs();
 
         initComponents();
-        i18n();
+
         URL url;
         try {
             url = ClassLoader.getSystemResource("de/blankedv/sx3pc/icons/sx3_ico.png");
@@ -112,7 +108,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         // set status text
         if (simulation) {
-            labelStatus.setText(bundle.getString("Simul"));
+            labelStatus.setText("Simulation");
             btnConnectDisconnect.setEnabled(false);
             btnConnectDisconnect.setText(" ");
             btnPowerOnOff.setEnabled(true);  // works always in simulation
@@ -205,21 +201,21 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         panelWindows.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Fenster"));
 
-        btnThrottle.setText("+ Lokregler");
+        btnThrottle.setText("+Throttle");
         btnThrottle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnThrottleActionPerformed(evt);
             }
         });
 
-        btnTurnout.setText("+ Weichen");
+        btnTurnout.setText("+Turnouts");
         btnTurnout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnTurnoutActionPerformed(evt);
             }
         });
 
-        btnSensor.setText("+ Belegtmelder");
+        btnSensor.setText("+Sensors");
         btnSensor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSensorActionPerformed(evt);
@@ -240,7 +236,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             }
         });
 
-        btnVtest.setText("V-Kennlinie");
+        btnVtest.setText("Speed Meas.");
         btnVtest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnVtestActionPerformed(evt);
@@ -287,14 +283,14 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         panelInterface.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Interface"));
 
-        btnConnectDisconnect.setText("Verbinden");
+        btnConnectDisconnect.setText("Connect");
         btnConnectDisconnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnConnectDisconnectActionPerformed(evt);
             }
         });
 
-        btnPowerOnOff.setText("Gleissp. einschalten");
+        btnPowerOnOff.setText("Track Power ON");
         btnPowerOnOff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPowerOnOffActionPerformed(evt);
@@ -413,14 +409,14 @@ public class InterfaceUI extends javax.swing.JFrame {
             if (sxi.open()) {
 
                 statusIcon.setEnabled(true);
-                btnConnectDisconnect.setText(bundle.getString("Disconnect"));
+                btnConnectDisconnect.setText("Disconnect");
                 sxiConnected = true;
                 btnPowerOnOff.setEnabled(true);
                 btnReset.setEnabled(true);
                 connectionOK = true;
                 timeoutCounter = 0;
             } else {
-                JOptionPane.showMessageDialog(this, bundle.getString("CheckSerialSettings"));
+                JOptionPane.showMessageDialog(this, "Check Serial Port Settings");
             }
         }
     }//GEN-LAST:event_btnConnectDisconnectActionPerformed
@@ -438,7 +434,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private void btnPowerOnOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPowerOnOffActionPerformed
 
         if (!sxiConnected && !simulation) {
-            JOptionPane.showMessageDialog(this, bundle.getString("PlsConnectFirst"));
+            JOptionPane.showMessageDialog(this, "Please Conncect First");
             return;
         }
         if (powerIsOn()) {
@@ -467,7 +463,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(this, bundle.getString("SXmonitorRunning"));
+            JOptionPane.showMessageDialog(this, "SXmonitorRunning");
         }
     }//GEN-LAST:event_btnSxMonitorActionPerformed
 
@@ -489,7 +485,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         if (settingsWindow == null) {
             settingsWindow = new SettingsUI();
         } else {
-            JOptionPane.showMessageDialog(this, bundle.getString("SettingsWindowOpen"));
+            JOptionPane.showMessageDialog(this, "Settings Window Open");
         }
     }//GEN-LAST:event_menuSettingsActionPerformed
 
@@ -521,7 +517,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             vtest = new VtestUI();
 
         } else {
-            JOptionPane.showMessageDialog(this, "already running"); //bundle.getString("SXmonitorRunning"));
+            JOptionPane.showMessageDialog(this, "already running");  
         }
     }//GEN-LAST:event_btnVtestActionPerformed
 
@@ -575,10 +571,10 @@ public class InterfaceUI extends javax.swing.JFrame {
         // regular update needed 
 
         if (powerIsOn()) {
-            btnPowerOnOff.setText(bundle.getString("TurnPowerOff"));
+            btnPowerOnOff.setText("Track Power Off");
             statusIcon.setIcon(green);
         } else {
-            btnPowerOnOff.setText(bundle.getString("TurnPowerOn"));
+            btnPowerOnOff.setText("Track Power On");
             statusIcon.setIcon(red);
         }
 
@@ -628,7 +624,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             sxiConnected = false;
         }
         statusIcon.setEnabled(false);
-        btnConnectDisconnect.setText(bundle.getString("Connect"));
+        btnConnectDisconnect.setText("Connect");
         btnPowerOnOff.setEnabled(false);
         btnReset.setEnabled(false);
         connectionOK = false;
@@ -667,16 +663,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         setLocation(prefs.getInt("windowX", 200), prefs.getInt("windowY", 200));
         DEBUG = prefs.getBoolean("enableDebug", false);
         System.out.println("DEBUG=" + DEBUG);
-        String l = prefs.get("locale", "Deutsch");
-        if (l.contains("Deu")) {
-            loc = Locale.GERMAN;
-        } else {
-            loc = Locale.ENGLISH;
-        }
-        bundle = ResourceBundle.getBundle("de/blankedv/sx3pc/resources/resources", loc);
-        if (DEBUG) {
-            System.out.println("lang=" + loc.toString());
-        }
+       
     }
 
     private void loadOtherPrefs() {
@@ -720,17 +707,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         }
     }
 
-    private void i18n() {
-        // language init for language dependent UI labels
-        btnThrottle.setText(bundle.getString("Throttle"));
-        btnTurnout.setText(bundle.getString("TurnoutEtc"));
-        btnSensor.setText(bundle.getString("Sensor"));
-        TitledBorder tb1 = (TitledBorder) panelWindows.getBorder();
-        tb1.setTitle(bundle.getString("Windows"));
-        tb1 = (TitledBorder) panelInterface.getBorder();
-        tb1.setTitle(bundle.getString("Interface"));
-
-    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConnectDisconnect;
     private javax.swing.JButton btnPowerOnOff;

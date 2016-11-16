@@ -34,7 +34,9 @@ class NIC {
 				InetAddress address = addressesOfAnInterface.nextElement();
                                 //if (DEBUG) System.out.println("has address=" + address.getHostAddress());
                 // look for IPv4 addresses which are not==127.0.0.1
-				if (!address.equals(localhost) && !address.toString().contains(":") && (!ifc.getName().toString().contains("vir"))) {
+				if (!address.equals(localhost) && !address.toString().contains(":") 
+                                        && (!ifc.getName().toString().contains("vir"))
+                                        && (!ifc.getName().toString().contains("lxc"))) {
 					addrList.add(address);
                                         if (DEBUG) System.out.println("not local, not ipv6, not virtual =" + address.getHostAddress());
 				//	System.out.println("FOUND ADDRESS ON NIC: " + address.getHostAddress());

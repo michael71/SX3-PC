@@ -185,7 +185,7 @@
       <SubComponents>
         <Component class="javax.swing.JButton" name="btnThrottle">
           <Properties>
-            <Property name="text" type="java.lang.String" value="+ Lokregler"/>
+            <Property name="text" type="java.lang.String" value="+Throttle"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnThrottleActionPerformed"/>
@@ -193,7 +193,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnTurnout">
           <Properties>
-            <Property name="text" type="java.lang.String" value="+ Weichen"/>
+            <Property name="text" type="java.lang.String" value="+Turnouts"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTurnoutActionPerformed"/>
@@ -201,7 +201,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnSensor">
           <Properties>
-            <Property name="text" type="java.lang.String" value="+ Belegtmelder"/>
+            <Property name="text" type="java.lang.String" value="+Sensors"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSensorActionPerformed"/>
@@ -225,7 +225,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnVtest">
           <Properties>
-            <Property name="text" type="java.lang.String" value="V-Kennlinie"/>
+            <Property name="text" type="java.lang.String" value="Speed Meas."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnVtestActionPerformed"/>
@@ -286,7 +286,7 @@
       <SubComponents>
         <Component class="javax.swing.JButton" name="btnConnectDisconnect">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Verbinden"/>
+            <Property name="text" type="java.lang.String" value="Connect"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnConnectDisconnectActionPerformed"/>
@@ -294,7 +294,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnPowerOnOff">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Gleissp. einschalten"/>
+            <Property name="text" type="java.lang.String" value="Track Power ON"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPowerOnOffActionPerformed"/>
