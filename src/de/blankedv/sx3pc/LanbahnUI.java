@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import static de.blankedv.sx3pc.InterfaceUI.*;
+import static de.blankedv.sx3pc.FunkreglerUI.fu;
 import java.awt.Color;
 
 /**
@@ -128,6 +129,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                     if (!isOwnIP(ipAddr)) {
                         lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
                         lbMessage2SX(message, ipAddr);
+                        FunkreglerUI.setAliveByIP(ipAddr);
                     }
 
                 }
@@ -198,26 +200,13 @@ public class LanbahnUI extends javax.swing.JFrame {
                             String name = cmd[1];
                             if (name.contains("FUNKR")) {  // only "FUNKR" is a "lanbahn FREDI"
 
-                                String ipDevice = cmd[2];
-                                int batt = Integer.parseInt(cmd[3]);
-                                int rssi = Integer.parseInt(cmd[4]);
-                                if (dev1.isEmpty()) {
-                                    dev1 = name;
-                                    lblDevice1Info.setText(dev1);
-                                    setBatteryDisplay(progBattery1, batt);
-                                    setRSSIDisplay(progRSSI1, rssi);
-                                } else if (dev1.equalsIgnoreCase(name)) {
-                                    setBatteryDisplay(progBattery1, batt);  // update battery status
-                                    setRSSIDisplay(progRSSI1, rssi);
-                                } else if (dev2.isEmpty()) {
-                                    dev2 = name;
-                                    lblDevice2Info.setText(dev2);
-                                    setRSSIDisplay(progRSSI2, rssi);
-                                    setBatteryDisplay(progBattery2, batt);
-                                } else if (dev2.equalsIgnoreCase(name)) {
-                                    setBatteryDisplay(progBattery2, batt); // update battery status
-                                    setRSSIDisplay(progRSSI2, rssi);
+                                // check, if it is known already
+                                if (FunkreglerUI.isKnown(name)) {
+                                    FunkreglerUI.updateByName(name, cmd);
+                                } else {
+                                    FunkreglerUI fu1 = new FunkreglerUI(name, cmd);                                  
                                 }
+                                
                             }
                         }
                     } catch (Exception e) {
@@ -229,27 +218,7 @@ public class LanbahnUI extends javax.swing.JFrame {
 
         }
 
-        private void setBatteryDisplay(javax.swing.JProgressBar p, int batt) {
-            p.setValue(batt);
-            if (batt < 3700) {
-                p.setForeground(Color.red);
-            } else if (batt < 3900) {
-                p.setForeground(Color.yellow);
-            } else {
-                p.setForeground(Color.green);
-            }
-        }
-
-        private void setRSSIDisplay(javax.swing.JProgressBar p, int rssi) {
-            p.setValue(rssi);
-            if (rssi < -80) {
-                p.setForeground(Color.red);
-            } else if (rssi < -72) {
-                p.setForeground(Color.yellow);
-            } else {
-                p.setForeground(Color.green);
-            }
-        }
+       
         
         private boolean isOwnIP(String ip) {
             //System.out.println(ip);

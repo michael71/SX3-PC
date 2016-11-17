@@ -596,6 +596,9 @@ public class InterfaceUI extends javax.swing.JFrame {
         SensorUI.updateAll();
         WeichenUI.updateAll();
         ThrottleUI.updateAll();
+        FunkreglerUI.updateAll();
+        FunkreglerUI.checkAlive();
+        
     }
 
     private void checkConnection() {
@@ -642,6 +645,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         SensorUI.saveAllPrefs();
         WeichenUI.saveAllPrefs();
         ThrottleUI.saveAllPrefs();
+        FunkreglerUI.saveAllPrefs();
         if (srcpserver != null) {
             srcpserver.savePrefs();
         }
@@ -651,6 +655,7 @@ public class InterfaceUI extends javax.swing.JFrame {
          if (lanbahnserver != null) {
             lanbahnserver.savePrefs();
         }
+        
     }
 
     private void savePrefs() {
