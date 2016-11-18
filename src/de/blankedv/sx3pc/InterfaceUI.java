@@ -28,7 +28,7 @@ import javax.swing.Timer;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.51 - 17 Nov 2016";   // program version, displayed in HELP window
+    public static final String VERSION = "1.52 - 18 Nov 2016";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)

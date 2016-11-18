@@ -24,7 +24,8 @@ import static de.blankedv.sx3pc.InterfaceUI.*;
  * @author mblank
  */
 public class SettingsUI extends javax.swing.JFrame {
-    private Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+   
+    Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
     /** Creates new form SettingsUI */
     public SettingsUI() {
@@ -358,12 +359,14 @@ public class SettingsUI extends javax.swing.JFrame {
             prefs.put("commPort", comboSelectSerialPort.getSelectedItem().toString());
         } else {
             prefs.put("commPort","");
-            prefs.putBoolean("simulation", true); // without serial port only simulation is possible
+            //prefs.putBoolean("simulation", true); // without serial port only simulation is possible
         }
          
          if (DEBUG) {
         System.out.println("saving Settings");
-        System.out.println("saving Port="+comboSelectSerialPort.getSelectedItem().toString());
+        if (comboSelectSerialPort.getItemCount() >= 1) {
+           System.out.println("saving Port="+comboSelectSerialPort.getSelectedItem().toString());
+        }
         System.out.println("saving Baudrate="+cbBaudrate.getSelectedItem().toString());
         System.out.println("saving Type="+comboSelectType.getSelectedItem().toString());
         System.out.println("saving Busmode="+comboBusmode.getSelectedItem().toString());
