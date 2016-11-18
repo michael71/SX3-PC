@@ -484,11 +484,15 @@ public class SettingsUI extends javax.swing.JFrame {
         while (enumComm.hasMoreElements()) {
             serialPortId = (CommPortIdentifier) enumComm.nextElement();
             if (serialPortId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                if (DEBUG) System.out.println("Port Found:" + serialPortId.getName()+" index="+count);
+                if (DEBUG) System.out.println("Port Found:"+ serialPortId.getName()+" index="+count);
                 comboSelectSerialPort.addItem(serialPortId.getName());
                 count++;
             }
         }
+        if (count == 0) {
+            System.out.println("no serial port found");
+        }
+        
 
         String commPortPref = prefs.get("commPort", "");
         for (int i=0; i<comboSelectSerialPort.getItemCount();i++) {
