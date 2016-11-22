@@ -18,6 +18,8 @@ import javax.swing.JOptionPane;
 import static de.blankedv.sx3pc.InterfaceUI.*;
 import static de.blankedv.sx3pc.FunkreglerUI.fu;
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -42,9 +44,10 @@ public class LanbahnUI extends javax.swing.JFrame {
 
     private String dev1 = "";
     private String dev2 = "";
-    
+
     private long announceTimer = 0;
-    
+
+    private static HashMap<Integer, LanbahnData> lanbahnData = new HashMap<Integer, LanbahnData>(200);
 
     /**
      * Creates new form LanbahnUI
@@ -119,15 +122,14 @@ public class LanbahnUI extends javax.swing.JFrame {
                     // Warten auf Nachricht
                     multicastsocket.receive(packet);
                     String message = new String(packet.getData(), 0, packet.getLength(), TEXT_ENCODING);
-
-                    message = message.replace("\n", "");
+                    message = message.replace("\n", "").replace("  "," ");
                     String ipAddr = packet.getAddress().toString().substring(1);
                     // don't react on "self" messages
-                    if (!isOwnIP(ipAddr)) {
-                        lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
-                        lbMessage2SX(message, ipAddr);
-                        FunkreglerUI.setAliveByIP(ipAddr);
-                    }
+                    //if (!isOwnIP(ipAddr)) {
+                    lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
+                    interpretLanbahnMessage(message, ipAddr);
+                    FunkreglerUI.setAliveByIP(ipAddr);
+                    //}
 
                 }
                 System.out.println("lanbahn Server closing.");
@@ -140,7 +142,7 @@ public class LanbahnUI extends javax.swing.JFrame {
 
         }
 
-        private void lbMessage2SX(String msg, String ip) {
+        private void interpretLanbahnMessage(String msg, String ip) {
             if (msg == null) {
                 return;
             }
@@ -190,6 +192,81 @@ public class LanbahnUI extends javax.swing.JFrame {
                         System.out.println("could not understand S command format: " + msg + " error=" + e.getMessage());
                     }
                     break;
+                case "S":
+                case "SET":
+                    // set command
+                    try {
+                        if (cmd.length >= 3) {
+                            adr = Integer.parseInt(cmd[1]);
+                            data = Integer.parseInt(cmd[2]);
+                            if (!isSXAddress(adr)) {
+                                // lanbahn address range
+                                if ((lanbahnData.get(adr) == null) || (lanbahnData.get(adr).data != data)) {
+                                    lanbahnData.put(adr, new LanbahnData(data));
+                                    if (DEBUG) {
+                                        System.out.println("setting LB-adr=" + adr + " val=" + data);
+                                    }
+                                }
+                            } else {
+                                // selectrix channel range
+                                sxi.sendAccessory(adr, data);
+                                if (DEBUG) {
+                                    System.out.println("setting sx-adr=" + adr + " val=" + data);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("could not understand S/SET command format: " + msg + " error=" + e.getMessage());
+                    }
+                    break;
+                case "R":
+                case "READ":
+                    // set command
+                    try {
+                        if (cmd.length >= 2) {
+                            adr = Integer.parseInt(cmd[1]);
+                            int dOut;
+                            String msgToSend;
+                            System.out.println("r, adr="+adr); 
+                            if (!isSXAddress(adr)) {
+                                // lanbahn address range
+                                LanbahnData lbdata = lanbahnData.get(adr);
+                                if (lbdata != null) {
+                                    dOut = lbdata.data;
+                                } else {
+                                    dOut = 0; // default, in case it was not set
+                                }
+                                msgToSend = "FB " + adr + " " + dOut;
+                            } else {
+                                // selectrix channel range
+                                if (adr < 128) {
+                                    dOut = sxData[adr][0];
+                                } else {
+                                    dOut = sxData[adr - 128][1];
+                                }
+                                msgToSend = "FX " + adr + " " + dOut;
+                            }
+
+                            System.out.println("to lanbahn: " + msgToSend);
+                            byte[] buf = new byte[256];
+                            buf = msgToSend.getBytes();
+
+                            DatagramPacket packet;
+                            packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
+
+                            try {
+                                multicastsocket.send(packet);
+                            } catch (IOException ex) {
+                                if (DEBUG) {
+                                    System.out.println("could not send LB Msg");
+                                }
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        System.out.println("could not understand R/READ command format: " + msg + " error=" + e.getMessage());
+                    }
+                    break;
                 case "A":
                     // announcement of name / ip-address / battery-state
                     try {
@@ -201,9 +278,9 @@ public class LanbahnUI extends javax.swing.JFrame {
                                 if (FunkreglerUI.isKnown(name)) {
                                     FunkreglerUI.updateByName(name, cmd);
                                 } else {
-                                    FunkreglerUI fu1 = new FunkreglerUI(name, cmd);                                  
+                                    FunkreglerUI fu1 = new FunkreglerUI(name, cmd);
                                 }
-                                
+
                             }
                         }
                     } catch (Exception e) {
@@ -215,11 +292,9 @@ public class LanbahnUI extends javax.swing.JFrame {
 
         }
 
-       
-        
         private boolean isOwnIP(String ip) {
             //System.out.println(ip);
-            for (int i=0; i < myip.size(); i++) {
+            for (int i = 0; i < myip.size(); i++) {
                 //System.out.println(myip.get(i).toString());
                 if (myip.get(i).toString().contains(ip)) {
                     return true;
@@ -227,25 +302,41 @@ public class LanbahnUI extends javax.swing.JFrame {
             }
             return false;
         }
+
+        private boolean isSXAddress(int a) {
+            if ((a <= 0) || (a > SXMAX_USED)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
     class MCSendTask extends TimerTask {
-        
+
         public void run() {
-            
-            int bus;
+            // send data to lanbahn when SX data have changed or when 
+            // lanbahn data have changed
+            int bus;  //TODO
             for (int ch = 0; ch < SXMAX2 + 1; ch++) {
                 if (sxData[ch][0] != sxDataCopy[ch][0]) {
                     // channel data changed, send update to mobile device
                     sxDataCopy[ch][0] = sxData[ch][0];
                     //System.out.println("X " + i + " " + sxDataCopy[ch][bus]);
-                    sendMCChannel(ch, 0, sxDataCopy[ch][0]);
+                    sendMCChannel(ch, sxDataCopy[ch][0]);
                     //ms.send(packet); //sendMessage("X " + i + " " + sxDataCopy[ch][bus]);
                 }
             }
+            for (Integer s : lanbahnData.keySet()) {
+                if (lanbahnData.get(s).changed) {
+                    sendMCChannel(s, lanbahnData.get(s).data);
+                    lanbahnData.get(s).changed = false;
+                }
+
+            }
             if (System.currentTimeMillis() > announceTimer) {
                 sendMCAnnounce();
-                announceTimer = System.currentTimeMillis() + 1000*10;   // every 10 secs
+                announceTimer = System.currentTimeMillis() + 1000 * 10;   // every 10 secs
             }
             try {
                 Thread.sleep(300);  // send update only every 300msecs
@@ -254,12 +345,12 @@ public class LanbahnUI extends javax.swing.JFrame {
             }
         }
 
-        private void sendMCChannel(int ch, int bus, int d) {
+        private void sendMCChannel(int ch, int d) {
             if (multicastsocket == null) {
                 System.out.println("Error: multicast socket is NULL");
                 return;
             }
-            String msg = "S " + ch + " " + d;
+            String msg = "FB " + ch + " " + d;
 
             byte[] buf = new byte[256];
 
@@ -268,21 +359,23 @@ public class LanbahnUI extends javax.swing.JFrame {
             DatagramPacket packet;
             packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
 
-            System.out.println("lanbahn " + msg);
+            System.out.println("to lanbahn: " + msg);
             try {
                 multicastsocket.send(packet);
             } catch (IOException ex) {
                 Logger.getLogger(LanbahnUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         private void sendMCAnnounce() {
             if (multicastsocket == null) {
                 System.out.println("Error: multicast socket is NULL");
                 return;
             }
-            if (myip.isEmpty()) return;
-            
+            if (myip.isEmpty()) {
+                return;
+            }
+
             String msg = "A SX3PC " + myip.get(0).getHostAddress();
 
             byte[] buf = new byte[256];

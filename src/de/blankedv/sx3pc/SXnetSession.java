@@ -26,7 +26,6 @@ public class SXnetSession implements Runnable {
     private static int session_counter = 0;
     private final int session_id;
     // list of channels which are of interest for this device
-    private final List<Integer> sxList;
     private final int[][] sxDataCopy;
     private int timeElapsed;
     private final long timeFB;
@@ -43,7 +42,7 @@ public class SXnetSession implements Runnable {
         incoming = i;
         session_id = ++session_counter;
         sxDataCopy = new int[128][2];
-        sxList = new ArrayList<Integer>();
+
         timeFB = 0;
         lastPower = false;
     }
@@ -115,11 +114,10 @@ public class SXnetSession implements Runnable {
             }
             int adr = getChannelFromString(param[1]);
             if (adr != ERROR) {
-                checkSXlist(adr);
                 String res = "";
-                if (adr > 127)  {
+                if (adr > 127) {
                     if (adr < 256) {
-                       res = "X " + adr + " " + sxData[adr-128][1];
+                        res = "X " + adr + " " + sxData[adr - 128][1];
                     } else {
                         res = "";
                     }
@@ -138,7 +136,6 @@ public class SXnetSession implements Runnable {
             int adr = getChannelFromString(param[1]);
             int bit = getBitFromString(param[2]);
             if ((adr != ERROR) && (bit != ERROR)) {
-                checkSXlist(adr);
                 sxi.send2SXBussesBit(adr, bit, 1);
                 return "OK";
             } else {
@@ -151,7 +148,6 @@ public class SXnetSession implements Runnable {
             int adr = getChannelFromString(param[1]);
             int bit = getBitFromString(param[2]);
             if ((adr != ERROR) && (bit != ERROR)) {
-                checkSXlist(adr);
                 sxi.send2SXBussesBit(adr, bit, 0);
                 return "OK";
             } else {
@@ -164,7 +160,6 @@ public class SXnetSession implements Runnable {
             int adr = getChannelFromString(param[1]);
             int data = getDataFromString(param[2]);
             if ((adr != ERROR) && (data != ERROR)) {
-                checkSXlist(adr);
                 sxi.send2SXBusses(adr, data);
                 return "OK";
             } else {
@@ -172,13 +167,6 @@ public class SXnetSession implements Runnable {
             }
         }
         return "ERROR";
-
-    }
-
-    private void checkSXlist(int adr) {
-        if (!sxList.contains(adr)) {
-            sxList.add(adr);
-        }
 
     }
 
@@ -253,25 +241,22 @@ public class SXnetSession implements Runnable {
     class Task extends TimerTask {
 
         public void run() {
-            int ch;
-            int bus;
-            for (int i : sxList) {
-                if (i < 127) {
-                    // SX0
-                    ch = i; 
-                    bus = 0;
-                } else {   
-                    //SX1
-                    ch = i -127;
-                    bus = 1;
-                }
-                if (sxData[ch][bus] != sxDataCopy[ch][bus]) {
-                    // channel data changed, send update to mobile device
-                    sxDataCopy[ch][bus] = sxData[ch][bus];
-                    System.out.println("X " + i + " " + sxDataCopy[ch][bus]);
-                    sendMessage("X " + i + " " + sxDataCopy[ch][bus]);
-                 }
 
+            for (int bus = 0; bus < 2; bus++) {
+                if (sxData[127][bus] != sxDataCopy[127][bus]) {
+                    // POWER ON/OFF state changed, send update to mobile device
+                    sxDataCopy[127][bus] = sxData[127][bus];
+                    System.out.println("X 127 " + sxDataCopy[127][bus]);
+                    sendMessage("X 127 " + sxDataCopy[127][bus]);
+                }
+                for (int i = 0; i < 112; i++) {
+                    if (sxData[i][bus] != sxDataCopy[i][bus]) {
+                        // channel data changed, send update to mobile device
+                        sxDataCopy[i][bus] = sxData[i][bus];
+                        System.out.println("X " + i + " " + sxDataCopy[i][bus]);
+                        sendMessage("X " + i + " " + sxDataCopy[i][bus]);
+                    }
+                }
             }
             try {
                 Thread.sleep(300);  // send update only every 300msecs
