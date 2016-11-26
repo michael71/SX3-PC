@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -16,10 +15,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import static de.blankedv.sx3pc.InterfaceUI.*;
-import static de.blankedv.sx3pc.FunkreglerUI.fu;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 
 /**
  *
@@ -35,7 +31,7 @@ public class LanbahnUI extends javax.swing.JFrame {
     protected MulticastSocket multicastsocket;
     static LanbahnServer lbServer;
 
-    private final int[][] sxDataCopy = new int[SXMAX2 + 1][2];
+    private final int[][] sxDataCopy = new int[SXMAX2][NBUSSES];
     // Preferences
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     protected Thread t;
@@ -47,9 +43,7 @@ public class LanbahnUI extends javax.swing.JFrame {
 
     private long announceTimer = 0;
 
-    private static HashMap<Integer, LanbahnData> lanbahnData = new HashMap<Integer, LanbahnData>(200);
-
-    /**
+        /**
      * Creates new form LanbahnUI
      */
     public LanbahnUI() {
@@ -58,7 +52,7 @@ public class LanbahnUI extends javax.swing.JFrame {
         loadPrefs();
 
         if (!myip.isEmpty()) {
-            for (int ch = 0; ch < SXMAX2 + 1; ch++) {
+            for (int ch = 0; ch < SXMAX2 ; ch++) {
                 sxDataCopy[ch][0] = sxData[ch][0];
                 sxDataCopy[ch][1] = sxData[ch][1];
             }
@@ -150,12 +144,13 @@ public class LanbahnUI extends javax.swing.JFrame {
 
             String cmd[] = msg.split(" ");
 
-            switch (cmd[0]) {
+            switch (cmd[0].toUpperCase()) {
                 case "LOCO":
                     if (cmd.length >= 6) {
                         try {
                             adr = Integer.parseInt(cmd[1]);
                             if ((adr <= 0) || (adr > SXMAX_USED)) {
+                                System.out.println("could not understand LOCO command format: " + msg + " invalid address");
                                 return;   // check address range
                             }
                             speed = Integer.parseInt(cmd[2]);
@@ -192,21 +187,16 @@ public class LanbahnUI extends javax.swing.JFrame {
                         System.out.println("could not understand S command format: " + msg + " error=" + e.getMessage());
                     }
                     break;
-                case "S":
+                case "S":  // standard lanbahn message for turnouts, signals etc
                 case "SET":
                     // set command
                     try {
                         if (cmd.length >= 3) {
                             adr = Integer.parseInt(cmd[1]);
                             data = Integer.parseInt(cmd[2]);
-                            if (!isSXAddress(adr)) {
+                            if (isSimulationAddress(adr)) {
                                 // lanbahn address range
-                                if ((lanbahnData.get(adr) == null) || (lanbahnData.get(adr).data != data)) {
-                                    lanbahnData.put(adr, new LanbahnData(data));
-                                    if (DEBUG) {
-                                        System.out.println("setting LB-adr=" + adr + " val=" + data);
-                                    }
-                                }
+                                lanbahnData.put(adr,data);
                             } else {
                                 // selectrix channel range
                                 sxi.sendAccessory(adr, data);
@@ -228,14 +218,10 @@ public class LanbahnUI extends javax.swing.JFrame {
                             int dOut;
                             String msgToSend;
                             System.out.println("r, adr="+adr); 
-                            if (!isSXAddress(adr)) {
+                            if (isSimulationAddress(adr)) {
                                 // lanbahn address range
-                                LanbahnData lbdata = lanbahnData.get(adr);
-                                if (lbdata != null) {
-                                    dOut = lbdata.data;
-                                } else {
-                                    dOut = 0; // default, in case it was not set
-                                }
+                                dOut = 0;
+
                                 msgToSend = "FB " + adr + " " + dOut;
                             } else {
                                 // selectrix channel range
@@ -303,11 +289,12 @@ public class LanbahnUI extends javax.swing.JFrame {
             return false;
         }
 
-        private boolean isSXAddress(int a) {
+        private boolean isSimulationAddress(int a) {
             if ((a <= 0) || (a > SXMAX_USED)) {
-                return false;
-            } else {
                 return true;
+                // todo: second sx bus == simulation, if not used by connected central station
+            } else {
+                return false;
             }
         }
     }
@@ -318,7 +305,7 @@ public class LanbahnUI extends javax.swing.JFrame {
             // send data to lanbahn when SX data have changed or when 
             // lanbahn data have changed
             int bus;  //TODO
-            for (int ch = 0; ch < SXMAX2 + 1; ch++) {
+            for (int ch = 0; ch < SXMAX2 ; ch++) {
                 if (sxData[ch][0] != sxDataCopy[ch][0]) {
                     // channel data changed, send update to mobile device
                     sxDataCopy[ch][0] = sxData[ch][0];
@@ -327,13 +314,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                     //ms.send(packet); //sendMessage("X " + i + " " + sxDataCopy[ch][bus]);
                 }
             }
-            for (Integer s : lanbahnData.keySet()) {
-                if (lanbahnData.get(s).changed) {
-                    sendMCChannel(s, lanbahnData.get(s).data);
-                    lanbahnData.get(s).changed = false;
-                }
 
-            }
             if (System.currentTimeMillis() > announceTimer) {
                 sendMCAnnounce();
                 announceTimer = System.currentTimeMillis() + 1000 * 10;   // every 10 secs

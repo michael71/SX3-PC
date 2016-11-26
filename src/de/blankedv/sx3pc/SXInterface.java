@@ -198,7 +198,7 @@ public class SXInterface {
             } catch (Exception e) {};
         };
   
-        if (twoBusses) {
+        if (useSX1forControl) {
             for (int i = 0; i < 112; i++) {
                 b[0] = (byte) ((i & 0x7F) | 0x80);  // write command
                 send(b, 1);
@@ -361,8 +361,8 @@ public class SXInterface {
     synchronized void send2SXBusses(int adr, int data) {
         // accepts adresses >127 and then sends data to SX1 (instead of SX0)
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
-         if (adr > 127) {
-            if (twoBusses == true) {
+         if (adr > SXMAX2) {
+            if (useSX1forControl == true) {
                 adr = adr - 128;  // to make channel number clear.
                 Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
                 send(b, 1);
@@ -382,8 +382,8 @@ public class SXInterface {
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
         // static int sxbusControl = 0;
         int bus = 0;
-        if (adr > 127) {
-            if (twoBusses == true) {
+        if (adr > SXMAX2) {
+            if (useSX1forControl == true) {
                 bus = 1;
                 adr = adr - 128;
             } else {
@@ -510,8 +510,9 @@ public class SXInterface {
 
     }
 
+    // address range 0 ..127 / 128 ... 255 / 256 ... 384
     private void setSX(int adr, int data) {
-        if (adr >= 0 && adr <= SXMAX2) {
+        if (adr >= 0 && adr < SXMAX2) {
             // data for SX0 bus
             sxData[adr][0] = data;
             if ((regFeedback) && (sxbusControl == 0)
@@ -519,14 +520,18 @@ public class SXInterface {
                 vtest.sensorFeedback(data);
             }
             if (DEBUG) System.out.print("SX0[" + adr + "]=" + data + " ");
-        } else if (adr >= 128 && adr <= (SXMAX2 + 128)) {
+        } else if (adr >= SXMAX2 && adr < (2*SXMAX2)) {
             // data for SX1 bus
             sxData[adr - 128][1] = data;
             if ((regFeedback) && (sxbusControl == 1)
                     && (adr == regFeedbackAdr)) {
                 vtest.sensorFeedback(data);
             }
-            if (DEBUG) System.out.print("SX1[" + adr + "]=" + data + " ");
+            if (DEBUG) System.out.print("SX1[" + (adr-SXMAX2) + "]=" + data + " ");
+        } else if ((adr >= (2 * SXMAX2 )) && (adr < (3* SXMAX2)) ) {
+            // data for SIM bus
+            sxData[adr - 2*SXMAX2][2] = data;  // set only sxData[][2]
+            if (DEBUG) System.out.print("SIM[" + (adr-2*SXMAX2) + "]=" + data + " ");
         }
     }
     

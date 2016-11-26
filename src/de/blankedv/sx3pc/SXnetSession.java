@@ -4,7 +4,6 @@ import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
 import static de.blankedv.sx3pc.InterfaceUI.sx;
 import static de.blankedv.sx3pc.InterfaceUI.sxData;
 import static de.blankedv.sx3pc.InterfaceUI.sxi;
-import static de.blankedv.sx3pc.InterfaceUI.twoBusses;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
 
 /**
  * hanles one session (=1 mobile device)
@@ -210,7 +210,7 @@ public class SXnetSession implements Runnable {
 
     int getChannelFromString(String s) {
         int maxchan = 127;
-        if (twoBusses) {
+        if (useSX1forControl) {
             maxchan = maxchan + 128;
         }
         Integer channel = ERROR;

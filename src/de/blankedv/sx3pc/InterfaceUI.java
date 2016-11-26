@@ -10,15 +10,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * This class is the SX3 MAIN class and starts all other UI-windows.
@@ -28,23 +32,33 @@ import javax.swing.Timer;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.52 - 18 Nov 2016";   // program version, displayed in HELP window
+    public static final String VERSION = "1.53 - 26 Nov 2016";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
-    public static final int SXMAX2 = 127; // maximal möglich (pro SX Kanal)
+    public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
+    public static final int LBMAX = 160;
     public static boolean DEBUG = false;
     public static boolean doUpdateFlag = false;
     public static boolean running = true;
     public static InterfaceUI sx;
     public static SXInterface sxi;
     public static SettingsUI settingsWindow;
-    public static int[][] sxData = new int[SXMAX2 + 1][2];   // the [0]=SX0, [1]=SX1
-    public static boolean twoBusses = false;
+    public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
+
+    public static int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
+    // locos: always SX0   
+    // control(turnouts, signals, buttons, routes) => SX0 OR SX1   
+    
+    // lanbahnData = hashmap for storing numerical (key,value) pairs of lanbahnData
+    // lanbahn loco data (strings) are always converted to SX0 values
+    public static ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(LBMAX);
+
+    // [3] = SIM
+    public static boolean useSX1forControl = false;
     // locos always control on SX0, "schalten/melden" on SX0 or SX1
     public static int sxbusControl = 0;
-    public static MonitorUI sxmon = null;
-    public static MonitorUI sxmon1 = null;  // for SX1
-    public static SRCPServerUI srcpserver;
+    public static MonitorUI sxmon[] = {null, null};
+    public static LanbahnMonitorUI lbmon = null;
     public static SXnetServerUI sxnetserver;
     public static List<InetAddress> myip;
     public static LanbahnUI lanbahnserver;
@@ -54,7 +68,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static int timeoutCounter = 0;
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
     public static boolean connectionOK = false;  // watchdog for connection
-    
+
     OutputStream outputStream;
     InputStream inputStream;
     private Boolean sxiConnected = false;
@@ -66,12 +80,12 @@ public class InterfaceUI extends javax.swing.JFrame {
     private boolean simulation;
     private String ifType;
     Boolean pollingFlag = false;  // only needed for trix-standard IF
-    private boolean enableSrcp;
+
     private boolean enableSxnet;
     private boolean enableLanbahn;
-    private Locale loc;
-    private ImageIcon green, red;
-    private List<Integer> pList = new LinkedList<Integer>();
+
+    private final ImageIcon green, red;
+    private List<Integer> pList = new LinkedList<>();
     Timer timer;  // user for updating UI every second
 
     /**
@@ -81,8 +95,8 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
-        System.out.println("Number of usable Network Interfaces="+myip.size());
-        
+        System.out.println("Number of usable Network Interfaces=" + myip.size());
+
         loadWindowPrefs();
 
         initComponents();
@@ -105,10 +119,14 @@ public class InterfaceUI extends javax.swing.JFrame {
         red = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/reddot.png"));
         statusIcon.setIcon(red);
 
-
         // set status text
         if (simulation) {
-            labelStatus.setText("Simulation");
+            if ( ifType.contains("ZS1") || ifType.contains("FCC") || ifType.contains("SLX 852")) {
+                labelStatus.setText("Simulation SX0/SX1");
+            } else {
+                labelStatus.setText("Simulation SX0");
+            }
+            
             btnConnectDisconnect.setEnabled(false);
             btnConnectDisconnect.setText(" ");
             btnPowerOnOff.setEnabled(true);  // works always in simulation
@@ -122,24 +140,27 @@ public class InterfaceUI extends javax.swing.JFrame {
         btnSxMonitor.setEnabled(!pollingFlag); // disable for standard trix interface
         addToPlist((Integer) 127);  // Power Status wird immer abgefragt.
         setVisible(true);
-        
+
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
-        System.out.println("Number of usable Network Interfaces="+myip.size());
-        
+        System.out.println("Number of usable Network Interfaces=" + myip.size());
+
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             if (enableSxnet) {
                 sxnetserver = new SXnetServerUI();
             }
-            if (enableSrcp) {
-                //    srcpserver = new SRCPServerUI();
-            }
+
             if (enableLanbahn) {
                 lanbahnserver = new LanbahnUI();
             }
         }
 
         initTimer();
+        
+        lanbahnData.put(1300,11);
+        lanbahnData.put(1100,12);
+        lanbahnData.put(1004,13);
+        lanbahnData.put(1033,336);
     }
 
     private void closeAll() {
@@ -449,17 +470,19 @@ public class InterfaceUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnThrottleActionPerformed
 
     private void btnSxMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSxMonitorActionPerformed
-        if (sxmon == null) {
-            if (twoBusses) {
-                sxmon = new MonitorUI(0);
-                sxmon1 = new MonitorUI(1);
+        if (sxmon[0] == null) {
+            if (useSX1forControl) {
+                sxmon[1] = new MonitorUI(1);
+                sxmon[1].update();
             } else {
-                sxmon = new MonitorUI();
-                sxmon1 = null;
+                sxmon[1] = null;
             }
-            sxmon.update();
-            if (twoBusses) {
-                sxmon1.update();
+
+            sxmon[0] = new MonitorUI(0);
+            sxmon[0].update();
+
+            if (enableLanbahn) {
+                lbmon = new LanbahnMonitorUI();
             }
 
         } else {
@@ -517,7 +540,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             vtest = new VtestUI();
 
         } else {
-            JOptionPane.showMessageDialog(this, "already running");  
+            JOptionPane.showMessageDialog(this, "already running");
         }
     }//GEN-LAST:event_btnVtestActionPerformed
 
@@ -525,6 +548,21 @@ public class InterfaceUI extends javax.swing.JFrame {
      * @param argsstatic the command line arguments
      */
     public static void main(String args[]) {
+
+        try {
+            // Set cross-platform Java L&F (also called "Metal")
+            UIManager.setLookAndFeel(
+                    UIManager.getSystemLookAndFeelClassName());
+        } catch (UnsupportedLookAndFeelException e) {
+            // handle exception
+        } catch (ClassNotFoundException e) {
+            // handle exception
+        } catch (InstantiationException e) {
+            // handle exception
+        } catch (IllegalAccessException e) {
+            // handle exception
+        }
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 sx = new InterfaceUI();
@@ -587,18 +625,19 @@ public class InterfaceUI extends javax.swing.JFrame {
     public void doUpdate() {
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
-        if (sxmon != null) {
-            sxmon.update();
+        for (int i = 0; i < NBUSSES; i++) {
+            if (sxmon[i] != null) {
+                sxmon[i].update();
+            }
         }
-        if (sxmon1 != null) {
-            sxmon1.update();
-        }
+        if (lbmon != null) lbmon.update();
+
         SensorUI.updateAll();
         WeichenUI.updateAll();
         ThrottleUI.updateAll();
         FunkreglerUI.updateAll();
         FunkreglerUI.checkAlive();
-        
+
     }
 
     private void checkConnection() {
@@ -636,26 +675,24 @@ public class InterfaceUI extends javax.swing.JFrame {
     public void saveAllPrefs() {
         //System.out.println("save all preferences.");
 
-        if (sxmon != null) {
-            sxmon.savePrefs();
+        for (int i = 0; i < NBUSSES; i++) {
+            if (sxmon[i] != null) {
+                sxmon[i].savePrefs();
+            }
         }
-        if (sxmon1 != null) {
-            sxmon1.savePrefs();
-        }
+
         SensorUI.saveAllPrefs();
         WeichenUI.saveAllPrefs();
         ThrottleUI.saveAllPrefs();
         FunkreglerUI.saveAllPrefs();
-        if (srcpserver != null) {
-            srcpserver.savePrefs();
-        }
+
         if (sxnetserver != null) {
             sxnetserver.savePrefs();
         }
-         if (lanbahnserver != null) {
+        if (lanbahnserver != null) {
             lanbahnserver.savePrefs();
         }
-        
+
     }
 
     private void savePrefs() {
@@ -668,13 +705,12 @@ public class InterfaceUI extends javax.swing.JFrame {
         setLocation(prefs.getInt("windowX", 200), prefs.getInt("windowY", 200));
         DEBUG = prefs.getBoolean("enableDebug", false);
         System.out.println("DEBUG=" + DEBUG);
-       
+
     }
 
     private void loadOtherPrefs() {
         portName = prefs.get("commPort", "/dev/ttyS0");
         simulation = prefs.getBoolean("simulation", false);
-        enableSrcp = prefs.getBoolean("enableSRCP", false);
         enableSxnet = prefs.getBoolean("enableSxnet", false);
         enableLanbahn = prefs.getBoolean("enableLanbahn", false);
 
@@ -687,17 +723,23 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         String busmode = prefs.get("busmode", "SX");
         if (busmode.equalsIgnoreCase("SX0/SX1")) {
-            twoBusses = true;
+            useSX1forControl = true;
             sxbusControl = prefs.getInt("sxbusControl", 1);
-            if (DEBUG) { System.out.println("2 SX buses, control=SX"+sxbusControl);}
+            if (DEBUG) {
+                System.out.println("2 SX buses, control=SX" + sxbusControl);
+            }
         } else {
-            twoBusses = false;
+            useSX1forControl = false;
             sxbusControl = 0;
-            if (DEBUG) { System.out.println("1 SX bus ");}
+            if (DEBUG) {
+                System.out.println("1 SX bus ");
+            }
         }
         String baudStr = prefs.get("baudrate", "9600");
         baudrate = Integer.parseInt(baudStr);
-        if (DEBUG) { System.out.println("IF="+ifType+" serial port="+portName+" at "+baudrate+" baud");}
+        if (DEBUG) {
+            System.out.println("IF=" + ifType + " serial port=" + portName + " at " + baudrate + " baud");
+        }
 
         // all sensors need polling (for srcp and/or Standard interface)
         String sel = prefs.get("SensorList", "");
@@ -712,7 +754,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         }
     }
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConnectDisconnect;
     private javax.swing.JButton btnPowerOnOff;

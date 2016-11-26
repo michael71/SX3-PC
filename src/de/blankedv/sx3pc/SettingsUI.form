@@ -51,7 +51,7 @@
                   <Component id="jPanel3" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="btnCancel" min="-2" pref="195" max="-2" attributes="0"/>
-                      <EmptySpace pref="137" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnSave" min="-2" pref="211" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
@@ -72,7 +72,7 @@
                   <Component id="btnCancel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnSave" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="18" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -108,33 +108,32 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
+              <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="lblSerial" alignment="0" max="32767" attributes="1"/>
-                          <Component id="comboSelectSerialPort" alignment="0" min="-2" pref="147" max="-2" attributes="1"/>
-                      </Group>
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <Component id="cbBaudrate" min="-2" pref="111" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
+                          <Component id="comboBusmode" min="-2" pref="144" max="-2" attributes="0"/>
                       </Group>
-                  </Group>
-                  <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="comboBusmode" alignment="0" max="32767" attributes="0"/>
-                          <Component id="comboSelectType" alignment="0" pref="144" max="32767" attributes="0"/>
-                      </Group>
-                      <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblLoco" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblLocoSX0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblSerial" alignment="0" min="-2" pref="147" max="-2" attributes="1"/>
+                              <Component id="comboSelectSerialPort" min="-2" pref="147" max="-2" attributes="1"/>
                           </Group>
+                          <EmptySpace min="-2" pref="55" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                              <Component id="comboSelectType" min="-2" pref="144" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="lblLocoSX0" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="lblLoco" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="lblControl" min="-2" max="-2" attributes="0"/>
@@ -150,26 +149,36 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="cbSimulation" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblSerial" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                          <Component id="cbSimulation" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace pref="32" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblSerial" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="comboSelectSerialPort" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="comboSelectType" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lblLoco" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lblControl" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="cbBaudrate" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="comboBusmode" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="comboSXBusControl" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblLocoSX0" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="cbBaudrate" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="comboBusmode" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblLocoSX0" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="comboSXBusControl" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -195,12 +204,14 @@
         <Component class="javax.swing.JComboBox" name="cbBaudrate">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="5">
+              <StringArray count="7">
                 <StringItem index="0" value="4800"/>
                 <StringItem index="1" value="9600"/>
                 <StringItem index="2" value="19200"/>
                 <StringItem index="3" value="38400"/>
                 <StringItem index="4" value="57600"/>
+                <StringItem index="5" value="115200"/>
+                <StringItem index="6" value="230400"/>
               </StringArray>
             </Property>
           </Properties>
@@ -227,11 +238,12 @@
         <Component class="javax.swing.JComboBox" name="comboSelectType">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="4">
+              <StringArray count="5">
                 <StringItem index="0" value="SLX 825"/>
-                <StringItem index="1" value="Trix 66824"/>
-                <StringItem index="2" value="ZS1"/>
-                <StringItem index="3" value="SLX 852"/>
+                <StringItem index="1" value="FCC"/>
+                <StringItem index="2" value="Trix 66824"/>
+                <StringItem index="3" value="ZS1"/>
+                <StringItem index="4" value="SLX 852"/>
               </StringArray>
             </Property>
           </Properties>
@@ -241,7 +253,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="cbSimulation">
           <Properties>
-            <Property name="text" type="java.lang.String" value="IF Simulation"/>
+            <Property name="text" type="java.lang.String" value="Simulation"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbSimulationActionPerformed"/>
@@ -316,16 +328,13 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnSensorList" min="-2" pref="144" max="-2" attributes="0"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="cbDebug" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="cbDebug" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnSensorList" alignment="0" min="-2" pref="144" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="cbEnableSrcp" min="-2" max="-2" attributes="0"/>
                       <Component id="cbEnableSxnet" min="-2" max="-2" attributes="0"/>
                       <Component id="cbEnableLanbahn" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -338,33 +347,20 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="cbEnableSrcp" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="cbDebug" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbEnableSxnet" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="cbEnableSxnet" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace pref="18" max="32767" attributes="0"/>
-                          <Component id="btnSensorList" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="cbEnableLanbahn" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="24" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="cbEnableLanbahn" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnSensorList" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace pref="23" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JCheckBox" name="cbEnableSrcp">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="SRCP Server"/>
-          </Properties>
-        </Component>
         <Component class="javax.swing.JCheckBox" name="cbDebug">
           <Properties>
             <Property name="text" type="java.lang.String" value="Debug Mode"/>

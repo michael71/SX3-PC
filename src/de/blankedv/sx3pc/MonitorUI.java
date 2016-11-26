@@ -23,33 +23,37 @@ public class MonitorUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 5313123456415L;
     static final int ROWS = 16;
     static final int COLS = 14; // *2
-    private int[] oldSxData = new int[SXMAX2 + 1];
-    private int index = 0;  //SX0 or SX1
+    private int[] oldSxData = new int[SXMAX2];
+    private int index = 0;  //SX0 or SX1 or SIM
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
-    /** Creates new default form MonitorUI */
-    public MonitorUI() {
-        initComponents();
-        index = 0;
-        this.setTitle("SX Monitor");
-        
-        loadPrefs();
-        initTable1();  // adressen schreiben
-        update(); // from SX Bus data
-        this.setVisible(true);
-    }
-    
+      
     /** Creates new form MonitorUI */
-    public MonitorUI(int sxIndex) {   // used for SX0 and SX1 display
+    public MonitorUI(int sxIndex) {   // used for SX0 and SX1 and SIM display
         initComponents();
         index = sxIndex;
-        this.setTitle("SX"+index+" Monitor");
-        if (index == 1) { 
-                Color c = new Color(255,210,210);
+        switch (sxIndex) {
+            case 0:
+                if (useSX1forControl) {
+                   this.setTitle("SX0 Monitor [Locos]");
+                } else {
+                   this.setTitle("SX0 Monitor [Locos, Turnouts, Signals]");
+                }
+                break;
+            case 1:
+                this.setTitle("SX1 Monitor [Turnouts, Signals]");
+                Color c = new Color(255,140,140);
 		Container con = this.getContentPane();
 		con.setBackground( c ); 
- 
+                break;
+            case 2:
+                this.setTitle("SIM Monitor [virtual and Routes]");
+                Color c1 = new Color(140,140,255);
+		Container con1 = this.getContentPane();
+		con1.setBackground( c1 ); 
+                break;            
         }
+       
         loadPrefs();
         initTable1();  // adressen schreiben
         update(); // from SX Bus data
@@ -160,7 +164,7 @@ public class MonitorUI extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         savePrefs();
-        sxmon = null;  // to enable opening a MonitorUI window again in Interface UI
+        sxmon[index] = null;  // to enable opening a MonitorUI window again in Interface UI
     }//GEN-LAST:event_formWindowClosing
 
     public void update() {
