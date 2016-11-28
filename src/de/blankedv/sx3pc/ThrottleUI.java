@@ -78,10 +78,10 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
                 //System.out.println("rot" + rotation + " amount" + amount);
                 if (rotation < 0) {
                     speedUp();
-                    sendeLoco();
+                    updateLoco();
                 } else {
                     speedDown();
-                    sendeLoco();
+                    updateLoco();
                 }
             }
         });
@@ -254,7 +254,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
     private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopActionPerformed
         speed = 0;
         jSliderSpeed.setValue(0);
-        sendeLoco();
+        updateLoco();
     }//GEN-LAST:event_btnStopActionPerformed
 
     private void btnChangeDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeDirActionPerformed
@@ -272,7 +272,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
         // dies kann irritierend sein, wenn man am Slider dreht, aber (noch)
         // nichts passiert - deshalb wieder disabled.
             speed = jSliderSpeed.getValue();
-            sendeLoco();
+            updateLoco();
         //  }
     }//GEN-LAST:event_jSliderSpeedStateChanged
 
@@ -282,7 +282,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
         } else {
             licht = false;
         }
-        sendeLoco();
+        updateLoco();
     }//GEN-LAST:event_cbLightActionPerformed
 
     private void cbHornActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbHornActionPerformed
@@ -291,7 +291,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
         } else {
             horn = false;
         }
-        sendeLoco();
+        updateLoco();
     }//GEN-LAST:event_cbHornActionPerformed
 
     
@@ -306,7 +306,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
     private javax.swing.JLabel lblAddress;
     // End of variables declaration//GEN-END:variables
 
-    private void sendeLoco() {
+    private void updateLoco() {
         sxi.sendLoco(lok_adr, speed, licht, forward,  horn);
     }
 
@@ -344,7 +344,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
             forward = true;
             labelDir.setText(">>");
         }
-        sendeLoco();
+        updateLoco();
     }
     private void speedUp() {
         // initial werte lesen aus sxData

@@ -26,12 +26,12 @@ import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
  * @author mblank
  */
 // TODO open/close serial port NICHT durchführen bei Simulation.
-public class SXInterface {
+public class SXInterface extends GenericSXInterface {
 
     private boolean noPollingFlag;
     private String portName;
-    private final boolean simulation;
-    private int baudrate ;
+    
+    private int baudrate;
     private int dataBits = SerialPort.DATABITS_8;
     private int stopBits = SerialPort.STOPBITS_1;
     private int parity = SerialPort.PARITY_NONE;
@@ -45,7 +45,7 @@ public class SXInterface {
     private PollingActivity pa;
     private int pollIndex = 0;
     private List<Integer> pListCopy;
-    
+
     private boolean sx1Flag = false;
     private int lastBusnumber = 0;
 
@@ -55,19 +55,15 @@ public class SXInterface {
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
 
-    public SXInterface(boolean noPoll, String portName, int baud, boolean simulation) {
+    public SXInterface(boolean noPoll, String portName, int baud) {
 
         this.noPollingFlag = noPoll;
         this.portName = portName;
-        this.simulation = simulation;
         this.baudrate = baud;
     }
 
-    boolean open() {
-        if (simulation) {
-            serialPortGeoeffnet = true;
-            return true;
-        }
+    public boolean open() {
+        
         Boolean foundPort = false;
         if (serialPortGeoeffnet != false) {
             System.out.println("Serialport bereits geöffnet");
@@ -98,7 +94,7 @@ public class SXInterface {
         }
 
         try {
-            leftoverFlag=false;
+            leftoverFlag = false;
             inputStream = serialPort.getInputStream();
         } catch (IOException e) {
             System.out.println("Keinen Zugriff auf InputStream");
@@ -127,9 +123,7 @@ public class SXInterface {
     }
 
     public void close() {
-        if (simulation) {
-            return;
-        }
+        
         if (!noPollingFlag) {
             stopPolling();
         }
@@ -142,18 +136,12 @@ public class SXInterface {
         }
     }
 
-    private synchronized void send(Byte[] data, int busnumber) {
+    @Override
+    public synchronized void send(Byte[] data, int busnumber) {
         // darf nicht unterbrochen werden
         // TODO check if switch from SX0 to Sx1 is necessary or vice versa
         // ************************************** using 0 only
-        if (simulation) {
-            // only write commands in simulation
-        	// convert "signed" byte to unsigned int.
-        	// (byte is ALLWAYS signed in Java)
-            sxData[data[0] & 0x7F][busnumber] = toUnsignedInt(data[1]);
-            //sx.doUpdate();
-            return;
-        }
+      
 
         if (serialPortGeoeffnet != true) {
             System.out.println("Fehler beim Senden, serial port nicht geöffnet und simul. nicht gesetzt");
@@ -161,11 +149,12 @@ public class SXInterface {
         }
 
         // check if sent on same bus as last command
-        if (busnumber != lastBusnumber) {
+        if ((busnumber != lastBusnumber)) {
             // send bus-command on channel 126
             lastBusnumber = busnumber;
             setBus(busnumber);
         }
+
         // falls im Trix Mode und schreib befehl, dann daten in sxData speichern
         // TODO ??? if ((value & (1L << x)) != 0)
         if ((!noPollingFlag) && ((data[0] & 0x80) != 0)) {
@@ -179,38 +168,22 @@ public class SXInterface {
         }
 
         try {
+            //if (fccMode) {
+            //    outputStream.write((byte)busnumber);
+            //}
             outputStream.write(data[0]);
             outputStream.write(data[1]);
             outputStream.flush();
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }
+
     }
 
-    public void resetAll() {
+   
 
-        Byte[] b = {(byte) 0xFF, (byte) 0x00};
-        for (int i=0; i<112 ; i++) {
-            b[0]=(byte)(  (i& 0x7F) | 0x80);  // write command
-            send(b,0);
-            try {
-            Thread.sleep(50);
-            } catch (Exception e) {};
-        };
-  
-        if (useSX1forControl) {
-            for (int i = 0; i < 112; i++) {
-                b[0] = (byte) ((i & 0x7F) | 0x80);  // write command
-                send(b, 1);
-                try {
-                    Thread.sleep(50);
-                } catch (Exception e) {
-                };
-            };
-        }
-    }
+    private void setInterfaceMode() {
 
-    public void setInterfaceMode() {
         Byte[] b = {(byte) 0xFF, (byte) 0xFF};
         /* Falls SLX825:
         Über einen Schreibbefehl auf die Adresse 126 (=0xFE schreiben, =0x7E lesen
@@ -245,7 +218,7 @@ public class SXInterface {
         if (noPollingFlag) {
             b[0] = (byte) 0xFE; // Rautenhaus ein
             b[1] = (byte) 0xA0; // Feedback ein
-              // wird also immer im Echo-Modus (Feedback) betrieben.
+            // wird also immer im Echo-Modus (Feedback) betrieben.
         } else {
             b[0] = (byte) 0xFE; // Rautenhaus aus
             b[1] = (byte) 0x48; // Feedback aus
@@ -264,13 +237,14 @@ public class SXInterface {
             Logger.getLogger(SXInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-     public void setBus(int busnumber) {
-        System.out.println("bus="+busnumber);
+
+    public void setBus(int busnumber) {
+
+        System.out.println("bus=" + busnumber);
         Byte[] b = {(byte) 0xFE, (byte) 0x00};   // == Kanel 126
- 
+
         if (busnumber == 1) {
-             b[1] = (byte) 0x01; 
+            b[1] = (byte) 0x01;
         }
 
         try {
@@ -287,148 +261,63 @@ public class SXInterface {
         }
     }
 
-    public synchronized void powerOff() {
+    @Override
+    public synchronized void switchPowerOff() {
         // 127 (ZE ein/aus) +128(schreiben) = 0xFF
-        if (simulation) {
-            sxData[127][0] = 0x00;
-            return;
-        }
-        
+       
+
         Byte[] b = {(byte) 0xFF, (byte) 0x00};
-        try { outputStream.write(b[0]);
+        try {
+            outputStream.write(b[0]);
             outputStream.write(b[1]);
             outputStream.flush();
-            } catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }
-    }
 
-    public synchronized void powerOn() {
-        // 127 (ZE ein/aus) +128(schreiben) = 0xFF
-        if (simulation) {
-            sxData[127][0] = 0x80;
-            return;
-        }
+    }
+    
+@Override
+    public synchronized void switchPowerOn() {
+        // 127 (ZE ein/aus) +128(schreiben) = 0xFF   
+
         Byte[] b = {(byte) 0xFF, (byte) 0x80};
-        try { outputStream.write(b[0]);
+        try {
+            outputStream.write(b[0]);
             outputStream.write(b[1]);
             outputStream.flush();
-            } catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }
     }
 
-    synchronized void sendLoco(int lok_adr, int speed, boolean licht, boolean forward, boolean horn) {
-        // constructs SX loco data from speed and bit input.
-        int data = 0;
- 
-        if (speed > 31) {
-            speed = 31;
-        }
-        if (speed < 0) {
-            speed = 0;
-        }
-        if (DEBUG) System.out.println("adr:" + lok_adr + " s:" + speed + " l:" + licht + " forw:" + forward + " h:" + horn);
-        data = speed;  // die unteren 5 bits (0..4)
-        if (horn) {
-            data += 128; // bit7
-        }
-        if (licht) {
-            data += 64; // bit6
-        }
-        if (forward == false) {
-            data += 32; //bit5
-        }
-        if (DEBUG) System.out.println("update loco " + Integer.toHexString(data));
-        Byte[] b = {(byte) (lok_adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
-        b[1] = (byte) data;
-        send(b,0);
-    }
-
-    synchronized void sendAccessoryBit(int adr, int bit, int data) {
-        int d = sxData[adr][sxbusControl];
-        Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
-        if (data == 1) {  // set bit
-            d |= (1 << (bit-1));  // sx bit von 1 bis 8
-        } else {
-            // reset bit
-            d = d & ~(1 << (bit-1));  // sx bit von 1 bis 8
-        }
-        b[1] = (byte) (d);
-        send(b,sxbusControl);
-    }
-    
-    synchronized void send2SXBusses(int adr, int data) {
-        // accepts adresses >127 and then sends data to SX1 (instead of SX0)
-        // locos always control on SX0, "schalten/melden" on SX0 or SX1
-         if (adr > SXMAX2) {
-            if (useSX1forControl == true) {
-                adr = adr - 128;  // to make channel number clear.
-                Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-                send(b, 1);
-            } else {
-                System.out.println("ERROR, trying to send to channel=" + adr + ", but only one SX Bus enabled.");
-            }
-        } else {
-            Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-            send(b, 0);
-        }
-    }
-    
-    synchronized void send2SXBussesBit(int adr, int bit, int data) {
-        // accepts adresses >127 and then sends data to SX1 (instead of SX0)
-        //  sxData[adr];
-        // twoBusses = false;
-        // locos always control on SX0, "schalten/melden" on SX0 or SX1
-        // static int sxbusControl = 0;
-        int bus = 0;
-        if (adr > SXMAX2) {
-            if (useSX1forControl == true) {
-                bus = 1;
-                adr = adr - 128;
-            } else {
-                System.out.println("ERROR, trying to send to channel=" + adr + ", but only one SX Bus enabled.");
-            }
-        }
-        int d = sxData[adr][bus];
-        Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
-        if (data == 1) {  // set bit
-            d |= (1 << (bit-1));  // sx bit von 1 bis 8
-        } else {
-            // reset bit
-            d = d & ~(1 << (bit-1));  // sx bit von 1 bis 8
-        }
-        b[1] = (byte) (d);
-        send(b,bus);
-    
-    }
-     
-    synchronized void sendAccessory(int adr, int data) {
-      //  sxData[adr];
-        Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-        send(b,sxbusControl);
-    }
-    
+@Override
     public void readPower() {
         Byte[] b = {(byte) 127, (byte) 0x00};   // read power state
-        send(b,0);
+        send(b, 0);
     }
+
     public boolean is825() {
         return noPollingFlag;
     }
 
-    boolean getPowerState() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
+    @Override
     public void registerFeedback(int sensorAdr) {
         regFeedbackAdr = sensorAdr;
         regFeedback = true;
     }
 
+    @Override
     public void unregisterFeedback() {
         regFeedback = false;
     }
+
+    @Override
+    public void unregisterFeedback(int adr) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     class serialPortEventListener implements SerialPortEventListener {
 
         public void serialEvent(SerialPortEvent event) {
@@ -459,47 +348,48 @@ public class SXInterface {
         // wird immer im Feedback(Echo)-Modus betrieben, das heisst
         // sxData wird nur hier geschrieben.
         // TODO achtung: immer auf 2 Byte warten .... timer reset wenn länger als 10 ms keine Bytes
-
         try {
-           int adr, data;
- 
+            int adr, data;
 
-   /*      case SerialPortEvent.DATA_AVAILABLE:
+
+            /*      case SerialPortEvent.DATA_AVAILABLE:
            readBuffer = new byte[8];
            try {
                 while (inputStream.available()>0) {
                 int numBytes = inputStream.read(readBuffer);
                 * */
             byte[] readBuffer = new byte[60];
-            
+
             while (inputStream.available() > 1) {
                 int numBytes = inputStream.read(readBuffer);
-                if (DEBUG) {System.out.println("read n="+numBytes); }
-                int offset=0;
+                if (DEBUG) {
+                    System.out.println("read n=" + numBytes);
+                }
+                int offset = 0;
                 if (leftoverFlag) {
                     offset = 1;
-                    data=(int)(readBuffer[0] & 0xFF);
-                    setSX(leftover,data);
+                    data = (int) (readBuffer[0] & 0xFF);
+                    setSX(leftover, data);
                 } else {
                     offset = 0;
                 }
-                for (int i=offset; i<numBytes; i=i+2) {
-                    adr = (int)(readBuffer[0+i] & 0xFF);
-                    if ((i+1) <numBytes) {
-                       data = (int)(readBuffer[1+i] & 0xFF);
-                       setSX(adr,data);
-                       leftoverFlag = false;
+                for (int i = offset; i < numBytes; i = i + 2) {
+                    adr = (int) (readBuffer[0 + i] & 0xFF);
+                    if ((i + 1) < numBytes) {
+                        data = (int) (readBuffer[1 + i] & 0xFF);
+                        setSX(adr, data);
+                        leftoverFlag = false;
                     } else {
                         // leftover data, no even number of data sent
                         // use next time
                         leftover = adr;
-                        leftoverFlag = true; 
+                        leftoverFlag = true;
                     }
                 }
-                
+
             }
             //sx.doUpdate(); // nur im Rautenhaus Format nach jeder Info
-            
+
             if (DEBUG) {
                 System.out.println(".");
             }
@@ -519,23 +409,28 @@ public class SXInterface {
                     && (adr == regFeedbackAdr)) {
                 vtest.sensorFeedback(data);
             }
-            if (DEBUG) System.out.print("SX0[" + adr + "]=" + data + " ");
-        } else if (adr >= SXMAX2 && adr < (2*SXMAX2)) {
+            if (DEBUG) {
+                System.out.print("SX0[" + adr + "]=" + data + " ");
+            }
+        } else if (adr >= SXMAX2 && adr < (2 * SXMAX2)) {
             // data for SX1 bus
             sxData[adr - 128][1] = data;
             if ((regFeedback) && (sxbusControl == 1)
                     && (adr == regFeedbackAdr)) {
                 vtest.sensorFeedback(data);
             }
-            if (DEBUG) System.out.print("SX1[" + (adr-SXMAX2) + "]=" + data + " ");
-        } else if ((adr >= (2 * SXMAX2 )) && (adr < (3* SXMAX2)) ) {
+            if (DEBUG) {
+                System.out.print("SX1[" + (adr - SXMAX2) + "]=" + data + " ");
+            }
+        } else if ((adr >= (2 * SXMAX2)) && (adr < (3 * SXMAX2))) {
             // data for SIM bus
-            sxData[adr - 2*SXMAX2][2] = data;  // set only sxData[][2]
-            if (DEBUG) System.out.print("SIM[" + (adr-2*SXMAX2) + "]=" + data + " ");
+            sxData[adr - 2 * SXMAX2][2] = data;  // set only sxData[][2]
+            if (DEBUG) {
+                System.out.print("SIM[" + (adr - 2 * SXMAX2) + "]=" + data + " ");
+            }
         }
     }
-    
-    
+
     void readSerialPortStandard() {
         // nur jeweils 1 Zeichen wird ausgewertet, die anderen werden ignoriert,
         // da nicht klar ist zu welcher Adresse sie gehören.
@@ -555,7 +450,7 @@ public class SXInterface {
                     if (DEBUG) {
                         System.out.print(" (adr=" + lastAdrSent + ")");
                     }
-                    sxData[lastAdrSent][0] = num;  
+                    sxData[lastAdrSent][0] = num;
                     lastAdrSent = -1;
                 } else {
                     System.out.println(" (ignoriert)");
@@ -565,7 +460,6 @@ public class SXInterface {
         } catch (IOException e) {
             System.out.println("Fehler beim Lesen empfangener Daten");
         }
-
 
     }
 
@@ -585,7 +479,7 @@ public class SXInterface {
                 System.out.println("polling adr:" + pListCopy.get(pollIndex));
             }
             Byte[] b = {(byte) (pListCopy.get(pollIndex) + 0), 0};
-            sxi.send(b,0);
+            send(b, 0);
             pollIndex++;
         } else {
             System.out.println("pList leer.");
@@ -599,15 +493,17 @@ public class SXInterface {
     }
 
     public void stopPolling() {
-    	if (pa != null) pa.cancel(true);
+        if (pa != null) {
+            pa.cancel(true);
+        }
 
     }
-
 
     class PollingActivity extends SwingWorker<Void, Void> {
 
         /**
-         * Polling is used to get info about SX Bus from old trix interface every 100ms
+         * Polling is used to get info about SX Bus from old trix interface
+         * every 100ms
          *
          */
         protected Void doInBackground() throws Exception {

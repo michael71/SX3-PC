@@ -208,7 +208,7 @@ public class VtestUI extends javax.swing.JFrame {
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
         count = 0;   // neuer Start der messung
         //Gleisspannung Ein 
-        sxi.powerOn();
+        sxi.switchPowerOn();
         sleepSomeMillis();
         speed = 3;
         sxi.sendLoco(locoAdr, speed, false, true, false) ;

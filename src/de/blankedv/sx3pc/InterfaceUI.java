@@ -32,7 +32,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.53 - 26 Nov 2016";   // program version, displayed in HELP window
+    public static final String VERSION = "1.54 - 27 Nov 2016";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -41,7 +41,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static boolean doUpdateFlag = false;
     public static boolean running = true;
     public static InterfaceUI sx;
-    public static SXInterface sxi;
+    public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
     public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
 
@@ -72,6 +72,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     OutputStream outputStream;
     InputStream inputStream;
     private Boolean sxiConnected = false;
+    private static int updateCount = 0;  //for counting 250 msec timer
     ThrottleUI loco1;
     SensorUI sensor1;
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
@@ -79,6 +80,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private int baudrate;
     private boolean simulation;
     private String ifType;
+    private boolean typeIsFCC = false;
     Boolean pollingFlag = false;  // only needed for trix-standard IF
 
     private boolean enableSxnet;
@@ -112,8 +114,16 @@ public class InterfaceUI extends javax.swing.JFrame {
         }
 
         loadOtherPrefs();
-
-        sxi = new SXInterface(!pollingFlag, portName, baudrate, simulation);
+        if (simulation) {
+            sxi = new SXSimulationInterface();
+        } else if ( ifType.contains("FCC") ) { // fcc has different interface handling !
+            typeIsFCC = true;
+            sxi = new SXFCCInterface(portName);
+        } else {
+            typeIsFCC = false;
+            sxi = new SXInterface(!pollingFlag, portName, baudrate);
+        }
+        
         // init status icon
         green = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/greendot.png"));
         red = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/reddot.png"));
@@ -175,6 +185,14 @@ public class InterfaceUI extends javax.swing.JFrame {
         saveAllPrefs();
         sxi.close();
         System.exit(0);
+    }
+    
+    private boolean powerIsOn() {
+        if (sxData[127][0] != 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -459,9 +477,9 @@ public class InterfaceUI extends javax.swing.JFrame {
             return;
         }
         if (powerIsOn()) {
-            sxi.powerOff();
+            sxi.switchPowerOff();
         } else {
-            sxi.powerOn();
+            sxi.switchPowerOn();
         }
     }//GEN-LAST:event_btnPowerOnOffActionPerformed
 
@@ -571,11 +589,14 @@ public class InterfaceUI extends javax.swing.JFrame {
         });
     }
 
+    /** 250 msec update timer for FCC
+     *  1000 msecs used for GUI update
+     */
     private void initTimer() {
-        timer = new Timer(1000, new ActionListener() {
+        timer = new Timer(250, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doUpdate();
-                checkConnection();
+
             }
         });
         timer.start();
@@ -608,21 +629,26 @@ public class InterfaceUI extends javax.swing.JFrame {
         // other sources can switch power off and on, therefor
         // regular update needed 
 
-        if (powerIsOn()) {
-            btnPowerOnOff.setText("Track Power Off");
-            statusIcon.setIcon(green);
-        } else {
+        if (sxData[127][0] == 0x00) {
             btnPowerOnOff.setText("Track Power On");
             statusIcon.setIcon(red);
+        } else {
+            btnPowerOnOff.setText("Track Power Off");
+            statusIcon.setIcon(green);
         }
 
     }
 
-    public boolean powerIsOn() {
-        return ((sxData[127][0] & 0x80) != 0);
-    }
-
+    
     public void doUpdate() {
+        sxi.doUpdate();
+        updateCount++;
+        if (updateCount < 4) return;
+        
+        updateCount = 0;
+        checkConnection();
+        
+        // do GUI update only every second
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
         for (int i = 0; i < NBUSSES; i++) {
@@ -640,6 +666,9 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     }
 
+    /** called every second
+     * 
+     */
     private void checkConnection() {
         timeoutCounter++;
 
