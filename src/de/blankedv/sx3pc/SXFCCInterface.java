@@ -270,6 +270,7 @@ shortSleep();
             outputStream.write(data[0]);
             outputStream.write(data[1]);
             outputStream.flush();
+            // done via polling in LanbahnUI // doLanbahnUpdate((byte)(data[0] & 0x7f), data[1]);
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }

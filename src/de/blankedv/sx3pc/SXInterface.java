@@ -174,6 +174,7 @@ public class SXInterface extends GenericSXInterface {
             outputStream.write(data[0]);
             outputStream.write(data[1]);
             outputStream.flush();
+            // done via polling of sx data in LanbahnUI / this.doLanbahnUpdate((byte)(data[0] & 0x7f), data[1]);
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }
