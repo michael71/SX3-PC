@@ -20,8 +20,8 @@ public class LBSXMap {
     
     public static void init() {
         // init LBSXMap      
-        lbsx.add(new LBSX(722, 72, 2));
-        lbsx.add(new LBSX(721, 74, 1));
+       // lbsx.add(new LBSX(722, 72, 2));
+       // lbsx.add(new LBSX(721, 74, 1));
     }
     
     public static int getLanbahn(int sxaddr, int sxbit) {
