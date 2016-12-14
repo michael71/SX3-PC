@@ -24,7 +24,7 @@ public class SXnetServerUI extends javax.swing.JFrame {
     // Preferences
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     protected Thread t;
-    //protected RegisterJMDNSService serv;
+    protected RegisterJMDNSService serv;
 
      private ServerSocket s;
      
@@ -52,7 +52,7 @@ public class SXnetServerUI extends javax.swing.JFrame {
             }
             startSXnetServer();
             setVisible(true);
-            // new Thread(new RegisterJMDNSService("sxnet", SXNET_PORT, myip.get(0), this)).start();
+            new Thread(new RegisterJMDNSService("sxnet", SXNET_PORT, myip.get(0), this)).start();
         }
     }
 

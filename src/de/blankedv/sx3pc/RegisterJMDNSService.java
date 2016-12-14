@@ -23,7 +23,7 @@ import static de.blankedv.sx3pc.InterfaceUI.running;
 public class RegisterJMDNSService implements Runnable {
 
     private final static String SXNET_TYPE = "_sxnet._tcp.local.";
-    private final static String SRCP_TYPE = "_srcp._tcp.local.";
+
     private final static String LANBAHN_TYPE = "_lanbahn._udp.local.";
     private String type;
     private String servicetype;
@@ -37,9 +37,7 @@ public class RegisterJMDNSService implements Runnable {
     public RegisterJMDNSService(String t, int p, InetAddress ip,  JFrame w ) {
         this.type = t;
         this.port = p;
-        if (t.equals("srcp")) {
-            servicetype = SRCP_TYPE;
-        } else if (t.equals("sxnet")) {
+        if (t.equals("sxnet")) {
             servicetype = SXNET_TYPE;
         } else if (t.equals("lanbahn")) {
             servicetype = LANBAHN_TYPE;
