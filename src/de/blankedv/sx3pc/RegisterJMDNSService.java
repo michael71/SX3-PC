@@ -23,8 +23,9 @@ import static de.blankedv.sx3pc.InterfaceUI.running;
 public class RegisterJMDNSService implements Runnable {
 
     private final static String SXNET_TYPE = "_sxnet._tcp.local.";
-
     private final static String LANBAHN_TYPE = "_lanbahn._udp.local.";
+    private final static String SXCONFIG_TYPE = "_sxconfig._tcp.local.";
+    
     private String type;
     private String servicetype;
     private String servicename;
@@ -32,19 +33,20 @@ public class RegisterJMDNSService implements Runnable {
     private InetAddress ip;
     private JmDNS jmdns;
     private ServiceInfo myservice;
-    private JFrame window;
 
-    public RegisterJMDNSService(String t, int p, InetAddress ip,  JFrame w ) {
+    
+    public RegisterJMDNSService(String t, int p, InetAddress ip ) {
         this.type = t;
         this.port = p;
         if (t.equals("sxnet")) {
             servicetype = SXNET_TYPE;
         } else if (t.equals("lanbahn")) {
             servicetype = LANBAHN_TYPE;
-        } else {
+        } else if (t.equals("sxconfig")) {
+            servicetype = SXCONFIG_TYPE;
+        }else {
             System.out.println("wrong service type in RegisterService");
         }
-        this.window = w;
         this.ip = ip;
     }
 
@@ -60,7 +62,7 @@ public class RegisterJMDNSService implements Runnable {
             System.out.println("Error, could not create JmDns.");
             return;
         }
-        System.out.println("Opened JmDNS!");
+        System.out.println("JmDNS for service="+servicename);
     
 
         final HashMap<String, String> values = new HashMap<String, String>();
@@ -79,7 +81,7 @@ public class RegisterJMDNSService implements Runnable {
             return;
         }
 
-        while (window.isVisible() && running) {
+        while (running) {
             // just wait for end.
             try {
                 Thread.sleep(100);
@@ -88,7 +90,7 @@ public class RegisterJMDNSService implements Runnable {
             }
         }
 
-        System.out.println("Closing JmDNS...");
+        System.out.println("Closing JmDNS, service="+servicename);
         //jmdns.unregisterService(myservice);
         jmdns.unregisterService(myservice);
         try {

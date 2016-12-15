@@ -87,6 +87,8 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     private boolean enableSxnet;
     private boolean enableLanbahn;
+    
+    private ConfigWebserver configWebserver;
 
     private final ImageIcon green, red;
     private List<Integer> pList = new LinkedList<>();
@@ -95,7 +97,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     /**
      * Creates new form InterfaceUI
      */
-    public InterfaceUI() {
+    public InterfaceUI() throws Exception {
 
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
@@ -165,6 +167,8 @@ public class InterfaceUI extends javax.swing.JFrame {
             if (enableLanbahn) {
                 lanbahnserver = new LanbahnUI();
             }
+            
+            configWebserver = new ConfigWebserver("/home/pi/lb-panel2.xml",8000);
         }
 
         initTimer();
@@ -180,6 +184,12 @@ public class InterfaceUI extends javax.swing.JFrame {
     private void closeAll() {
         System.out.println("close all.");
         running = false;  // flag for stopping services
+        
+        if (configWebserver != null) {
+            // stop webserver
+            configWebserver.stop();
+        }
+        
         try {  // close jmdns etc.
             Thread.sleep(500);
         } catch (InterruptedException e1) {
@@ -587,7 +597,11 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                sx = new InterfaceUI();
+                try {
+                    sx = new InterfaceUI();
+                } catch (Exception ex) {
+                    Logger.getLogger(InterfaceUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 sx.setVisible(true);
             }
         });

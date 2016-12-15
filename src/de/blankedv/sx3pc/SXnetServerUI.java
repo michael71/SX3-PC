@@ -52,7 +52,7 @@ public class SXnetServerUI extends javax.swing.JFrame {
             }
             startSXnetServer();
             setVisible(true);
-            new Thread(new RegisterJMDNSService("sxnet", SXNET_PORT, myip.get(0), this)).start();
+            new Thread(new RegisterJMDNSService("sxnet", SXNET_PORT, myip.get(0))).start();
         }
     }
 
