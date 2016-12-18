@@ -83,6 +83,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private boolean simulation;
     private String ifType;
     private boolean typeIsFCC = false;
+    private boolean typeIsOpenSX = false;
     Boolean pollingFlag = false;  // only needed for trix-standard IF
 
     private boolean enableSxnet;
@@ -123,8 +124,10 @@ public class InterfaceUI extends javax.swing.JFrame {
         } else if ( ifType.contains("FCC") ) { // fcc has different interface handling !
             typeIsFCC = true;
             sxi = new SXFCCInterface(portName);
+        } else if ( ifType.toLowerCase().contains("opensx") ) { // opensx has different interface handling !
+            typeIsOpenSX = true;
+            sxi = new SXOpenSXInterface(portName);
         } else {
-            typeIsFCC = false;
             sxi = new SXInterface(!pollingFlag, portName, baudrate);
         }
         

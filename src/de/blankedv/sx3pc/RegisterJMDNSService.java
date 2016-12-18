@@ -58,7 +58,7 @@ public class RegisterJMDNSService implements Runnable {
         try {
             jmdns = JmDNS.create(ip,servicename);
         } catch (IOException ex) {
-            Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Error, could not create JmDns.");
             return;
         }
@@ -76,7 +76,7 @@ public class RegisterJMDNSService implements Runnable {
             jmdns.registerService(myservice);
             System.out.println("announcing sxnet service '" + servicename+"'");
         } catch (IOException ex) {
-            Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Error, could not announce sxnet service '" + servicename+"'");
             return;
         }
@@ -101,7 +101,8 @@ public class RegisterJMDNSService implements Runnable {
         try {
             jmdns.close();
         } catch (IOException ex) {
-            Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error: "+ex.getMessage());
+            //Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }

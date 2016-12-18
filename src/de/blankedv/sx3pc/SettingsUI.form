@@ -238,12 +238,13 @@
         <Component class="javax.swing.JComboBox" name="comboSelectType">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="5">
+              <StringArray count="6">
                 <StringItem index="0" value="SLX 825"/>
-                <StringItem index="1" value="FCC"/>
-                <StringItem index="2" value="Trix 66824"/>
-                <StringItem index="3" value="ZS1"/>
-                <StringItem index="4" value="SLX 852"/>
+                <StringItem index="1" value="OpenSX"/>
+                <StringItem index="2" value="FCC"/>
+                <StringItem index="3" value="Trix 66824"/>
+                <StringItem index="4" value="ZS1"/>
+                <StringItem index="5" value="SLX 852"/>
               </StringArray>
             </Property>
           </Properties>

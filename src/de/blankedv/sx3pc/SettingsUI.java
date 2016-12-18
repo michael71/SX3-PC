@@ -159,7 +159,7 @@ public class SettingsUI extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
         jLabel2.setText("Type");
 
-        comboSelectType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SLX 825", "FCC", "Trix 66824", "ZS1", "SLX 852" }));
+        comboSelectType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SLX 825", "OpenSX", "FCC", "Trix 66824", "ZS1", "SLX 852" }));
         comboSelectType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboSelectTypeActionPerformed(evt);
@@ -448,6 +448,13 @@ public class SettingsUI extends javax.swing.JFrame {
             // force 230400 
             for (int i=0; i <cbBaudrate.getItemCount(); i++) {
                 if (cbBaudrate.getItemAt(i).toString().equalsIgnoreCase("230400")) {
+                    cbBaudrate.setSelectedIndex(i);
+                }
+            }
+        } else if  (comboSelectType.getSelectedItem().toString().toLowerCase().contains("opensx")) {
+            // force 230400 
+            for (int i=0; i <cbBaudrate.getItemCount(); i++) {
+                if (cbBaudrate.getItemAt(i).toString().equalsIgnoreCase("115200")) {
                     cbBaudrate.setSelectedIndex(i);
                 }
             }
