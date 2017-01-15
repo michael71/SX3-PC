@@ -260,7 +260,9 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
     private void btnChangeDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeDirActionPerformed
         // TODO add your handling code here:
         // change dir
-        toggleDirection();
+        speed = 0;
+        jSliderSpeed.setValue(0);
+        toggleDirection();  // will call updateLoco()
     }//GEN-LAST:event_btnChangeDirActionPerformed
 
     private void jSliderSpeedPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jSliderSpeedPropertyChange
