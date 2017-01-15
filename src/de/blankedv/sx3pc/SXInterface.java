@@ -62,6 +62,10 @@ public class SXInterface extends GenericSXInterface {
         this.baudrate = baud;
     }
 
+    public void setPort(String port) {
+        portName = port;
+    }
+    
     public boolean open() {
         
         Boolean foundPort = false;

@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -53,10 +54,17 @@ public class SXFCCInterface extends GenericSXInterface {
     private static long lastReceived = 0;
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
+    
+    private static int fccErrorCount = 0;
 
     SXFCCInterface(String port) {
         this.portName = port;
     }
+    
+    public void setPort(String port) {
+        portName = port;
+    }
+ 
 
     @Override
     public boolean open() {
@@ -124,18 +132,18 @@ public class SXFCCInterface extends GenericSXInterface {
         } else {
             System.out.println("Serialport bereits geschlossen");
         }
+       fccErrorCount = 0; // reset errors
     }
 
     @Override
-    public void doUpdate() {
+    public String doUpdate() {
+        if (fccErrorCount > 10) {
+            System.out.println("ERROR: FCC does not respond");
+            return("ERROR: Keine Response von der FCC, SerialPort Settings überprüfen"); 
+
+        } 
         if (serialPortGeoeffnet) {
-           /* try {
-                while (inputStream.available() > 1) {
-                    int b = inputStream.read();
-                }
-            } catch (IOException ex) {
-                System.out.println("ERROR: Serial-IO where trying to empty inputstream");
-            } */
+
             try {
                 Byte[] b = {0x78, 0x03};
                 outputStream.write(b[0]);
@@ -143,6 +151,7 @@ public class SXFCCInterface extends GenericSXInterface {
                 outputStream.flush();
             } catch (IOException ex) {
                 System.out.println("ERROR: Serial-IO where trying to write");
+                fccErrorCount++;
             }
             shortSleep();
             try {
@@ -175,11 +184,17 @@ public class SXFCCInterface extends GenericSXInterface {
                 }
                 if (count != 226) {
                     System.out.println("ERROR wrong number of bytes read="+ count);
+                    fccErrorCount++;
+                } else {
+                    fccErrorCount = 0;
+                    //System.out.println("226 bytes gelesen");
                 }
             } catch (IOException ex) {
                 System.out.println("ERROR: Serial-IO where trying to read");
+                fccErrorCount++;
             }
         }
+        return "";
     }
 
     private void shortSleep() {
@@ -196,6 +211,9 @@ public class SXFCCInterface extends GenericSXInterface {
         // not necessary, because it is polled every second
     }
 
+    
+    // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
+    // das höchste Bit auf 1 gesetzt werden
     @Override
     public void switchPowerOn() {
 
@@ -263,6 +281,8 @@ shortSleep();
         connectionOK = true;
     }
 
+    // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
+    // das höchste Bit auf 1 gesetzt werden
     @Override
     public void send(Byte[] data, int busnumber) {
         try {
@@ -275,6 +295,7 @@ shortSleep();
             System.out.println("Fehler beim Senden");
         }
         shortSleep();
+        // quittung abwarten
         try {
             int result = inputStream.read();
             if (result != 0) {

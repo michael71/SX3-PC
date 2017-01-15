@@ -23,6 +23,9 @@ public class SXSimulationInterface extends GenericSXInterface {
 
     }
 
+    public void setPort(String port) {
+    }
+    
     @Override
     public boolean open() {
         serialPortGeoeffnet = true;

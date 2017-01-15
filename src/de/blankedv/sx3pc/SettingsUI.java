@@ -371,6 +371,7 @@ public class SettingsUI extends javax.swing.JFrame {
         System.out.println("saving enableDebug="+cbDebug.isSelected());
 
         }
+         
 
         JOptionPane.showMessageDialog(this,"Needs Restart" );
         settingsWindow = null;

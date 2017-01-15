@@ -145,7 +145,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
         // the lanbahnData hashmap only can grow, no values will be deleted
         // initTable() => not necessary
 
-        List keys = new ArrayList(lbCopy.keySet());
+        ArrayList<Integer> keys = new ArrayList<>(lbCopy.keySet());
         Collections.sort(keys);
         Iterator it = keys.iterator();
 

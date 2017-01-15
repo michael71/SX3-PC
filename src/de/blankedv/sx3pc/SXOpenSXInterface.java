@@ -66,6 +66,10 @@ public class SXOpenSXInterface extends GenericSXInterface implements SerialPortE
     SXOpenSXInterface(String port) {
         this.portName = port;
     }
+    
+    public void setPort(String port) {
+        portName = port;
+    }
 
     @Override
     public boolean open() {
@@ -147,8 +151,8 @@ public class SXOpenSXInterface extends GenericSXInterface implements SerialPortE
     }
 
     @Override
-    public void doUpdate() {
-        return; // TODO
+    public String doUpdate() {
+        return ""; // TODO
         /*
         if ((System.currentTimeMillis() -lastXrequest) < 5000) return;
         lastXrequest = System.currentTimeMillis();

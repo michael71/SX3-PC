@@ -18,12 +18,15 @@ import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
 abstract public class GenericSXInterface {
 
     abstract public boolean open();
+    
+    abstract public void setPort(String port);
 
     abstract public void close();
     
-    public void doUpdate() {
+    public String doUpdate() {
         ;  // implemented in SXFCCInterface, where a full update can be
         // requested regularly
+        return "";
     }
 
     public synchronized void send2SXBussesBit(int adr, int bit, int data) {

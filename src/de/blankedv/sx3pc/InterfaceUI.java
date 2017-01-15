@@ -459,22 +459,8 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     private void btnConnectDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectDisconnectActionPerformed
         // this button can never be pressed in simulation mode.
-        if (sxiConnected) {
-            closeConnection();
-        } else {
-            if (sxi.open()) {
-
-                statusIcon.setEnabled(true);
-                btnConnectDisconnect.setText("Disconnect");
-                sxiConnected = true;
-                btnPowerOnOff.setEnabled(true);
-                btnReset.setEnabled(true);
-                connectionOK = true;
-                timeoutCounter = 0;
-            } else {
-                JOptionPane.showMessageDialog(this, "Check Serial Port Settings");
-            }
-        }
+        disconnect();
+        
     }//GEN-LAST:event_btnConnectDisconnectActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
@@ -579,6 +565,24 @@ public class InterfaceUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnVtestActionPerformed
 
+    private void disconnect() {
+        if (sxiConnected) {
+            closeConnection();
+        } else {
+            if (sxi.open()) {
+
+                statusIcon.setEnabled(true);
+                btnConnectDisconnect.setText("Disconnect");
+                sxiConnected = true;
+                btnPowerOnOff.setEnabled(true);
+                btnReset.setEnabled(true);
+                connectionOK = true;
+                timeoutCounter = 0;
+            } else {
+                JOptionPane.showMessageDialog(this, "Check Serial Port Settings");
+            }
+        }
+    }
     /**
      * @param argsstatic the command line arguments
      */
@@ -662,7 +666,11 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     
     public void doUpdate() {
-        sxi.doUpdate();
+        String result = sxi.doUpdate();
+        if (!result.isEmpty()) {
+            JOptionPane.showMessageDialog(this, result);
+            disconnect();
+        }
         updateCount++;
         if (updateCount < 4) return;
         
