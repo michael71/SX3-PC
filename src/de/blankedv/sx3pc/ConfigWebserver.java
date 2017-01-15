@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 
 public class ConfigWebserver {
 
-    static String fileName = "";
+    String fileName = "";
     static final String jmdnsService = "sxconfig";
     HttpServer server;
 
@@ -55,11 +55,11 @@ public class ConfigWebserver {
         
     }
 
-    static class MyHandler implements HttpHandler {
+    class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            String response = new String(Files.readAllBytes(Paths.get(fileName)));
-
+            String //response = new String(Files.readAllBytes(Paths.get(fileName)));
+response =" Test config";
             t.sendResponseHeaders(200, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
