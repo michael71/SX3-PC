@@ -41,6 +41,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static boolean DEBUG = false;
     public static boolean doUpdateFlag = false;
     public static boolean running = true;
+    public static int CONFIG_PORT = 8000;
     public static InterfaceUI sx;
     public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
@@ -162,6 +163,8 @@ public class InterfaceUI extends javax.swing.JFrame {
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
 
+        String configFile = prefs.get("configfilename", "-keiner-");
+        
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             if (enableSxnet) {
                 sxnetserver = new SXnetServerUI();
@@ -171,13 +174,14 @@ public class InterfaceUI extends javax.swing.JFrame {
                 lanbahnserver = new LanbahnUI();
             }
             
-            configWebserver = new ConfigWebserver("/home/pi/lb-panel2.xml",8000);
+            configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
         }
 
         initTimer();
         
-        LBSXMap.init();
+        LBSXMap.init(configFile);
                 
+        // for debugging ...
         lanbahnData.put(1300,11);
         lanbahnData.put(1100,12);
         lanbahnData.put(1004,13);

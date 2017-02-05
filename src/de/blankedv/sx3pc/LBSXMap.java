@@ -18,7 +18,9 @@ public class LBSXMap {
    
     // TODO second sxbit
     
-    public static void init() {
+    public static void init(String configfilename) {
+        // TODO read config file and add mappings.
+        
         // init LBSXMap      
        // lbsx.add(new LBSX(722, 72, 2));
        // lbsx.add(new LBSX(721, 74, 1));

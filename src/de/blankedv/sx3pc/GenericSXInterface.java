@@ -12,7 +12,8 @@ import static de.blankedv.sx3pc.InterfaceUI.sxbusControl;
 import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
 
 /**
- *
+ * abstract class for generic selectrix interfaces
+ * 
  * @author mblank
  */
 abstract public class GenericSXInterface {
@@ -57,8 +58,21 @@ abstract public class GenericSXInterface {
 
     }
 
+    /** 
+     * send a data byte to a specific bus number
+     * busses are activated)
+     * @param data (Byte[], first byte address, second byte data
+     * @param busnumber (either 0=> SX0 or 1=>SX1)
+     */
     abstract public void send(Byte[] data, int busnumber);
 
+    /** 
+     * set or reset a bit on the control channel (SX0 when only 1 bus, SX1 when
+     * busses are activated)
+     * @param adr
+     * @param bit
+     * @param data 
+     */
     public synchronized void sendAccessoryBit(int adr, int bit, int data) {
         int d = sxData[adr][sxbusControl];
         Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
@@ -72,6 +86,14 @@ abstract public class GenericSXInterface {
         send(b, sxbusControl);
     }
 
+    /**
+     * sends and selectrix control command to the SX interface
+     * if adr > 128 => output sent to SX1
+     *    adr <=128 (=SXMAX2) => output sent to SX0
+     * 
+     * @param adr
+     * @param data 
+     */
     public synchronized void send2SXBusses(int adr, int data) {
         // accepts adresses >127 and then sends data to SX1 (instead of SX0)
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
@@ -89,6 +111,15 @@ abstract public class GenericSXInterface {
         }
     }
 
+    /**
+     * sends a loco control command (always SX0 !) to the SX interface
+     * 
+     * @param lok_adr
+     * @param speed
+     * @param licht
+     * @param forward
+     * @param horn 
+     */
     public synchronized void sendLoco(int lok_adr, int speed, boolean licht, boolean forward, boolean horn) {
         // constructs SX loco data from speed and bit input.
         int data = 0;
@@ -100,7 +131,7 @@ abstract public class GenericSXInterface {
             speed = 0;
         }
         if (DEBUG) {
-            System.out.println("adr:" + lok_adr + " s:" + speed + " l:" + licht + " forw:" + forward + " h:" + horn);
+            //System.out.println("adr:" + lok_adr + " s:" + speed + " l:" + licht + " forw:" + forward + " h:" + horn);
         }
         data = speed;  // die unteren 5 bits (0..4)
         if (horn) {
@@ -113,7 +144,7 @@ abstract public class GenericSXInterface {
             data += 32; //bit5
         }
         if (DEBUG) {
-            System.out.println("update loco " + Integer.toHexString(data));
+            //System.out.println("update loco " + Integer.toHexString(data));
         }
         Byte[] b = {(byte) (lok_adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
         b[1] = (byte) data;

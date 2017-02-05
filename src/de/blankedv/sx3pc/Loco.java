@@ -4,8 +4,7 @@
  */
 
 package de.blankedv.sx3pc;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;   // SX Data
-import static de.blankedv.sx3pc.InterfaceUI.sxi;   // the SX interface.
+
 /**
  *
  * @author mblank
@@ -62,31 +61,4 @@ public class Loco {
         this.speed = speed;
     }
 
-//    public void updateToSX() {
-//        int data = 0;
-//        // Berechnen des Steuerwort
-//        data = speed;  // die unteren 5 bits (0..4)
-//        if (horn) {
-//            data += 128; // bit7
-//        }
-//        if (licht) {
-//            data += 64; // bit6
-//        }
-//        if (forward == false) {
-//            data += 32; //bit5
-//        }
-//        //System.out.println("update loco " + Integer.toHexString(data));
-//        Byte[] b = {(byte) (lok_adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
-//        b[1] = (byte) data;
-//        sxi.send(b,0);
-//    }
-
-//    public void updateFromSX() {
-//        // initial werte lesen aus sxData
-//        int ld = sxData[lok_adr][0];
-//        speed = (ld & 0x1F);
-//        horn = ((ld & 0x80) == 0x80);
-//        licht = ((ld & 0x40) == 0x40);
-//        forward = !((ld & 0x20) == 0x20);
-//    }
 }
