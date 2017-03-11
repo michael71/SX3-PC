@@ -71,6 +71,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static int timeoutCounter = 0;
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
     public static boolean connectionOK = false;  // watchdog for connection
+    public static String panelName = "";
 
     OutputStream outputStream;
     InputStream inputStream;
@@ -91,6 +92,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private boolean enableLanbahn;
     
     private ConfigWebserver configWebserver;
+    
 
     private final ImageIcon green, red;
     private List<Integer> pList = new LinkedList<>();
@@ -180,6 +182,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         initTimer();
         
         LBSXMap.init(configFile);
+        this.setTitle("SX3-PC - "+panelName);
                 
         // for debugging ...
         lanbahnData.put(1300,11);

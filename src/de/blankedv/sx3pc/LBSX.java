@@ -19,6 +19,13 @@ public class LBSX {
         public int sxBit;
         public int sxBit2;
         
+        LBSX() {
+            lbAddr = INVALID_INT;
+            sxAddr = INVALID_INT;
+            sxBit = 1;
+            sxBit2 = INVALID_INT;
+        }
+        
         LBSX(int l, int s, int b, int b2) {
             lbAddr = l;
             sxAddr = s;
@@ -31,6 +38,32 @@ public class LBSX {
             sxAddr = s;
             sxBit = b;
             sxBit2 = INVALID_INT;
+        }
+        
+        public boolean isValid() {
+            if ((lbAddr != INVALID_INT) &&
+                    (sxAddr != INVALID_INT) &&
+                    (sxBit >=1) &&
+                     (sxBit <=8)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("lbAddr=");
+            sb.append(lbAddr);
+            sb.append(" sxAddr=");
+            sb.append(sxAddr);
+            sb.append(" b1=");
+            sb.append(sxBit);
+            if (sxBit2 != INVALID_INT) {
+                sb.append(" b2=");
+                sb.append(sxBit2);
+            }
+            return sb.toString();
         }
 
 }
