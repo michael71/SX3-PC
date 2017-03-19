@@ -18,11 +18,18 @@ import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
  */
 abstract public class GenericSXInterface {
 
+    protected boolean connected = false;
+    
     abstract public boolean open();
     
     abstract public void setPort(String port);
 
     abstract public void close();
+    
+ 
+    public boolean isConnected() {
+        return connected;
+    }
     
     public String doUpdate() {
         ;  // implemented in SXFCCInterface, where a full update can be
@@ -83,6 +90,8 @@ abstract public class GenericSXInterface {
             d = d & ~(1 << (bit - 1));  // sx bit von 1 bis 8
         }
         b[1] = (byte) (d);
+        // ???? sxData[adr][sxbusControl] = d;
+        if (DEBUG) System.out.println("SendAc: a="+adr+" d="+b[1]);
         send(b, sxbusControl);
     }
 

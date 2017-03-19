@@ -5,14 +5,11 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
 import static de.blankedv.sx3pc.InterfaceUI.connectionOK;
 import static de.blankedv.sx3pc.InterfaceUI.sxData;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +18,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -41,30 +37,21 @@ public class SXFCCInterface extends GenericSXInterface {
     OutputStream outputStream;
     InputStream inputStream;
     Boolean serialPortGeoeffnet = false;
-    private int lastAdrSent = -1;
+
     private SXInterface.PollingActivity pa;
-    private int pollIndex = 0;
-    private List<Integer> pListCopy;
 
-    private boolean sx1Flag = false;
-    private int lastBusnumber = 0;
-
-    private static int leftover;
-    private static boolean leftoverFlag = false;
-    private static long lastReceived = 0;
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
-    
+
     private static int fccErrorCount = 0;
 
     SXFCCInterface(String port) {
         this.portName = port;
     }
-    
+
     public void setPort(String port) {
         portName = port;
     }
- 
 
     @Override
     public boolean open() {
@@ -98,10 +85,10 @@ public class SXFCCInterface extends GenericSXInterface {
         }
 
         try {
-              inputStream = serialPort.getInputStream();
-              while (inputStream.available() >= 1) {  // empty.
-                    int b = inputStream.read();
-                }
+            inputStream = serialPort.getInputStream();
+            while (inputStream.available() >= 1) {  // empty.
+                int b = inputStream.read();
+            }
         } catch (IOException e) {
             System.out.println("Keinen Zugriff auf InputStream");
         }
@@ -119,31 +106,39 @@ public class SXFCCInterface extends GenericSXInterface {
         }
 
         serialPortGeoeffnet = true;
+        connected = true;
 
         return true;
     }
 
     @Override
     public void close() {
-       if (serialPortGeoeffnet == true) {
+        if (serialPortGeoeffnet == true) {
             System.out.println("Schließe Serialport");
             serialPort.close();
             serialPortGeoeffnet = false;
         } else {
             System.out.println("Serialport bereits geschlossen");
         }
-       fccErrorCount = 0; // reset errors
+        fccErrorCount = 0; // reset errors
+        connected = false;
     }
 
     @Override
-    public String doUpdate() {
+    public synchronized String  doUpdate() {
         if (fccErrorCount > 10) {
             System.out.println("ERROR: FCC does not respond");
-            return("ERROR: Keine Response von der FCC, SerialPort Settings überprüfen"); 
+            return ("ERROR: Keine Response von der FCC, SerialPort Settings überprüfen");
 
-        } 
+        }
         if (serialPortGeoeffnet) {
-
+            try {  // empty input
+                while (inputStream.available() >= 1) {
+                    int b = inputStream.read();
+                }
+            } catch (IOException ex) {
+                ;
+            }
             try {
                 Byte[] b = {0x78, 0x03};
                 outputStream.write(b[0]);
@@ -155,40 +150,50 @@ public class SXFCCInterface extends GenericSXInterface {
             }
             shortSleep();
             try {
-                int count = 0;  // byte numbering in FCC-manual starts with 1 !
+                //int count = 0;  // byte numbering in FCC-manual starts with 1 !
                 // but for consistency with sxData array we start with 0 here
-                while (inputStream.available() >= 1) {
-                    int b = inputStream.read();
-                    if (b == -1) {
-                        break;
-                    }
-                    if (count < 110) {
-                        sxData[count][0] = b & 0xff;                       
-                    } else if (count == 112) {  
-                        //System.out.println("power="+b);
-                        if (b == 0) {
-                            sxData[127][0] = 0;
-                        } else {
-                            sxData[127][0] = 80;
-                        }                       
-                    } else if (count < 226) {
-                        //sxData[count-114][1] = b & 0xff;                           
-                    } else if (count == 226) {               
-                        if (b == 0) {
-                           // sxData[127][1] = 0;
-                        } else {
-                           //  sxData[127][1] = 80;
-                        }  
-                    }
-                    count++;
-                }
-                if (count != 226) {
-                    System.out.println("ERROR wrong number of bytes read="+ count);
+                
+                byte[] buf = new byte[226];
+                int nread = inputStream.read(buf, 0, 226);
+                
+                if (nread != 226) {
+                    System.out.println("ERROR wrong number of bytes read=" + nread);
                     fccErrorCount++;
+                    return "ERROR";
                 } else {
                     fccErrorCount = 0;
                     //System.out.println("226 bytes gelesen");
+                }  
+                    
+     /*           while (inputStream.available() >= 1) {
+
+                    int b = inputStream.read();
+                    if (b == -1) {
+                        break;
+                    } */
+                for (int count =0; count < 226; count++) {
+                    
+                    if (count < 110) {
+                        sxData[count][0] = buf[count] & 0xff;
+                    } else if (count == 112) {
+                        //System.out.println("power="+b);
+                        if (buf[count] == 0) {
+                            sxData[127][0] = 0;
+                        } else {
+                            sxData[127][0] = 80;
+                        }
+                    } else if (count < 226) {
+                        //sxData[count-114][1] = b & 0xff;                           
+                    } else if (count == 226) {
+                        //if (b == 0) {
+                            // sxData[127][1] = 0;
+                        //} else {
+                            //  sxData[127][1] = 80;
+                       // }
+                    }
+      
                 }
+                
             } catch (IOException ex) {
                 System.out.println("ERROR: Serial-IO where trying to read");
                 fccErrorCount++;
@@ -199,23 +204,22 @@ public class SXFCCInterface extends GenericSXInterface {
 
     private void shortSleep() {
         try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SXFCCInterface.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Thread.sleep(20);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SXFCCInterface.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    
+
     @Override
     public void registerFeedback(int adr
     ) {
         // not necessary, because it is polled every second
     }
 
-    
     // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
     // das höchste Bit auf 1 gesetzt werden
     @Override
-    public void switchPowerOn() {
+    public synchronized void switchPowerOn() {
 
         Byte[] b = {(byte) 0x00, (byte) 0xFF, (byte) 0x01};
 
@@ -227,7 +231,7 @@ public class SXFCCInterface extends GenericSXInterface {
         } catch (IOException e) {
             System.out.println("Error: Serial Fehler beim Senden");
         }
-shortSleep();
+        shortSleep();
         try {
             inputStream.read();
         } catch (IOException ex) {
@@ -236,7 +240,7 @@ shortSleep();
     }
 
     @Override
-    public void switchPowerOff() {
+    public synchronized void switchPowerOff() {
 
         Byte[] b = {(byte) 0x00, (byte) 0xFF, (byte) 0x00};
 
@@ -263,13 +267,11 @@ shortSleep();
         // not necessary, because it is polled every second
     }
 
-    
     @Override
     public void resetAll() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
     @Override
     public void unregisterFeedback() {
         // not necessary, because it is polled every second
@@ -284,7 +286,7 @@ shortSleep();
     // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
     // das höchste Bit auf 1 gesetzt werden
     @Override
-    public void send(Byte[] data, int busnumber) {
+    public synchronized void send(Byte[] data, int busnumber) {
         try {
             outputStream.write((byte) busnumber);
             outputStream.write(data[0]);
@@ -306,5 +308,4 @@ shortSleep();
         }
     }
 
-    
 }

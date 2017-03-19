@@ -209,7 +209,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnSxMonitor">
           <Properties>
-            <Property name="text" type="java.lang.String" value="SX Monitor"/>
+            <Property name="text" type="java.lang.String" value="Monitor"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSxMonitorActionPerformed"/>

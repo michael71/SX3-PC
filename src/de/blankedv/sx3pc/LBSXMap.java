@@ -27,6 +27,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static de.blankedv.sx3pc.InterfaceUI.panelName;
+
 /**
  * utility function for the mapping of lanbahn addresses to SX addresses (and
  * bits) and vice versa
@@ -37,7 +38,7 @@ public class LBSXMap {
 
     // TODO second sxbit
     private static final boolean CFG_DEBUG = true;
-    
+
     private static String sxMode = "";
 
     public static void init(String configfilename) {
@@ -49,7 +50,7 @@ public class LBSXMap {
         // lbsx.add(new LBSX(721, 74, 1));
     }
 
-    public static int getLanbahn(int sxaddr, int sxbit) {
+    public static int getLanbahnFromSXBit(int sxaddr, int sxbit) {
         for (LBSX ls : lbsx) {
             if ((ls.sxAddr == sxaddr) && (ls.sxBit == sxbit)) {
                 return ls.lbAddr;
@@ -58,16 +59,38 @@ public class LBSXMap {
         return INVALID_INT; // => no mapping
     }
 
-    public static SXAddrAndBit getSX(int lbAddr) {
+    // return a list of lanbahn mappings which have been changed
+    // for a given SX address and SXdata change
+    public static ArrayList<LBSX> getChangedLanbahnFromSXByte(int sxaddr, int sxbyte, int oldSxbyte) {
+        LBValue lbvalue = new LBValue();
+        ArrayList<LBSX> lbvs = new ArrayList<LBSX>();
         for (LBSX ls : lbsx) {
-            if (ls.lbAddr == lbAddr) {
-                return new SXAddrAndBit(ls.sxAddr, ls.sxBit, ls.sxBit2);
+            if (ls.sxAddr == sxaddr) { // address matches, now look for bits
+                if (ls.getLBValueFromSXByte(sxbyte) != ls.getLBValueFromSXByte(oldSxbyte)) {
+                    if (!lbvs.contains(ls)) {
+                        lbvs.add(ls);
+                    }
+
+                }
             }
         }
-        return new SXAddrAndBit(INVALID_INT, 0);   // => no mapping
+        return lbvs;  // can be empty
     }
-    
-// code template from lanbahnPanel
+
+    public static int getValueFromSXByte(LBSX lbx, int d) {
+        return lbx.getLBValueFromSXByte(d);
+    }
+
+    public static SXAddrAndBits getSX(int lbAddr) {
+        for (LBSX ls : lbsx) {
+            if (ls.lbAddr == lbAddr) {
+                return new SXAddrAndBits(ls.sxAddr, ls.sxBit, ls.nBit);
+            }
+        }
+        return new SXAddrAndBits(INVALID_INT, 0);   // => no mapping
+    }
+
+    // code template taken from lanbahnPanel
     private static String readXMLConfigFile(String fname) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
@@ -100,7 +123,7 @@ public class LBSXMap {
 //<panel name="Lonstoke West 2">
 //<mode sx="on" />
 //<sxmapping adr="811" sxadr="81" sxbit="1" />
-//<sxmapping adr ...
+//<sxmapping adr="822" sxadr="81" sxbit="5" nbit="2" /> 2 sxbits are used 5 (low) and 6 (high)
 
         NodeList items;
         Element root = doc.getDocumentElement();
@@ -127,7 +150,7 @@ public class LBSXMap {
         for (int i = 0; i < items.getLength(); i++) {
             LBSX tmp = parseSXMapping(items.item(i));
             if (tmp != null) {
-                System.out.println("map=" + tmp.toString());
+                System.out.println("map: " + tmp.toString());
                 lbsx.add(tmp);
             }
         }
@@ -148,24 +171,9 @@ public class LBSXMap {
             } else if (theAttribute.getNodeName().equals("sxadr")) {
                 sxmap.sxAddr = getPositionNode(theAttribute);
             } else if (theAttribute.getNodeName().equals("sxbit")) {
-                int tmp = getPositionNode(theAttribute);
-                if (tmp < 10) {  // only a single bit used for this mapping
-                    if ((tmp >= 1) && (tmp <= 8)) {
-                        sxmap.sxBit = tmp;
-                        sxmap.sxBit2 = INVALID_INT;
-                    }
-                } else if ((tmp >= 11) && (tmp <= 87)) {
-                    // two sx bits used for this mapping
-                    int tmp1 = tmp % 10;
-                    if ((tmp1 >= 1) && (tmp1 <= 8)) {
-                        sxmap.sxBit2 = tmp1;
-                    }
-                    int tmp2 = tmp / 10;
-                    if ((tmp2 >= 1) && (tmp2 <= 8)) {
-                        sxmap.sxBit = tmp2;
-                    }
-
-                }
+                sxmap.sxBit = getPositionNode(theAttribute);
+            } else if (theAttribute.getNodeName().equals("nbit")) {
+                sxmap.nBit = getPositionNode(theAttribute);
             } else {
                 if (CFG_DEBUG) {
                     System.out.println(

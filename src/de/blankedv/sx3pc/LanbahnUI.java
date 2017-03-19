@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import static de.blankedv.sx3pc.InterfaceUI.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -36,9 +37,6 @@ public class LanbahnUI extends javax.swing.JFrame {
     protected Thread t;
     //protected RegisterJMDNSService serv;
     byte[] buf = new byte[1000];
-
-    private String dev1 = "";
-    private String dev2 = "";
 
     private long announceTimer = 0;
 
@@ -139,7 +137,7 @@ public class LanbahnUI extends javax.swing.JFrame {
             if (msg == null) {
                 return;
             }
-            int lbaddr, sxaddr, speed, data;
+            int lbaddr, sxaddr, speed, data, lbdata;
 
             String cmd[] = msg.split(" ");
 
@@ -182,7 +180,11 @@ public class LanbahnUI extends javax.swing.JFrame {
                                 return;  // check address range
                             }
                             data = Integer.parseInt(cmd[2]);
-                            sxi.sendAccessory(sxaddr, data);
+                            if (sxi != null) {
+                                sxi.sendAccessory(sxaddr, data);
+                            } else {
+                                System.out.println("could not set SX, interface not connected");
+                            }
                         }
                     } catch (Exception e) {
                         System.out.println("could not understand SX command format: " + msg + " error=" + e.getMessage());
@@ -194,28 +196,20 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 3) {
                             lbaddr = Integer.parseInt(cmd[1]);
-                            data = Integer.parseInt(cmd[2]);
-                            SXAddrAndBit sx = LBSXMap.getSX(lbaddr);
+                            lbdata = Integer.parseInt(cmd[2]);
+                            SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
+                            if (DEBUG) {
+                                System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
+                                System.out.println("sx: " + sx.toString());
+                            }
                             if (sx.sxAddr == INVALID_INT) {
                                 // pure lanbahn address range
-                                lanbahnData.put(lbaddr, data);
-                                if (DEBUG) {
-                                    System.out.println("setting lb-addr=" + lbaddr + " val=" + data);
-                                }
+                                lanbahnData.put(lbaddr, lbdata);
                             } else {
-                                // selectrix channel range                               
-                                sxi.sendAccessoryBit(sx.sxAddr, sx.bit, (data & 0x01));
-                                if (sx.bit2 != INVALID_INT) {
-                                    sxi.sendAccessoryBit(sx.sxAddr, sx.bit2, ((data & 0x02) >> 1));
-                                    if (DEBUG) {
-                                        System.out.println("setting sx-adr=" + sx.sxAddr
-                                                + " bit=" + sx.bit + "/" + (data & 0x01)
-                                                + " bit2=" + sx.bit2 + "/" + ((data & 0x02) >> 1));
-                                    }
-                                } else if (DEBUG) {
-                                    System.out.println("setting sx-adr=" + sx.sxAddr
-                                            + " bit=" + sx.bit + "/" + (data & 0x01));
-                                }
+                                // selectrix channel range   
+
+                                try_set_sx_accessory(sx, lbdata);
+
                             }
                         }
                     } catch (Exception e) {
@@ -228,8 +222,8 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 2) {
                             lbaddr = Integer.parseInt(cmd[1]);
-                            String msgToSend;
-                            SXAddrAndBit sx = LBSXMap.getSX(lbaddr);
+                            String msgToSend = "";
+                            SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
                             if (sx.sxAddr == INVALID_INT) {
                                 if (!lanbahnData.containsKey(lbaddr)) {
                                     // initialize to "0" (=start simulation and init to "0")
@@ -241,29 +235,36 @@ public class LanbahnUI extends javax.swing.JFrame {
 
                             } else {
                                 // selectrix channel range, get value from SX data array mapping
-                                int dOut;
+                                int dOut = INVALID_INT;
                                 int d = sxData[sx.sxAddr][sxbusControl];
                                 // check mapping for the following bit also
-                                if (sx.bit2 != INVALID_INT) {  // ==> two bit used
-                                    dOut = (d >> (sx.bit - 1)) & 0x03;  // two consecutive bits
-                                } else { // only 1 bit
-                                    dOut = (d >> (sx.bit - 1)) & 0x01;  // sxBit = 1...8
+                                switch (sx.nbit) {
+                                    case 1:
+                                        dOut = (d >> (sx.bit - 1)) & 0x01;  // sxBit = 1...8
+                                        break;
+                                    case 2:
+                                        dOut = (d >> (sx.bit - 1)) & 0x03;  // two consecutive bits
+                                        break;
                                 }
-                                msgToSend = "FB " + lbaddr + " " + dOut;
+                                if (dOut != INVALID_INT) {
+                                    msgToSend = "FB " + lbaddr + " " + dOut;
+                                } else {
+                                    System.out.println("ERROR, could not get SX Value");
+                                }
                             }
+                            if (!msgToSend.isEmpty()) {
+                                byte[] buf = new byte[256];
+                                buf = msgToSend.getBytes();
+                                System.out.println("to lanbahn: " + msgToSend);
+                                DatagramPacket packet;
+                                packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
 
-                            System.out.println("to lanbahn: " + msgToSend);
-                            byte[] buf = new byte[256];
-                            buf = msgToSend.getBytes();
-
-                            DatagramPacket packet;
-                            packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
-
-                            try {
-                                multicastsocket.send(packet);
-                            } catch (IOException ex) {
-                                if (DEBUG) {
-                                    System.out.println("could not send LB Msg");
+                                try {
+                                    multicastsocket.send(packet);
+                                } catch (IOException ex) {
+                                    if (DEBUG) {
+                                        System.out.println("could not send LB Msg");
+                                    }
                                 }
                             }
 
@@ -308,8 +309,68 @@ public class LanbahnUI extends javax.swing.JFrame {
             return false;
         }
 
+        
+
+        private void try_set_sx_accessory(SXAddrAndBits sx, int data) {
+            if (!sxi.isConnected()) {
+                System.out.println("could not set SX, interface not connected");
+                return;
+            }
+            if ((sx.bit >= 1) && (sx.bit <= 8) && (sx.nbit <= 4) && (sx.nbit >= 1)) {
+                int d = sxData[sx.sxAddr][sxbusControl];
+                switch (sx.nbit) {
+                    case 1:
+                        if (data > 1) {
+                            System.out.println("could not set SX, data >1 (nbit = 1)");
+                            return;
+                        }
+                        d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                        break;
+                    case 2:
+                        if (data > 3) {
+                            System.out.println("could not set SX, data >3 (nbit = 2)");
+                            return;
+                        }
+                        d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                        d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                        break;
+                    case 3:
+                        if (data > 7) {
+                            System.out.println("could not set SX, data >7 (nbit = 3)");
+                            return;
+                        }
+                        d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                        d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                        d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
+                        break;
+                    case 4:
+                        if (data > 15) {
+                            System.out.println("could not set SX, data >15 (nbit = 4)");
+                            return;
+                        }
+                        d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                        d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                        d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
+                        d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x08));
+                        break;
+
+                }
+                sxi.sendAccessory(sx.sxAddr, d);  // set changed data value
+                if (DEBUG) {
+                    System.out.println("setting sx-adr=" + " val=" + d);
+                }
+            } else {
+                if (DEBUG) {
+                    System.out.println("could not set sx-adr=" + sx.sxAddr + " bit=" + sx.bit);
+                }
+            }
+        }
+
     }
 
+    /**
+     * send command to lanabahn (via UDP)
+     */
     class MCSendTask extends TimerTask {
 
         public void run() {
@@ -317,24 +378,16 @@ public class LanbahnUI extends javax.swing.JFrame {
             // lanbahn data have changed
             int bus;  //TODO
             for (int ch = 0; ch < SXMAX2; ch++) {
+
                 if (sxData[ch][0] != sxDataCopy[ch][0]) {
-                    sxDataCopy[ch][0] = sxData[ch][0];
-                    for (int bit = 1; bit <= 8; bit++) {
-                        int lbadr = LBSXMap.getLanbahn(ch, bit);
-                        if (lbadr != INVALID_INT) {
-                            // there is a lanbahn-SX mapping for this bit
-                            int dOut;
-                            int d = sxData[ch][0];
-                            // int getBit(int n, int k) { return (n >> k) & 1;}
-                            if (LBSXMap.getLanbahn(ch, bit + 1) != INVALID_INT) {  // ==> two bit used
-                                dOut = (d >> (bit - 1)) & 0x03;  // two consecutive bits
-                            } else { // only 1 bit
-                                dOut = (d >> (bit - 1)) & 0x01;  // sxBit = 1...8
-                            }
-                           
-                            sendMCChannel(lbadr, dOut);
-                        }
+                    // get all mappings which changed SX-values
+                    ArrayList<LBSX> lbchanged = LBSXMap.getChangedLanbahnFromSXByte(ch, sxData[ch][0], sxDataCopy[ch][0]);
+                    for (LBSX lbx : lbchanged) {
+                        int lbvalue = LBSXMap.getValueFromSXByte(lbx, sxData[ch][0] );
+                        lanbahnData.put(lbx.lbAddr, lbvalue);
+                        sendMCChannel(lbx.lbAddr, lbvalue);
                     }
+                    sxDataCopy[ch][0] = sxData[ch][0];
                 }
             }
 
@@ -389,13 +442,15 @@ public class LanbahnUI extends javax.swing.JFrame {
             DatagramPacket packet;
             packet = new DatagramPacket(buf, buf.length, mgroup, LANBAHN_PORT);
 
-            System.out.println("lanbahn " + msg);
+            // System.out.println("lanbahn " + msg);
             try {
                 multicastsocket.send(packet);
             } catch (IOException ex) {
                 Logger.getLogger(LanbahnUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+       
     }
 
     /**

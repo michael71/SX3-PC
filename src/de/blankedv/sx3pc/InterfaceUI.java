@@ -54,7 +54,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     
     // lanbahnData = hashmap for storing numerical (key,value) pairs of lanbahnData
     // lanbahn loco data (strings) are always converted to SX0 values
-    public static ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(LBMAX);
+    public static final ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(LBMAX);
 
     // [3] = SIM
     public static boolean useSX1forControl = false;
@@ -75,7 +75,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     OutputStream outputStream;
     InputStream inputStream;
-    private Boolean sxiConnected = false;
+
     private static int updateCount = 0;  //for counting 250 msec timer
     ThrottleUI loco1;
     SensorUI sensor1;
@@ -84,8 +84,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private int baudrate;
     private boolean simulation;
     private String ifType;
-    private boolean typeIsFCC = false;
-    private boolean typeIsOpenSX = false;
+
     Boolean pollingFlag = false;  // only needed for trix-standard IF
 
     private boolean enableSxnet;
@@ -125,11 +124,10 @@ public class InterfaceUI extends javax.swing.JFrame {
         if (simulation) {
             sxi = new SXSimulationInterface();
         } else if ( ifType.contains("FCC") ) { // fcc has different interface handling !
-            typeIsFCC = true;
+  
             sxi = new SXFCCInterface(portName);
         } else if ( ifType.toLowerCase().contains("opensx") ) { // opensx has different interface handling !
-            typeIsOpenSX = true;
-            sxi = new SXOpenSXInterface(portName);
+             sxi = new SXOpenSXInterface(portName);
         } else {
             sxi = new SXInterface(!pollingFlag, portName, baudrate);
         }
@@ -285,7 +283,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             }
         });
 
-        btnSxMonitor.setText("SX Monitor");
+        btnSxMonitor.setText("Monitor");
         btnSxMonitor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSxMonitorActionPerformed(evt);
@@ -466,7 +464,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     private void btnConnectDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectDisconnectActionPerformed
         // this button can never be pressed in simulation mode.
-        disconnect();
+        toggleConnectStatus();
         
     }//GEN-LAST:event_btnConnectDisconnectActionPerformed
 
@@ -482,7 +480,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     private void btnPowerOnOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPowerOnOffActionPerformed
 
-        if (!sxiConnected && !simulation) {
+        if (!sxi.isConnected() && !simulation) {
             JOptionPane.showMessageDialog(this, "Please Conncect First");
             return;
         }
@@ -549,7 +547,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
-        if (sxiConnected) {
+        if (sxi.isConnected()) {
             Cursor c = this.getCursor();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sxi.resetAll();
@@ -572,15 +570,15 @@ public class InterfaceUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnVtestActionPerformed
 
-    private void disconnect() {
-        if (sxiConnected) {
+    
+    private void toggleConnectStatus() {
+        if (sxi.isConnected()) {
             closeConnection();
         } else {
             if (sxi.open()) {
 
                 statusIcon.setEnabled(true);
                 btnConnectDisconnect.setText("Disconnect");
-                sxiConnected = true;
                 btnPowerOnOff.setEnabled(true);
                 btnReset.setEnabled(true);
                 connectionOK = true;
@@ -676,7 +674,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         String result = sxi.doUpdate();
         if (!result.isEmpty()) {
             JOptionPane.showMessageDialog(this, result);
-            disconnect();
+            toggleConnectStatus();
         }
         updateCount++;
         if (updateCount < 4) return;
@@ -708,7 +706,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     private void checkConnection() {
         timeoutCounter++;
 
-        if ((timeoutCounter > TIMEOUT_SECONDS) && (sxiConnected)) {
+        if ((timeoutCounter > TIMEOUT_SECONDS) && (sxi.isConnected())) {
             sxi.readPower();
             try {
                 Thread.sleep(50);
@@ -726,9 +724,9 @@ public class InterfaceUI extends javax.swing.JFrame {
     }
 
     private void closeConnection() {
-        if (sxiConnected) {
+        if (sxi.isConnected()) {
             sxi.close();
-            sxiConnected = false;
+            
         }
         statusIcon.setEnabled(false);
         btnConnectDisconnect.setText("Connect");

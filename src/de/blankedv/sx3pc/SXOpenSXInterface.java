@@ -118,6 +118,7 @@ public class SXOpenSXInterface extends GenericSXInterface implements SerialPortE
         }
 
         serialPortGeoeffnet = true;
+        connected = true;
 
         return true;
     }
@@ -148,6 +149,7 @@ public class SXOpenSXInterface extends GenericSXInterface implements SerialPortE
         } else {
             System.out.println("Serialport bereits geschlossen");
         }
+        connected = false;
     }
 
     @Override

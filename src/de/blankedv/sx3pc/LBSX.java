@@ -14,30 +14,45 @@ import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
  */
 public class LBSX {
 
-        public int lbAddr;
-        public int sxAddr;
-        public int sxBit;
-        public int sxBit2;
+        public int lbAddr;   // lanbahn address
+        public int sxAddr;   // sx Address
+        public int sxBit;    // (first) sx bit (1..8) (== lowest bit value
+                          // example sxBit = 5, nBit=2
+                          // bit5=1 ==> value = 1
+                          // bit6=1 ==> value = 2
+                          // bit5 and bit6 =set => Value = 3
+        
+        public int nBit;    // number of bits used 1 ...4
         
         LBSX() {
             lbAddr = INVALID_INT;
             sxAddr = INVALID_INT;
             sxBit = 1;
-            sxBit2 = INVALID_INT;
+            nBit = 1;
         }
         
-        LBSX(int l, int s, int b, int b2) {
+        LBSX(int l, int s, int b, int n) {
             lbAddr = l;
             sxAddr = s;
             sxBit = b;
-            sxBit2 = b2;
+            nBit = n;
         }
         
         LBSX(int l, int s, int b) {
             lbAddr = l;
             sxAddr = s;
             sxBit = b;
-            sxBit2 = INVALID_INT;
+            nBit = 1;
+        }
+        
+        public int getLBValueFromSXByte(int d) {
+            int v = 0;
+            for (int i = sxBit; i <=nBit; i++) {
+                if (SXUtils.isSet(d,i) != 0) {
+                    v = v + (1 << (i - sxBit));
+                }               
+            }
+            return v;
         }
         
         public boolean isValid() {
@@ -57,11 +72,9 @@ public class LBSX {
             sb.append(lbAddr);
             sb.append(" sxAddr=");
             sb.append(sxAddr);
-            sb.append(" b1=");
-            sb.append(sxBit);
-            if (sxBit2 != INVALID_INT) {
-                sb.append(" b2=");
-                sb.append(sxBit2);
+            for (int i= nBit; i >=1; i--) {
+                sb.append(" bit=");
+                sb.append((sxBit+(i-1)));
             }
             return sb.toString();
         }

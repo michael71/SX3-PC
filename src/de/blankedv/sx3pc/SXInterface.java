@@ -117,6 +117,7 @@ public class SXInterface extends GenericSXInterface {
         }
 
         serialPortGeoeffnet = true;
+        connected = true;
         lastBusnumber = 0;
         setInterfaceMode();
 
@@ -138,6 +139,7 @@ public class SXInterface extends GenericSXInterface {
         } else {
             System.out.println("Serialport bereits geschlossen");
         }
+        connected = false;
     }
 
     @Override
