@@ -70,4 +70,7 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar">
+        <copy file="src/de/blankedv/sx3pc/assets/lb-panel2.xml" flatten="true" todir="${dist.dir}/panels"/>
+    </target> 
 </project>

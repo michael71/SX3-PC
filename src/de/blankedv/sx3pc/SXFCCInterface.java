@@ -153,7 +153,7 @@ public class SXFCCInterface extends GenericSXInterface {
                 //int count = 0;  // byte numbering in FCC-manual starts with 1 !
                 // but for consistency with sxData array we start with 0 here
                 
-                byte[] buf = new byte[226];
+                byte[] buf = new byte[226];  // in case w
                 int nread = inputStream.read(buf, 0, 226);
                 
                 if (nread != 226) {
@@ -204,7 +204,7 @@ public class SXFCCInterface extends GenericSXInterface {
 
     private void shortSleep() {
         try {
-            Thread.sleep(20);
+            Thread.sleep(40);
         } catch (InterruptedException ex) {
             Logger.getLogger(SXFCCInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
