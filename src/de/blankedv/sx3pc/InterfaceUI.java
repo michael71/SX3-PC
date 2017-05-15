@@ -36,7 +36,9 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
-    public static final int LBMAX = 160;
+    public static final int N_LANBAHN = 200;  // number of entries in lanbahn array 
+                                 //(i.e. maximum number of usable lanbahn addresses
+    public static final int LBMAX = 9999;  // maximum lanbahn channel number
     public static final int INVALID_INT = -1;
     public static boolean DEBUG = false;
     public static boolean doUpdateFlag = false;
@@ -54,7 +56,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     
     // lanbahnData = hashmap for storing numerical (key,value) pairs of lanbahnData
     // lanbahn loco data (strings) are always converted to SX0 values
-    public static final ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(LBMAX);
+    public static final ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(N_LANBAHN);
 
     // [3] = SIM
     public static boolean useSX1forControl = false;
@@ -181,12 +183,13 @@ public class InterfaceUI extends javax.swing.JFrame {
         
         LBSXMap.init(configFile);
         this.setTitle("SX3-PC - "+panelName);
+        
                 
         // for debugging ...
-        lanbahnData.put(1300,11);
+        /*lanbahnData.put(1300,11);
         lanbahnData.put(1100,12);
         lanbahnData.put(1004,13);
-        lanbahnData.put(1033,336);
+        lanbahnData.put(1033,336); */
     }
 
     private void closeAll() {

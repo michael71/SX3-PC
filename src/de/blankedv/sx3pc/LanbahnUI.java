@@ -146,10 +146,10 @@ public class LanbahnUI extends javax.swing.JFrame {
                     if (cmd.length >= 6) {
                         try {
                             lbaddr = Integer.parseInt(cmd[1]);
-                            if ((lbaddr <= 0) || (lbaddr > SXMAX_USED)) {
-                                System.out.println("could not understand LOCO command format: " + msg + " ERROR= invalid SX address");
-                                return;   // check address range
-                            }
+                            if (!isValidLanbahnAddress(lbaddr)) {
+                               // ignore invalid lanbahn addresses
+                                return;
+                            } 
                             speed = Integer.parseInt(cmd[2]);
                             boolean forward = true;
                             if (cmd[3] == "1") {
@@ -164,6 +164,10 @@ public class LanbahnUI extends javax.swing.JFrame {
                                 forward = true;
                             }
                             sxaddr = lbaddr;  // TODO add mapping of loco addresses later
+                            if (!isValidSXAddress(sxaddr)) {
+                                // ignore invalid sx addresses
+                                return;
+                            }
                             sxi.sendLoco(sxaddr, speed, licht, forward, horn);
                         } catch (Exception e) {
                             System.out.println("could not understand LOCO command format: " + msg + " error=" + e.getMessage());
@@ -175,9 +179,9 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 3) {
                             sxaddr = Integer.parseInt(cmd[1]);
-                            if ((sxaddr <= 0) || (sxaddr > SXMAX_USED)) {
-                                System.out.println("could not understand SX command format: " + msg + " ERROR= invalid SX address");
-                                return;  // check address range
+                            if (!isValidSXAddress(sxaddr)) {
+                                // ignore invalid sx addresses
+                                return;
                             }
                             data = Integer.parseInt(cmd[2]);
                             if (sxi != null) {
@@ -196,21 +200,26 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 3) {
                             lbaddr = Integer.parseInt(cmd[1]);
-                            lbdata = Integer.parseInt(cmd[2]);
-                            SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
-                            if (DEBUG) {
-                                System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
-                                System.out.println("sx: " + sx.toString());
-                            }
-                            if (sx.sxAddr == INVALID_INT) {
-                                // pure lanbahn address range
-                                lanbahnData.put(lbaddr, lbdata);
-                            } else {
-                                // selectrix channel range   
+                           if (!isValidLanbahnAddress(lbaddr)) {
+                               // ignore invalid lanbahn addresses
+                                return;
+                            } 
+                                lbdata = Integer.parseInt(cmd[2]);
+                                SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
+                                if (DEBUG) {
+                                    System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
+                                    System.out.println("sx: " + sx.toString());
+                                }
+                                if (sx.sxAddr == INVALID_INT) {
+                                    // pure lanbahn address range
+                                    lanbahnData.put(lbaddr, lbdata);
+                                } else {
+                                    // selectrix channel range   
 
-                                try_set_sx_accessory(sx, lbdata);
+                                    try_set_sx_accessory(sx, lbdata);
 
-                            }
+                                }
+                          
                         }
                     } catch (Exception e) {
                         System.out.println("could not understand S/SET command format: " + msg + " error=" + e.getMessage());
@@ -222,6 +231,10 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 2) {
                             lbaddr = Integer.parseInt(cmd[1]);
+                            if (!isValidLanbahnAddress(lbaddr)) {
+                                return;
+                            }
+
                             String msgToSend = "";
                             SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
                             if (sx.sxAddr == INVALID_INT) {
@@ -309,7 +322,23 @@ public class LanbahnUI extends javax.swing.JFrame {
             return false;
         }
 
-        
+        private boolean isValidLanbahnAddress(int addr) {
+            if ((addr > 0) && (addr <= LBMAX)) {
+                return true;
+            } else {
+                if (DEBUG) System.out.println("ERROR: lb-address="+addr+" ignored.");
+                return false;
+            }
+        }
+
+        private boolean isValidSXAddress(int addr) {
+            if ((addr > 0) || (addr < SXMAX_USED)) {
+                return true;
+            } else {
+                if (DEBUG) System.out.println("ERROR: sx-address="+addr+" ignored.");
+                return false;
+            }
+        }
 
         private void try_set_sx_accessory(SXAddrAndBits sx, int data) {
             if (!sxi.isConnected()) {
@@ -383,7 +412,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                     // get all mappings which changed SX-values
                     ArrayList<LBSX> lbchanged = LBSXMap.getChangedLanbahnFromSXByte(ch, sxData[ch][0], sxDataCopy[ch][0]);
                     for (LBSX lbx : lbchanged) {
-                        int lbvalue = LBSXMap.getValueFromSXByte(lbx, sxData[ch][0] );
+                        int lbvalue = LBSXMap.getValueFromSXByte(lbx, sxData[ch][0]);
                         lanbahnData.put(lbx.lbAddr, lbvalue);
                         sendMCChannel(lbx.lbAddr, lbvalue);
                     }
@@ -450,7 +479,6 @@ public class LanbahnUI extends javax.swing.JFrame {
             }
         }
 
-       
     }
 
     /**
