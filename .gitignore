@@ -3,7 +3,6 @@ nbproject/private/
 nbproject/project.properties
 build/
 nbbuild/
-dist/
 nbdist/
 .nb-gradle/
 
@@ -11,6 +10,5 @@ nbdist/
 *.class
 
 # Package Files #
-*.jar
 *.war
 *.ear
