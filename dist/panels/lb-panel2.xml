@@ -2,23 +2,20 @@
 <layout-config>
 <panel name="Lonstoke West 2">
 <mode sx="on" />
-<sxmapping adr="811" sxadr="81" sxbit="1" />
 <sxmapping adr="843" sxadr="76" sxbit="1" />
-<sxmapping adr="810" sxadr="81" sxbit="4" />
 <sxmapping adr="841" sxadr="76" sxbit="4" />
 <sxmapping adr="842" sxadr="76" sxbit="3" />
 <sxmapping adr="720" sxadr="74" sxbit="1" />
 <sxmapping adr="721" sxadr="74" sxbit="2" />
 <sxmapping adr="722" sxadr="72" sxbit="2" />
-<sxmapping adr="812" sxadr="81" sxbit="2" />
 <sxmapping adr="760" sxadr="74" sxbit="7" nbit="2" />
 <sxmapping adr="770" sxadr="72" sxbit="5" nbit="2" />
 <sxmapping adr="750" sxadr="74" sxbit="5" />
 <sxmapping adr="751" sxadr="72" sxbit="7" />
 <sxmapping adr="780" sxadr="70" sxbit="7" nbit="2" />
-<sxmapping adr="812" sxadr="70" sxbit="1" />
-<sxmapping adr="810" sxadr="70" sxbit="2" />
-<sxmapping adr="811" sxadr="70" sxbit="3" />
+<sxmapping adr="812" sxadr="70" sxbit="3" />
+<sxmapping adr="810" sxadr="70" sxbit="1" />
+<sxmapping adr="811" sxadr="70" sxbit="2" />
 <track x="3" y="20" x2="320" y2="20" />
 <track x="3" y="40" x2="320" y2="40" />
 <track x="40" y="70" x2="200" y2="70" />
