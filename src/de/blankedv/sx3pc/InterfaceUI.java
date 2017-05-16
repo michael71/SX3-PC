@@ -32,7 +32,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.60 - 14 May 2017";   // program version, displayed in HELP window
+    public static final String VERSION = "1.61 - 15 May 2017";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -50,7 +50,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
 
     public static int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
-    public static ArrayList<LBSX> lbsx = new ArrayList<>();  // maps lanbahn addresses to SX addresses
+    public static ArrayList<LanbahnSXPair> lbsx = new ArrayList<>();  // maps lanbahn addresses to SX addresses
     // locos: always SX0   
     // control(turnouts, signals, buttons, routes) => SX0 OR SX1   
     
@@ -181,7 +181,7 @@ public class InterfaceUI extends javax.swing.JFrame {
 
         initTimer();
         
-        LBSXMap.init(configFile);
+        UtilityMapping.init(configFile);
         this.setTitle("SX3-PC - "+panelName);
         
                 

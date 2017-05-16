@@ -34,7 +34,7 @@ import static de.blankedv.sx3pc.InterfaceUI.panelName;
  *
  * @author mblank
  */
-public class LBSXMap {
+public class UtilityMapping {
 
     // TODO second sxbit
     private static final boolean CFG_DEBUG = true;
@@ -45,13 +45,13 @@ public class LBSXMap {
 
         readXMLConfigFile(configfilename);
 
-        // example LBSXMap      
-        // lbsx.add(new LBSX(722, 72, 2));
-        // lbsx.add(new LBSX(721, 74, 1));
+        // example UtilityMapping      
+        // lbsx.add(new LanbahnSXPair(722, 72, 2));
+        // lbsx.add(new LanbahnSXPair(721, 74, 1));
     }
 
     public static int getLanbahnFromSXBit(int sxaddr, int sxbit) {
-        for (LBSX ls : lbsx) {
+        for (LanbahnSXPair ls : lbsx) {
             if ((ls.sxAddr == sxaddr) && (ls.sxBit == sxbit)) {
                 return ls.lbAddr;
             }
@@ -61,28 +61,37 @@ public class LBSXMap {
 
     // return a list of lanbahn mappings which have been changed
     // for a given SX address and SXdata change
-    public static ArrayList<LBSX> getChangedLanbahnFromSXByte(int sxaddr, int sxbyte, int oldSxbyte) {
-        LBValue lbvalue = new LBValue();
-        ArrayList<LBSX> lbvs = new ArrayList<LBSX>();
-        for (LBSX ls : lbsx) {
+    public static ArrayList<LanbahnSXPair> getChangedLanbahnFromSXByte(int sxaddr, int sxbyte, int oldSxbyte) {
+        // TODO !!!!
+        ArrayList<LanbahnSXPair> lbvs = new ArrayList<>();
+        for (LanbahnSXPair ls : lbsx) {
             if (ls.sxAddr == sxaddr) { // address matches, now look for bits
-                if (ls.getLBValueFromSXByte(sxbyte) != ls.getLBValueFromSXByte(oldSxbyte)) {
-                    if (!lbvs.contains(ls)) {
-                        lbvs.add(ls);
-                    }
+                //if (ls.getLBValueFromSXByte(sxbyte) != ls.getLBValueFromSXByte(oldSxbyte)) {
+                //    if (!lbvs.contains(ls)) {
+                //        lbvs.add(ls);
+                 //   }
 
+                //}
+                if (!lbvs.contains(ls)) {  // add all potentially changed lanbahn channels
+                         lbvs.add(ls);
                 }
             }
+        }
+        if (sxaddr == 70) {
+            for (LanbahnSXPair ls:lbvs) {
+                 System.out.println("sxadr70 / changed="+ls.toString());
+            }
+           
         }
         return lbvs;  // can be empty
     }
 
-    public static int getValueFromSXByte(LBSX lbx, int d) {
+    public static int getValueFromSXByte(LanbahnSXPair lbx, int d) {
         return lbx.getLBValueFromSXByte(d);
     }
 
     public static SXAddrAndBits getSX(int lbAddr) {
-        for (LBSX ls : lbsx) {
+        for (LanbahnSXPair ls : lbsx) {
             if (ls.lbAddr == lbAddr) {
                 return new SXAddrAndBits(ls.sxAddr, ls.sxBit, ls.nBit);
             }
@@ -148,7 +157,7 @@ public class LBSXMap {
             System.out.println("config: " + items.getLength() + " sxmappings");
         }
         for (int i = 0; i < items.getLength(); i++) {
-            LBSX tmp = parseSXMapping(items.item(i));
+            LanbahnSXPair tmp = parseSXMapping(items.item(i));
             if (tmp != null) {
                 System.out.println("map: " + tmp.toString());
                 lbsx.add(tmp);
@@ -157,9 +166,9 @@ public class LBSXMap {
     }
     // code template from lanbahnPanel
 
-    private static LBSX parseSXMapping(Node item) {
+    private static LanbahnSXPair parseSXMapping(Node item) {
 
-        LBSX sxmap = new LBSX();
+        LanbahnSXPair sxmap = new LanbahnSXPair();
 
         NamedNodeMap attributes = item.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {

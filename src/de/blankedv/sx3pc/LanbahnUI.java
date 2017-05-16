@@ -147,9 +147,9 @@ public class LanbahnUI extends javax.swing.JFrame {
                         try {
                             lbaddr = Integer.parseInt(cmd[1]);
                             if (!isValidLanbahnAddress(lbaddr)) {
-                               // ignore invalid lanbahn addresses
+                                // ignore invalid lanbahn addresses
                                 return;
-                            } 
+                            }
                             speed = Integer.parseInt(cmd[2]);
                             boolean forward = true;
                             if (cmd[3] == "1") {
@@ -200,26 +200,26 @@ public class LanbahnUI extends javax.swing.JFrame {
                     try {
                         if (cmd.length >= 3) {
                             lbaddr = Integer.parseInt(cmd[1]);
-                           if (!isValidLanbahnAddress(lbaddr)) {
-                               // ignore invalid lanbahn addresses
+                            if (!isValidLanbahnAddress(lbaddr)) {
+                                // ignore invalid lanbahn addresses
                                 return;
-                            } 
-                                lbdata = Integer.parseInt(cmd[2]);
-                                SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
-                                if (DEBUG) {
-                                    System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
-                                    System.out.println("sx: " + sx.toString());
-                                }
-                                if (sx.sxAddr == INVALID_INT) {
-                                    // pure lanbahn address range
-                                    lanbahnData.put(lbaddr, lbdata);
-                                } else {
-                                    // selectrix channel range   
+                            }
+                            lbdata = Integer.parseInt(cmd[2]);
+                            SXAddrAndBits sx = UtilityMapping.getSX(lbaddr);
+                            if (DEBUG) {
+                                System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
+                                System.out.println("sx: " + sx.toString());
+                            }
+                            if (sx.sxAddr == INVALID_INT) {
+                                // pure lanbahn address range
+                                lanbahnData.put(lbaddr, lbdata);
+                            } else {
+                                // selectrix channel range   
 
-                                    try_set_sx_accessory(sx, lbdata);
+                                try_set_sx_accessory(sx, lbdata);
 
-                                }
-                          
+                            }
+
                         }
                     } catch (Exception e) {
                         System.out.println("could not understand S/SET command format: " + msg + " error=" + e.getMessage());
@@ -236,7 +236,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                             }
 
                             String msgToSend = "";
-                            SXAddrAndBits sx = LBSXMap.getSX(lbaddr);
+                            SXAddrAndBits sx = UtilityMapping.getSX(lbaddr);
                             if (sx.sxAddr == INVALID_INT) {
                                 if (!lanbahnData.containsKey(lbaddr)) {
                                     // initialize to "0" (=start simulation and init to "0")
@@ -326,7 +326,9 @@ public class LanbahnUI extends javax.swing.JFrame {
             if ((addr > 0) && (addr <= LBMAX)) {
                 return true;
             } else {
-                if (DEBUG) System.out.println("ERROR: lb-address="+addr+" ignored.");
+                if (DEBUG) {
+                    System.out.println("ERROR: lb-address=" + addr + " ignored.");
+                }
                 return false;
             }
         }
@@ -335,7 +337,9 @@ public class LanbahnUI extends javax.swing.JFrame {
             if ((addr > 0) || (addr < SXMAX_USED)) {
                 return true;
             } else {
-                if (DEBUG) System.out.println("ERROR: sx-address="+addr+" ignored.");
+                if (DEBUG) {
+                    System.out.println("ERROR: sx-address=" + addr + " ignored.");
+                }
                 return false;
             }
         }
@@ -409,12 +413,26 @@ public class LanbahnUI extends javax.swing.JFrame {
             for (int ch = 0; ch < SXMAX2; ch++) {
 
                 if (sxData[ch][0] != sxDataCopy[ch][0]) {
+                    if (DEBUG && (ch == 70)) {
+                        System.out.println("sxData=" + sxData[ch][0] + " ..Copy=" + sxDataCopy[ch][0]);
+                    }
                     // get all mappings which changed SX-values
-                    ArrayList<LBSX> lbchanged = LBSXMap.getChangedLanbahnFromSXByte(ch, sxData[ch][0], sxDataCopy[ch][0]);
-                    for (LBSX lbx : lbchanged) {
-                        int lbvalue = LBSXMap.getValueFromSXByte(lbx, sxData[ch][0]);
+                    ArrayList<LanbahnSXPair> lbchanged = UtilityMapping.getChangedLanbahnFromSXByte(ch, sxData[ch][0], sxDataCopy[ch][0]);
+                    if (DEBUG && (ch == 70)) {
+                        System.out.println("lbchanged.length=" + lbchanged.size());
+                    }
+                    for (LanbahnSXPair lbx : lbchanged) {
+                        if (DEBUG && (ch == 70)) {
+                            System.out.println("lbx=" + lbx.toString());
+                        }
+                        int lbvalue = UtilityMapping.getValueFromSXByte(lbx, sxData[ch][0]);
+
+                        if (DEBUG && (ch == 70)) {
+                            System.out.println("setting lbaddr=" + lbx.lbAddr + " to data=" + lbvalue);
+                        }
                         lanbahnData.put(lbx.lbAddr, lbvalue);
                         sendMCChannel(lbx.lbAddr, lbvalue);
+
                     }
                     sxDataCopy[ch][0] = sxData[ch][0];
                 }

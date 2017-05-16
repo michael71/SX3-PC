@@ -10,15 +10,15 @@ import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
  *
  * @author mblank
  */
-class LBValue {
+class LanbahnValue {
     int lbAddr;
     int lbValue;
     
-    LBValue() {
+    LanbahnValue() {
         lbAddr = INVALID_INT;
         lbValue = 0;
     }
-    LBValue(int a, int v) {
+    LanbahnValue(int a, int v) {
         lbAddr = a;
         lbValue = v;     
     }

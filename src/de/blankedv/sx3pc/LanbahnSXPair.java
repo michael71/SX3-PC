@@ -12,7 +12,7 @@ import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
  * 
  * @author mblank
  */
-public class LBSX {
+public class LanbahnSXPair {
 
         public int lbAddr;   // lanbahn address
         public int sxAddr;   // sx Address
@@ -24,21 +24,21 @@ public class LBSX {
         
         public int nBit;    // number of bits used 1 ...4
         
-        LBSX() {
+        LanbahnSXPair() {
             lbAddr = INVALID_INT;
             sxAddr = INVALID_INT;
             sxBit = 1;
             nBit = 1;
         }
         
-        LBSX(int l, int s, int b, int n) {
+        LanbahnSXPair(int l, int s, int b, int n) {
             lbAddr = l;
             sxAddr = s;
             sxBit = b;
             nBit = n;
         }
         
-        LBSX(int l, int s, int b) {
+        LanbahnSXPair(int l, int s, int b) {
             lbAddr = l;
             sxAddr = s;
             sxBit = b;
