@@ -412,7 +412,7 @@ public class SXInterface extends GenericSXInterface {
                 vtest.sensorFeedback(data);
             }
             if (DEBUG) {
-                System.out.print("SX0[" + adr + "]=" + data + " ");
+                System.out.println("set: SX0[" + adr + "]=" + data + " ");
             }
         } else if (adr >= SXMAX2 && adr < (2 * SXMAX2)) {
             // data for SX1 bus
@@ -422,13 +422,13 @@ public class SXInterface extends GenericSXInterface {
                 vtest.sensorFeedback(data);
             }
             if (DEBUG) {
-                System.out.print("SX1[" + (adr - SXMAX2) + "]=" + data + " ");
+                System.out.println("set: SX1[" + (adr - SXMAX2) + "]=" + data + " ");
             }
         } else if ((adr >= (2 * SXMAX2)) && (adr < (3 * SXMAX2))) {
             // data for SIM bus
             sxData[adr - 2 * SXMAX2][2] = data;  // set only sxData[][2]
             if (DEBUG) {
-                System.out.print("SIM[" + (adr - 2 * SXMAX2) + "]=" + data + " ");
+                System.out.println("set: SIM[" + (adr - 2 * SXMAX2) + "]=" + data + " ");
             }
         }
     }
@@ -438,7 +438,7 @@ public class SXInterface extends GenericSXInterface {
         // da nicht klar ist zu welcher Adresse sie gehören.
         // immer einzelnen bus = SX0
         if (DEBUG) {
-            System.out.print("Sread: ");
+            System.out.println("Sread: ");
         }
         try {
             int num;
@@ -450,7 +450,7 @@ public class SXInterface extends GenericSXInterface {
                 // trix format, nur daten und nur nach anforderung (lastAdrSent)
                 if (lastAdrSent != -1) {  // trix format, nur daten
                     if (DEBUG) {
-                        System.out.print(" (adr=" + lastAdrSent + ")");
+                        System.out.println(" (adr=" + lastAdrSent + ")");
                     }
                     sxData[lastAdrSent][0] = num;
                     lastAdrSent = -1;

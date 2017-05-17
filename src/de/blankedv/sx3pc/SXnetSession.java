@@ -371,6 +371,9 @@ public class SXnetSession implements Runnable {
         }
     }
 
+    // handles feedback, if the sxData have been changed on the SX-Bus
+    // feedback both for low (<256) addresses == SX-only
+    // and for high "lanbahn" type addresses
     class Task extends TimerTask {
 
         public void run() {
@@ -386,15 +389,18 @@ public class SXnetSession implements Runnable {
                     if (sxData[i][bus] != sxDataCopy[i][bus]) {
                         // channel data changed, send update to mobile device
                         sxDataCopy[i][bus] = sxData[i][bus];
-                        System.out.println("X " + i + " " + sxDataCopy[i][bus]);
-                        sendMessage("X " + i + " " + sxDataCopy[i][bus]);
-
+                        
+                        String msg = "X " + i + " " + sxDataCopy[i][bus];
+                        sendMessage(msg);
+                        if (DEBUG) System.out.println(msg);
                         // check if there needs to be "lanbahn" feedback
                         if (bus == 0) {  // only for control bus
                             for (LanbahnSXPair lb : lbsx) {
                                 if (lb.sxAddr == i) {
                                     int val = lb.getLBValueFromSXByte(sxData[i][0]);
-                                    sendMessage("X " + lb.lbAddr + " " + val);
+                                    msg = "X " + lb.lbAddr + " " + val;
+                                    sendMessage(msg);
+                                    if (DEBUG) System.out.println(msg);
                                 }
                             }
                         }
