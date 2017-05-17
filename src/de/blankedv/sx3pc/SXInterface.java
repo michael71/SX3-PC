@@ -397,10 +397,6 @@ public class SXInterface extends GenericSXInterface {
             }
             //sx.doUpdate(); // nur im Rautenhaus Format nach jeder Info
 
-            if (DEBUG) {
-                System.out.println(".");
-            }
-
         } catch (IOException e) {
             System.out.println("Fehler beim Lesen empfangener Daten");
         }
