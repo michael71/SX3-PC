@@ -32,7 +32,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.61 - 15 May 2017";   // program version, displayed in HELP window
+    public static final String VERSION = "1.62 - 17 May 2017";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -125,8 +125,8 @@ public class InterfaceUI extends javax.swing.JFrame {
         loadOtherPrefs();
         if (simulation) {
             sxi = new SXSimulationInterface();
-        } else if ( ifType.contains("FCC") ) { // fcc has different interface handling !
-  
+
+        } else if ( ifType.contains("FCC") ) { // fcc has different interface handling ! 
             sxi = new SXFCCInterface(portName);
         } else if ( ifType.toLowerCase().contains("opensx") ) { // opensx has different interface handling !
              sxi = new SXOpenSXInterface(portName);
@@ -146,7 +146,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             } else {
                 labelStatus.setText("Simulation SX0");
             }
-            
+            sxi.open();
             btnConnectDisconnect.setEnabled(false);
             btnConnectDisconnect.setText(" ");
             btnPowerOnOff.setEnabled(true);  // works always in simulation
@@ -707,6 +707,8 @@ public class InterfaceUI extends javax.swing.JFrame {
      * 
      */
     private void checkConnection() {
+        if (simulation) return;
+        
         timeoutCounter++;
 
         if ((timeoutCounter > TIMEOUT_SECONDS) && (sxi.isConnected())) {

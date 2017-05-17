@@ -29,6 +29,7 @@ public class SXSimulationInterface extends GenericSXInterface {
     @Override
     public boolean open() {
         serialPortGeoeffnet = true;
+        connected = true;
         return true;
     }
 
