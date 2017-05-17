@@ -1,6 +1,8 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
+import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
+import static de.blankedv.sx3pc.InterfaceUI.lanbahnData;
 import static de.blankedv.sx3pc.InterfaceUI.sx;
 import static de.blankedv.sx3pc.InterfaceUI.sxData;
 import static de.blankedv.sx3pc.InterfaceUI.sxi;
@@ -16,6 +18,11 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
+import static de.blankedv.sx3pc.InterfaceUI.LBMAX;
+import static de.blankedv.sx3pc.InterfaceUI.lanbahnData;
+import static de.blankedv.sx3pc.InterfaceUI.sxData;
+import static de.blankedv.sx3pc.InterfaceUI.sxbusControl;
+import static de.blankedv.sx3pc.InterfaceUI.sxi;
 
 /**
  * hanles one session (=1 mobile device)
@@ -104,16 +111,22 @@ public class SXnetSession implements Runnable {
      *
      * for a list of channels (which the client has set or read in the past) all
      * changes are transmitted back to the client
+     *
+     * addresses > 128 are "lanbahn messages", which can have a mapping to SX
+     * addresses, see "UtilityMapping.java"
      */
     private String handleCommand(String m) {
         String[] param = m.split("\\s+");  // one or more whitespace
 
-        if (param[0].equals("R")) {  // read an SX channel
+        if (param[0].equals("R") || param[0].equals("READ")) {  // read a channel
             if (param.length < 2) {
                 return "ERROR";
             }
             int adr = getChannelFromString(param[1]);
-            if (adr != ERROR) {
+            if (adr == ERROR) {
+                return "ERROR";
+            }
+            if (isSXAddress(adr)) {
                 String res = "";
                 if (adr > 127) {
                     if (adr < 256) {
@@ -126,7 +139,41 @@ public class SXnetSession implements Runnable {
                 }
                 return res;
             } else {
-                return "ERROR";
+                // lanbahn address range
+                String res = "";
+                SXAddrAndBits sx = UtilityMapping.getSX(adr);
+                if (sx.sxAddr == INVALID_INT) {
+                    // pure lanbahn or simulation
+                    if (!lanbahnData.containsKey(adr)) {
+                        // initialize to "0" (=start simulation and init to "0")
+                        // if not already exists
+                        lanbahnData.put(adr, 0);
+                    }
+                    // send lanbahnData, when already set
+                    res = "X " + adr + " " + lanbahnData.get(adr);
+
+                } else {
+                    // selectrix channel range, get value from SX data array mapping
+                    int dOut = INVALID_INT;
+                    int d = sxData[sx.sxAddr][sxbusControl];
+                    // check mapping for the following bit also
+                    switch (sx.nbit) {
+                        case 1:
+                            dOut = (d >> (sx.bit - 1)) & 0x01;  // sxBit = 1...8
+                            break;
+                        case 2:
+                            dOut = (d >> (sx.bit - 1)) & 0x03;  // two consecutive bits
+                            break;
+                    }
+                    if (dOut != INVALID_INT) {
+                        res = "X " + adr + " " + dOut;
+                        return res;
+                    } else {
+                        System.out.println("ERROR, could not get SX Value");
+                        return "ERROR";
+                    }
+                }
+
             }
 
         } else if (param[0].equals("B")) {  // set/change an SX Bit
@@ -137,7 +184,7 @@ public class SXnetSession implements Runnable {
             int bit = getBitFromString(param[2]);
             if ((adr != ERROR) && (bit != ERROR)) {
                 sxi.send2SXBussesBit(adr, bit, 1);
-                return "OK";
+                return "X " + adr + " " + sxData[adr][sxbusControl];
             } else {
                 return "ERROR";
             }
@@ -149,25 +196,125 @@ public class SXnetSession implements Runnable {
             int bit = getBitFromString(param[2]);
             if ((adr != ERROR) && (bit != ERROR)) {
                 sxi.send2SXBussesBit(adr, bit, 0);
-                return "OK";
+                return "X " + adr + " " + sxData[adr][sxbusControl];
             } else {
                 return "ERROR";
             }
-        } else if (param[0].equals("S")) {  // set an SX Channel to a new value
+        } else if (param[0].equals("S") || param[0].equals("SET")) {  // set a Channel to a new value
             if (param.length < 3) {
                 return "ERROR";
             }
             int adr = getChannelFromString(param[1]);
             int data = getDataFromString(param[2]);
             if ((adr != ERROR) && (data != ERROR)) {
-                sxi.send2SXBusses(adr, data);
-                return "OK";
+                if (isSXAddress(adr)) {
+                    sxi.send2SXBusses(adr, data);
+                    return "X " + adr + " " + data;
+                } else {
+                    // set lanbahn channel
+
+                    SXAddrAndBits sx = UtilityMapping.getSX(adr);
+                    if (DEBUG) {
+                        System.out.println("lb-in: lbaddr=" + adr + " val=" + data);
+                        System.out.println("sx: " + sx.toString());
+                    }
+                    if (sx.sxAddr == INVALID_INT) {
+                        // pure lanbahn address range
+                        lanbahnData.put(adr, data);
+                    } else {
+                        // selectrix channel range   
+
+                        try_set_sx_accessory(sx, data);
+
+                    }
+                    return "X " + adr + " " + data;
+                }
+            } else {
+                return "ERROR";
+            }
+        } else if (param[0].equals("RT")) {  // route message
+            // just reply XRT with the same adr and data
+            if (param.length < 3) {
+                return "ERROR";
+            }
+            int adr = getChannelFromString(param[1]);
+            int data = getDataFromString(param[2]);
+            if ((adr != ERROR) && (data != ERROR)) {
+                return "XRT " + adr + " " + data;
             } else {
                 return "ERROR";
             }
         }
         return "ERROR";
 
+    }
+
+    private void try_set_sx_accessory(SXAddrAndBits sx, int data) {
+        if (!sxi.isConnected()) {
+            System.out.println("could not set SX, interface not connected");
+            return;
+        }
+        if ((sx.bit >= 1) && (sx.bit <= 8) && (sx.nbit <= 4) && (sx.nbit >= 1)) {
+            int d = sxData[sx.sxAddr][sxbusControl];
+            switch (sx.nbit) {
+                case 1:
+                    if (data > 1) {
+                        System.out.println("could not set SX, data >1 (nbit = 1)");
+                        return;
+                    }
+                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                    break;
+                case 2:
+                    if (data > 3) {
+                        System.out.println("could not set SX, data >3 (nbit = 2)");
+                        return;
+                    }
+                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                    break;
+                case 3:
+                    if (data > 7) {
+                        System.out.println("could not set SX, data >7 (nbit = 3)");
+                        return;
+                    }
+                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
+                    break;
+                case 4:
+                    if (data > 15) {
+                        System.out.println("could not set SX, data >15 (nbit = 4)");
+                        return;
+                    }
+                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
+                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
+                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
+                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x08));
+                    break;
+
+            }
+            sxi.sendAccessory(sx.sxAddr, d);  // set changed data value
+            if (DEBUG) {
+                System.out.println("setting sx-adr=" + " val=" + d);
+            }
+        } else {
+            if (DEBUG) {
+                System.out.println("could not set sx-adr=" + sx.sxAddr + " bit=" + sx.bit);
+            }
+        }
+    }
+
+    private boolean isSXAddress(int a) {
+        int maxchan = 127;
+        if (useSX1forControl) {
+            maxchan = maxchan + 128;
+        }
+        if ((a >= 0) && (a <= maxchan)) {
+            // SX channel
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private int getBitFromString(String s) {
@@ -217,15 +364,18 @@ public class SXnetSession implements Runnable {
         try {
             channel = Integer.parseInt(s);
             if ((channel >= 0) && (channel <= maxchan)) {
+                // SX channel
                 // polling einschalten, wenn nicht schon passiert
                 if (!sx.getpList().contains(channel)) {
                     sx.addToPlist(channel);
                 }
                 return channel;
-            } else {
-                channel = ERROR;
+            } else if (channel <= LBMAX) {
+                // lanbahn channel
+                return channel;
             }
         } catch (Exception e) {
+            // error is default, see above
         }
         return channel;
     }
@@ -261,7 +411,7 @@ public class SXnetSession implements Runnable {
             try {
                 Thread.sleep(300);  // send update only every 300msecs
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("ERROR: " + e.getMessage());
             }
         }
     }
