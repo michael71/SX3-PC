@@ -326,7 +326,6 @@ public class SXInterface extends GenericSXInterface {
     }
 
     class serialPortEventListener implements SerialPortEventListener {
-
         public void serialEvent(SerialPortEvent event) {
             switch (event.getEventType()) {
                 case SerialPortEvent.DATA_AVAILABLE:

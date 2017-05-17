@@ -1,11 +1,6 @@
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
-import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
-import static de.blankedv.sx3pc.InterfaceUI.lanbahnData;
-import static de.blankedv.sx3pc.InterfaceUI.sx;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;
-import static de.blankedv.sx3pc.InterfaceUI.sxi;
+import static de.blankedv.sx3pc.InterfaceUI.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,12 +12,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
-import static de.blankedv.sx3pc.InterfaceUI.LBMAX;
-import static de.blankedv.sx3pc.InterfaceUI.lanbahnData;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;
-import static de.blankedv.sx3pc.InterfaceUI.sxbusControl;
-import static de.blankedv.sx3pc.InterfaceUI.sxi;
 
 /**
  * hanles one session (=1 mobile device)
@@ -31,12 +20,9 @@ public class SXnetSession implements Runnable {
 
     private final Socket incoming;
     private static int session_counter = 0;
-    private final int session_id;
+
     // list of channels which are of interest for this device
     private final int[][] sxDataCopy;
-    private int timeElapsed;
-    private final long timeFB;
-    private final boolean lastPower;
     protected PrintWriter out;
     private static final int ERROR = 9999;
 
@@ -47,11 +33,8 @@ public class SXnetSession implements Runnable {
      */
     public SXnetSession(Socket i) {
         incoming = i;
-        session_id = ++session_counter;
-        sxDataCopy = new int[128][2];
 
-        timeFB = 0;
-        lastPower = false;
+        sxDataCopy = new int[128][2];
     }
 
     public void run() {
@@ -405,6 +388,16 @@ public class SXnetSession implements Runnable {
                         sxDataCopy[i][bus] = sxData[i][bus];
                         System.out.println("X " + i + " " + sxDataCopy[i][bus]);
                         sendMessage("X " + i + " " + sxDataCopy[i][bus]);
+
+                        // check if there needs to be "lanbahn" feedback
+                        if (bus == 0) {  // only for control bus
+                            for (LanbahnSXPair lb : lbsx) {
+                                if (lb.sxAddr == i) {
+                                    int val = lb.getLBValueFromSXByte(sxData[i][0]);
+                                    sendMessage("X " + lb.lbAddr + " " + val);
+                                }
+                            }
+                        }
                     }
                 }
             }

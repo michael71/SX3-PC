@@ -13,7 +13,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -184,12 +183,6 @@ public class InterfaceUI extends javax.swing.JFrame {
         UtilityMapping.init(configFile);
         this.setTitle("SX3-PC - "+panelName);
         
-                
-        // for debugging ...
-        /*lanbahnData.put(1300,11);
-        lanbahnData.put(1100,12);
-        lanbahnData.put(1004,13);
-        lanbahnData.put(1033,336); */
     }
 
     private void closeAll() {
@@ -510,9 +503,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             sxmon[0] = new MonitorUI(0);
             sxmon[0].update();
 
-            if (enableLanbahn) {
-                lbmon = new LanbahnMonitorUI();
-            }
+            lbmon = new LanbahnMonitorUI();
 
         } else {
             JOptionPane.showMessageDialog(this, "SXmonitorRunning");
