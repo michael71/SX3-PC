@@ -72,7 +72,7 @@ public class LanbahnUI extends javax.swing.JFrame {
             timer.schedule(new MCSendTask(), 1000, 1000);
 
             setVisible(true);
-            new Thread(new RegisterJMDNSService("lanbahn", LANBAHN_PORT, myip.get(0))).start();
+            //new Thread(new RegisterJMDNSService("lanbahn", LANBAHN_PORT, myip.get(0))).start();
         } else {
             System.out.println("no network adapter, cannot listen to lanbahn messages.");
         }

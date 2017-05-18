@@ -7,13 +7,9 @@ package de.blankedv.sx3pc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
-import javax.swing.JFrame;
 import static de.blankedv.sx3pc.InterfaceUI.running;
 
 /**
@@ -32,7 +28,7 @@ public class RegisterJMDNSService implements Runnable {
     private int port;
     private InetAddress ip;
     private JmDNS jmdns;
-    private ServiceInfo myservice;
+    private ServiceInfo serviceInfo;
 
     
     public RegisterJMDNSService(String t, int p, InetAddress ip ) {
@@ -71,9 +67,9 @@ public class RegisterJMDNSService implements Runnable {
         values.put("version", "1.0");
 
         
-        myservice = ServiceInfo.create(servicetype, servicename, port, 0, 0, values);
+        serviceInfo = ServiceInfo.create(servicetype, servicename, port, 0, 0, values);
         try {
-            jmdns.registerService(myservice);
+            jmdns.registerService(serviceInfo);
             System.out.println("announcing sxnet service '" + servicename+"'");
         } catch (IOException ex) {
             //Logger.getLogger(RegisterJMDNSService.class.getName()).log(Level.SEVERE, null, ex);
@@ -91,8 +87,8 @@ public class RegisterJMDNSService implements Runnable {
         }
 
         System.out.println("Closing JmDNS, service="+servicename);
-        //jmdns.unregisterService(myservice);
-        jmdns.unregisterService(myservice);
+        //jmdns.unregisterService(serviceInfo);
+        jmdns.unregisterService(serviceInfo);
         try {
                 Thread.sleep(100);
             } catch (InterruptedException e1) {

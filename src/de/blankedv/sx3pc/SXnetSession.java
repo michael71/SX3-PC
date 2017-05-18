@@ -105,10 +105,12 @@ public class SXnetSession implements Runnable {
 
         if (param[0].equals("R") || param[0].equals("READ")) {  // read a channel
             if (param.length < 2) {
+                System.out.println("not enough params in READ command");
                 return "ERROR";
             }
             int adr = getChannelFromString(param[1]);
             if (adr == ERROR) {
+                System.out.println("could not get address from READ command");
                 return "ERROR";
             }
             if (isSXAddress(adr)) {
@@ -127,7 +129,7 @@ public class SXnetSession implements Runnable {
                 // lanbahn address range
                 String res = "";
                 SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(adr);
-                if (sx.sxAddr == INVALID_INT) {
+                if ((sx == null ) || (sx.sxAddr == INVALID_INT)) {
                     // pure lanbahn or simulation
                     if (!lanbahnData.containsKey(adr)) {
                         // initialize to "0" (=start simulation and init to "0")
@@ -207,9 +209,13 @@ public class SXnetSession implements Runnable {
                     SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(adr);
                     if (DEBUG) {
                         System.out.println("lb-in: lbaddr=" + adr + " val=" + data);
-                        System.out.println("sx: " + sx.toString());
+                        if (sx != null) {
+                            System.out.println("sx: " + sx.toString());
+                        } else {
+                            System.out.println("sx = null");
+                        }
                     }
-                    if (sx.sxAddr == INVALID_INT) {
+                    if ((sx == null) || (sx.sxAddr == INVALID_INT)) {
                         // pure lanbahn address range
                         lanbahnData.put(adr, data);
                          return "X " + adr + " " + data;
@@ -355,11 +361,12 @@ public class SXnetSession implements Runnable {
     }
 
     int getChannelFromString(String s) {
+        System.out.println("getChannelFromString s="+s);
         int maxchan = 127;
         if (useSX1forControl) {
             maxchan = maxchan + 128;
         }
-        Integer channel = ERROR;
+        Integer channel;
         try {
             channel = Integer.parseInt(s);
             if ((channel >= 0) && (channel <= maxchan)) {
@@ -368,13 +375,15 @@ public class SXnetSession implements Runnable {
                 if (!sx.getpList().contains(channel)) {
                     sx.addToPlist(channel);
                 }
-                return channel;
             } else if (channel <= LBMAX) {
-                // lanbahn channel
-                return channel;
+                // OK, valid lanbahn channel
+            } else {
+                System.out.println("ERROR: channel="+channel+" not valid");
+                channel = ERROR;
             }
         } catch (Exception e) {
-            // error is default, see above
+            System.out.println("ERROR: number conversion error input="+s);
+            channel = ERROR;
         }
         return channel;
     }

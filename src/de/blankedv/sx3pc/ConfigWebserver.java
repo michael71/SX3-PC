@@ -36,7 +36,7 @@ public class ConfigWebserver {
         server.setExecutor(null); // creates a default executor
         server.start();
 
-        new Thread(new RegisterJMDNSService(jmdnsService, port, myip.get(0))).start();
+        // new Thread(new RegisterJMDNSService(jmdnsService, port, myip.get(0))).start();
 
         /* GUI:
     JFileChooser chooser = new JFileChooser();

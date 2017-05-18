@@ -402,7 +402,7 @@ public class SXInterface extends GenericSXInterface {
 
     }
 
-    // address range 0 ..127 / 128 ... 255 / 256 ... 384
+    // address range 0 ..127 / 128 ... 255 
     private void setSX(int adr, int data) {
         if (adr >= 0 && adr < SXMAX2) {
             // data for SX0 bus
@@ -424,12 +424,8 @@ public class SXInterface extends GenericSXInterface {
             if (DEBUG) {
                 System.out.println("set: SX1[" + (adr - SXMAX2) + "]=" + data + " ");
             }
-        } else if ((adr >= (2 * SXMAX2)) && (adr < (3 * SXMAX2))) {
-            // data for SIM bus
-            sxData[adr - 2 * SXMAX2][2] = data;  // set only sxData[][2]
-            if (DEBUG) {
-                System.out.println("set: SIM[" + (adr - 2 * SXMAX2) + "]=" + data + " ");
-            }
+        } else {
+                System.out.println("set: ERROR adr="+adr+" to high");
         }
     }
 

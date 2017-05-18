@@ -175,7 +175,7 @@ public class InterfaceUI extends javax.swing.JFrame {
                 lanbahnserver = new LanbahnUI();
             }
             
-            configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
+           // configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
         }
 
         initTimer();
@@ -548,7 +548,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             this.setCursor(c);
         }
         if (simulation) {
-            for (int i = 0; i < SXMAX; i++) {  // nur bis 112, die oberen (=system) Channels werden nicht auf 0 gesetzt
+            for (int i = 0; i < SXMAX_USED; i++) {  // nur bis 103, die oberen (=system) Channels werden nicht auf 0 gesetzt
                 sxData[i][0] = 0;
                 sxData[i][1] = 0;
             }
