@@ -45,13 +45,22 @@ public class LanbahnSXPair {
             nBit = 1;
         }
         
-        public int getLBValueFromSXByte(int d) {
+        /**
+         * calculate lanbahn value from the SX data byte
+         * use only relevant bits sxBit ... sxBit+(nBit-1)
+         * @param d
+         * @return 
+         */
+        public int getLBValueFromSXByte(int d) {         
             int v = 0;
-            for (int i = sxBit; i <=nBit; i++) {
+            for (int i = sxBit; i < (sxBit+nBit); i++) {
                 if (SXUtils.isSet(d,i) != 0) {
                     v = v + (1 << (i - sxBit));
                 }               
             }
+            //if (sxAddr == 70) {
+            //System.out.println("lbaddr="+lbAddr+ " sxaddr="+sxAddr+ " sxBit="+sxBit+" nBit="+nBit+" v="+v);
+            //}
             return v;
         }
         

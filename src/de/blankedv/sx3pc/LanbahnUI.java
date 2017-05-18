@@ -205,7 +205,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                                 return;
                             }
                             lbdata = Integer.parseInt(cmd[2]);
-                            SXAddrAndBits sx = UtilityMapping.getSX(lbaddr);
+                            SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(lbaddr);
                             if (DEBUG) {
                                 System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
                                 System.out.println("sx: " + sx.toString());
@@ -236,7 +236,7 @@ public class LanbahnUI extends javax.swing.JFrame {
                             }
 
                             String msgToSend = "";
-                            SXAddrAndBits sx = UtilityMapping.getSX(lbaddr);
+                            SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(lbaddr);
                             if (sx.sxAddr == INVALID_INT) {
                                 if (!lanbahnData.containsKey(lbaddr)) {
                                     // initialize to "0" (=start simulation and init to "0")
@@ -402,7 +402,7 @@ public class LanbahnUI extends javax.swing.JFrame {
     }
 
     /**
-     * send command to lanabahn (via UDP)
+     * send command to lanbahn if the corresponding SX data have been changed
      */
     class MCSendTask extends TimerTask {
 
@@ -417,22 +417,20 @@ public class LanbahnUI extends javax.swing.JFrame {
                         System.out.println("sxData=" + sxData[ch][0] + " ..Copy=" + sxDataCopy[ch][0]);
                     }
                     // get all mappings which changed SX-values
-                    ArrayList<LanbahnSXPair> lbchanged = UtilityMapping.getChangedLanbahnFromSXByte(ch, sxData[ch][0], sxDataCopy[ch][0]);
-                    if (DEBUG && (ch == 70)) {
-                        System.out.println("lbchanged.length=" + lbchanged.size());
-                    }
-                    for (LanbahnSXPair lbx : lbchanged) {
-                        if (DEBUG && (ch == 70)) {
-                            System.out.println("lbx=" + lbx.toString());
-                        }
-                        int lbvalue = UtilityMapping.getValueFromSXByte(lbx, sxData[ch][0]);
+                    // iterate over lanbahnSXPairs to get affected lanbahn channels
+                    for (LanbahnSXPair lbx : allLanbahnSXPairs) {
+                        if (lbx.sxAddr == ch) {
+                            if (DEBUG && (ch == 70)) {
+                                System.out.println("lbx=" + lbx.toString());
+                            }
+                            int lbvalue = lbx.getLBValueFromSXByte( sxData[ch][0]);
 
-                        if (DEBUG && (ch == 70)) {
-                            System.out.println("setting lbaddr=" + lbx.lbAddr + " to data=" + lbvalue);
+                            if (DEBUG && (ch == 70)) {
+                                System.out.println("setting lbaddr=" + lbx.lbAddr + " to data=" + lbvalue);
+                            }
+                            lanbahnData.put(lbx.lbAddr, lbvalue);
+                            sendMCChannel(lbx.lbAddr, lbvalue);
                         }
-                        lanbahnData.put(lbx.lbAddr, lbvalue);
-                        sendMCChannel(lbx.lbAddr, lbvalue);
-
                     }
                     sxDataCopy[ch][0] = sxData[ch][0];
                 }

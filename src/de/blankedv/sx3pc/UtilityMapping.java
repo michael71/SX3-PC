@@ -6,20 +6,13 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
-import static de.blankedv.sx3pc.InterfaceUI.lbsx;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -27,6 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static de.blankedv.sx3pc.InterfaceUI.panelName;
+import static de.blankedv.sx3pc.InterfaceUI.allLanbahnSXPairs;
 
 /**
  * utility function for the mapping of lanbahn addresses to SX addresses (and
@@ -46,17 +40,8 @@ public class UtilityMapping {
         readXMLConfigFile(configfilename);
 
         // example UtilityMapping      
-        // lbsx.add(new LanbahnSXPair(722, 72, 2));
-        // lbsx.add(new LanbahnSXPair(721, 74, 1));
-    }
-
-    public static int getLanbahnFromSXBit(int sxaddr, int sxbit) {
-        for (LanbahnSXPair ls : lbsx) {
-            if ((ls.sxAddr == sxaddr) && (ls.sxBit == sxbit)) {
-                return ls.lbAddr;
-            }
-        }
-        return INVALID_INT; // => no mapping
+        // allLanbahnSXPairs.add(new LanbahnSXPair(722, 72, 2));
+        // allLanbahnSXPairs.add(new LanbahnSXPair(721, 74, 1));
     }
 
     // return a list of lanbahn mappings which have been changed
@@ -64,7 +49,7 @@ public class UtilityMapping {
     public static ArrayList<LanbahnSXPair> getChangedLanbahnFromSXByte(int sxaddr, int sxbyte, int oldSxbyte) {
         // TODO !!!!
         ArrayList<LanbahnSXPair> lbvs = new ArrayList<>();
-        for (LanbahnSXPair ls : lbsx) {
+        for (LanbahnSXPair ls : allLanbahnSXPairs) {
             if (ls.sxAddr == sxaddr) { // address matches, now look for bits
                 //if (ls.getLBValueFromSXByte(sxbyte) != ls.getLBValueFromSXByte(oldSxbyte)) {
                 //    if (!lbvs.contains(ls)) {
@@ -86,19 +71,16 @@ public class UtilityMapping {
         return lbvs;  // can be empty
     }
 
-    public static int getValueFromSXByte(LanbahnSXPair lbx, int d) {
-        return lbx.getLBValueFromSXByte(d);
-    }
-
-    public static SXAddrAndBits getSX(int lbAddr) {
-        for (LanbahnSXPair ls : lbsx) {
-            if (ls.lbAddr == lbAddr) {
-                return new SXAddrAndBits(ls.sxAddr, ls.sxBit, ls.nBit);
+    public static SXAddrAndBits getSXAddrAndBitsFromLanbahnAddr(int lbaddr) {
+        for (LanbahnSXPair lbx:allLanbahnSXPairs) {
+            if (lbx.lbAddr == lbaddr) {
+                // matching entry found
+                return new SXAddrAndBits(lbx.sxAddr, lbx.sxBit, lbx.nBit);
             }
         }
-        return new SXAddrAndBits(INVALID_INT, 0);   // => no mapping
+        return null;
     }
-
+    
     // code template taken from lanbahnPanel
     private static String readXMLConfigFile(String fname) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -160,7 +142,7 @@ public class UtilityMapping {
             LanbahnSXPair tmp = parseSXMapping(items.item(i));
             if (tmp != null) {
                 System.out.println("map: " + tmp.toString());
-                lbsx.add(tmp);
+                allLanbahnSXPairs.add(tmp);
             }
         }
     }

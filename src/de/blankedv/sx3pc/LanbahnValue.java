@@ -6,6 +6,7 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
+import static de.blankedv.sx3pc.InterfaceUI.allLanbahnSXPairs;
 /**
  *
  * @author mblank
@@ -38,4 +39,6 @@ class LanbahnValue {
             return sb.toString();
         }
     }
+    
+    
 }

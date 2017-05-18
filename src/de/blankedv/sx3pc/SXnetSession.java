@@ -25,15 +25,17 @@ public class SXnetSession implements Runnable {
     private final int[][] sxDataCopy;
     protected PrintWriter out;
     private static final int ERROR = 9999;
+    
+    private boolean starting = true;
 
     /**
      * Constructs a handler.
      *
-     * @param i the incoming socket
+     * @param sock the incoming socket
      */
-    public SXnetSession(Socket i) {
-        incoming = i;
-
+    public SXnetSession(Socket sock) {
+        incoming = sock;
+        starting = true;  // after start ALL channels need to be transmitted
         sxDataCopy = new int[128][2];
     }
 
@@ -124,7 +126,7 @@ public class SXnetSession implements Runnable {
             } else {
                 // lanbahn address range
                 String res = "";
-                SXAddrAndBits sx = UtilityMapping.getSX(adr);
+                SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(adr);
                 if (sx.sxAddr == INVALID_INT) {
                     // pure lanbahn or simulation
                     if (!lanbahnData.containsKey(adr)) {
@@ -146,6 +148,12 @@ public class SXnetSession implements Runnable {
                             break;
                         case 2:
                             dOut = (d >> (sx.bit - 1)) & 0x03;  // two consecutive bits
+                            break;
+                        case 3:
+                            dOut = (d >> (sx.bit - 1)) & 0x07;  // three consecutive bits
+                            break;
+                        case 4:
+                            dOut = (d >> (sx.bit - 1)) & 0x0f;  // four consecutive bits
                             break;
                     }
                     if (dOut != INVALID_INT) {
@@ -196,7 +204,7 @@ public class SXnetSession implements Runnable {
                 } else {
                     // set lanbahn channel
 
-                    SXAddrAndBits sx = UtilityMapping.getSX(adr);
+                    SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(adr);
                     if (DEBUG) {
                         System.out.println("lb-in: lbaddr=" + adr + " val=" + data);
                         System.out.println("sx: " + sx.toString());
@@ -204,13 +212,19 @@ public class SXnetSession implements Runnable {
                     if (sx.sxAddr == INVALID_INT) {
                         // pure lanbahn address range
                         lanbahnData.put(adr, data);
+                         return "X " + adr + " " + data;
                     } else {
                         // selectrix channel range   
 
-                        try_set_sx_accessory(sx, data);
+                        boolean result = try_set_sx_accessory(sx, data);
+                        if (result == true) {
+                             return "X " + adr + " " + data;
+                        } else {
+                            return "ERROR";
+                        }
 
                     }
-                    return "X " + adr + " " + data;
+                   
                 }
             } else {
                 return "ERROR";
@@ -232,10 +246,10 @@ public class SXnetSession implements Runnable {
 
     }
 
-    private void try_set_sx_accessory(SXAddrAndBits sx, int data) {
+    private boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
         if (!sxi.isConnected()) {
             System.out.println("could not set SX, interface not connected");
-            return;
+            return false;
         }
         if ((sx.bit >= 1) && (sx.bit <= 8) && (sx.nbit <= 4) && (sx.nbit >= 1)) {
             int d = sxData[sx.sxAddr][sxbusControl];
@@ -243,14 +257,14 @@ public class SXnetSession implements Runnable {
                 case 1:
                     if (data > 1) {
                         System.out.println("could not set SX, data >1 (nbit = 1)");
-                        return;
+                        return false;
                     }
                     d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
                     break;
                 case 2:
                     if (data > 3) {
                         System.out.println("could not set SX, data >3 (nbit = 2)");
-                        return;
+                        return false;
                     }
                     d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
                     d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
@@ -258,7 +272,7 @@ public class SXnetSession implements Runnable {
                 case 3:
                     if (data > 7) {
                         System.out.println("could not set SX, data >7 (nbit = 3)");
-                        return;
+                        return false;
                     }
                     d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
                     d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
@@ -267,7 +281,7 @@ public class SXnetSession implements Runnable {
                 case 4:
                     if (data > 15) {
                         System.out.println("could not set SX, data >15 (nbit = 4)");
-                        return;
+                        return false;
                     }
                     d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
                     d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
@@ -280,10 +294,12 @@ public class SXnetSession implements Runnable {
             if (DEBUG) {
                 System.out.println("setting sx-adr=" + " val=" + d);
             }
+            return true;
         } else {
             if (DEBUG) {
                 System.out.println("could not set sx-adr=" + sx.sxAddr + " bit=" + sx.bit);
             }
+            return false;
         }
     }
 
@@ -301,7 +317,7 @@ public class SXnetSession implements Runnable {
     }
 
     private int getBitFromString(String s) {
-        // converts String to aan integer between 1 and 8 (=SX Bit)
+        // converts String to an integer between 1 and 8 (=SX Bit)
         Integer bit = ERROR;
         try {
             bit = Integer.parseInt(s);
@@ -379,33 +395,40 @@ public class SXnetSession implements Runnable {
         public void run() {
 
             for (int bus = 0; bus < 2; bus++) {
-                if (sxData[127][bus] != sxDataCopy[127][bus]) {
+                // when a new client has connected (starting is true), then send
+                // all the channels
+                if (starting || (sxData[127][bus] != sxDataCopy[127][bus])) {
                     // POWER ON/OFF state changed, send update to mobile device
                     sxDataCopy[127][bus] = sxData[127][bus];
-                    System.out.println("X 127 " + sxDataCopy[127][bus]);
-                    sendMessage("X 127 " + sxDataCopy[127][bus]);
+                    //System.out.println("T:X 127 " + sxDataCopy[127][bus]);
+                    // offset 128 for bus=1
+                    int chan = 127 + (bus * 128);
+                    sendMessage("X " + chan + " " + sxDataCopy[127][bus]);
                 }
-                for (int i = 0; i < 112; i++) {
-                    if (sxData[i][bus] != sxDataCopy[i][bus]) {
+                for (int ch = 0; ch < 112; ch++) {
+                    if (starting || (sxData[ch][bus] != sxDataCopy[ch][bus])) {
                         // channel data changed, send update to mobile device
-                        sxDataCopy[i][bus] = sxData[i][bus];
-                        
-                        String msg = "X " + i + " " + sxDataCopy[i][bus];
-                        sendMessage(msg);
-                        if (DEBUG) System.out.println(msg);
-                        // check if there needs to be "lanbahn" feedback
-                        if (bus == 0) {  // only for control bus
-                            for (LanbahnSXPair lb : lbsx) {
-                                if (lb.sxAddr == i) {
-                                    int val = lb.getLBValueFromSXByte(sxData[i][0]);
-                                    msg = "X " + lb.lbAddr + " " + val;
-                                    sendMessage(msg);
-                                    if (DEBUG) System.out.println(msg);
+                        sxDataCopy[ch][bus] = sxData[ch][bus];
+                        int chan = ch + (bus * 128);
+                        String msg = "X " + chan + " " + sxDataCopy[ch][bus];
+                       
+                        if (DEBUG) System.out.println("TS:"+msg+" / bus="+bus);
+                        // check for dependent "lanbahn" feedback
+                        if (bus == 0) {  // only for control bus, BUS=0
+                            for (LanbahnSXPair lbx : allLanbahnSXPairs) {
+                                //if (DEBUG) System.out.println("LBX:"+lbx.toString()+" / sx[i][0]="+sxData[i][0]);
+                                if (lbx.sxAddr == ch) {
+                                    int val = lbx.getLBValueFromSXByte(sxData[ch][0]); 
+                                    msg += ";X " + lbx.lbAddr + " " + val;
+                                    
                                 }
                             }
                         }
+                        if (DEBUG) System.out.println("TL:"+msg);
+                        sendMessage(msg);  // send all messages, separated with ";"
                     }
                 }
+                starting = false;
             }
             try {
                 Thread.sleep(300);  // send update only every 300msecs

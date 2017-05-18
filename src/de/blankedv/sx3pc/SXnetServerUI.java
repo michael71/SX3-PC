@@ -171,9 +171,6 @@ public class SXnetServerUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     class SXnetServer implements Runnable {
-
-       
-
         public void run() {
             try {              
                 while (running) {
