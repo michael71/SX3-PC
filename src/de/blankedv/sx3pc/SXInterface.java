@@ -364,12 +364,12 @@ public class SXInterface extends GenericSXInterface {
                 while (inputStream.available()>0) {
                 int numBytes = inputStream.read(readBuffer);
                 * */
-            byte[] readBuffer = new byte[60];
+            byte[] readBuffer = new byte[200];
 
             while (inputStream.available() > 1) {
                 int numBytes = inputStream.read(readBuffer);
                 if (DEBUG) {
-                    System.out.println("read n=" + numBytes);
+                    // System.out.println("read n=" + numBytes);
                 }
                 int offset = 0;
                 if (leftoverFlag) {
@@ -412,7 +412,7 @@ public class SXInterface extends GenericSXInterface {
                 vtest.sensorFeedback(data);
             }
             if (DEBUG) {
-                System.out.println("set: SX0[" + adr + "]=" + data + " ");
+                //System.out.println("set: SX0[" + adr + "]=" + data + " ");
             }
         } else if (adr >= SXMAX2 && adr < (2 * SXMAX2)) {
             // data for SX1 bus
@@ -422,7 +422,7 @@ public class SXInterface extends GenericSXInterface {
                 vtest.sensorFeedback(data);
             }
             if (DEBUG) {
-                System.out.println("set: SX1[" + (adr - SXMAX2) + "]=" + data + " ");
+                //System.out.println("set: SX1[" + (adr - SXMAX2) + "]=" + data + " ");
             }
         } else {
                 System.out.println("set: ERROR adr="+adr+" to high");
