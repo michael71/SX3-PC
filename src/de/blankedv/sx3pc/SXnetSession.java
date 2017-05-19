@@ -19,15 +19,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SXnetSession implements Runnable {
 
-    private final Socket incoming;
-    private static int session_counter = 0;
-
+    private static int session_counter = 0;  // class variable !
+    
+    
+    private final Socket incoming;   
+    protected PrintWriter out;
+    
     // list of channels which are of interest for this device
     private final int[][] sxDataCopy;
-    protected PrintWriter out;
-    private static final int ERROR = INVALID_INT;  // ERROR kept for readability
-    private static final HashMap<Integer,Integer> lanbahnDataCopy = new HashMap<Integer,Integer>(N_LANBAHN);
-
+    private final HashMap<Integer,Integer> lanbahnDataCopy = new HashMap<>(N_LANBAHN);
+    private final int ERROR = INVALID_INT;  // ERROR kept for readability
     /**
      * Constructs a handler.
      *
@@ -36,7 +37,6 @@ public class SXnetSession implements Runnable {
     public SXnetSession(Socket sock) {
         incoming = sock;
         sxDataCopy = new int[128][2];
-       
     }
 
     public void run() {
@@ -49,7 +49,7 @@ public class SXnetSession implements Runnable {
             Timer timer = new Timer();
             timer.schedule(new Task(), 1000, 1000);
 
-            sendMessage("SXnet-Server 0.1");  // welcome string
+            sendMessage("SXnet-Server 1.0 - "+session_counter++);  // welcome string
 
             while (in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
@@ -114,7 +114,7 @@ public class SXnetSession implements Runnable {
                 return "ERROR";
             }
             if (isSXAddress(adr)) {
-                String res = "";
+                String res;
                 if (adr > 127) {
                     if (adr < 256) {
                         res = "X " + adr + " " + sxData[adr - 128][1];
@@ -127,7 +127,7 @@ public class SXnetSession implements Runnable {
                 return res;
             } else {
                 // lanbahn address range
-                String res = "";
+                String res;
                 SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(adr);
                 if ((sx == null) || (sx.sxAddr == INVALID_INT)) {
                     // pure lanbahn or simulation
