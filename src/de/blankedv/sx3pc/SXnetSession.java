@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SXnetSession implements Runnable {
 
     private static int session_counter = 0;  // class variable !
-    
-    
+   
+    private int sn; // session number
     private final Socket incoming;   
     protected PrintWriter out;
     
@@ -37,6 +37,7 @@ public class SXnetSession implements Runnable {
     public SXnetSession(Socket sock) {
         incoming = sock;
         sxDataCopy = new int[128][2];
+        sn = session_counter++;
     }
 
     public void run() {
@@ -49,13 +50,13 @@ public class SXnetSession implements Runnable {
             Timer timer = new Timer();
             timer.schedule(new Task(), 1000, 1000);
 
-            sendMessage("SXnet-Server 1.0 - "+session_counter++);  // welcome string
+            sendMessage("SXnet-Server 1.0 - "+sn);  // welcome string
 
             while (in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
                 if (msg.length() > 0) {
                     if (DEBUG) {
-                        System.out.println("sxnet read: " + msg);
+                        System.out.println("sxnet"+sn+" read: " + msg);
                     }
 
                     sendMessage(handleCommand(msg));  // handleCommand returns "OK" or error msg
@@ -63,22 +64,22 @@ public class SXnetSession implements Runnable {
                 } else {
                     // ignore empty lines
                     if (DEBUG) {
-                        System.out.println("sxnet read empty line");
+                        System.out.println("sxnet"+sn+" read empty line");
                     }
                 }
 
             }
-            SXnetServerUI.taClients.append("client disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
+            SXnetServerUI.taClients.append("client"+sn+" disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
         } catch (IOException e) {
-            System.out.println("SXnetServerHandler Error: " + e);
+            System.out.println("SXnetServerHandler"+sn+" Error: " + e);
         }
         try {
             incoming.close();
         } catch (IOException ex) {
-            System.out.println("SXnetServerHandler Error: " + ex);
+            System.out.println("SXnetServerHandler"+sn+" Error: " + ex);
         }
 
-        System.out.println("Closing SXnetserverHandler\n");
+        System.out.println("Closing SXnetserverHandler"+sn+"\n");
     }
 
     /**
@@ -349,7 +350,7 @@ public class SXnetSession implements Runnable {
     }
 
     int getChannelFromString(String s) {
-        System.out.println("getChannelFromString s=" + s);
+        //System.out.println("getChannelFromString s=" + s);
         int maxchan = 127;
         if (useSX1forControl) {
             maxchan = maxchan + 128;
@@ -380,7 +381,7 @@ public class SXnetSession implements Runnable {
         out.println(res);
         out.flush();
         if (DEBUG) {
-            System.out.println("sxnet send:" + res);
+            System.out.println("sxnet"+sn+" send: " + res);
         }
     }
 
