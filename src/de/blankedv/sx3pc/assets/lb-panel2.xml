@@ -16,14 +16,9 @@
 <sxmapping adr="812" sxadr="70" sxbit="3" />
 <sxmapping adr="810" sxadr="70" sxbit="1" />
 <sxmapping adr="811" sxadr="70" sxbit="2" />
-<sxmapping adr="501" sxadr="88" sxbit="1" />
-<sxmapping adr="502" sxadr="88" sxbit="2" />
-<sxmapping adr="503" sxadr="88" sxbit="3" />
-<sxmapping adr="504" sxadr="88" sxbit="4" />
-<sxmapping adr="505" sxadr="88" sxbit="5" />
-<sxmapping adr="506" sxadr="88" sxbit="6" />
-<sxmapping adr="507" sxadr="88" sxbit="7" />
-<sxmapping adr="508" sxadr="88" sxbit="8" />
+<sxmapping adr="501" sxadr="88" sxbit="1" nbit="2" />
+<sxmapping adr="503" sxadr="88" sxbit="3" nbit="2" />
+<sxmapping adr="506" sxadr="88" sxbit="6" nbit="3" />
 <track x="3" y="20" x2="320" y2="20" />
 <track x="3" y="40" x2="320" y2="40" />
 <track x="40" y="70" x2="200" y2="70" />
@@ -113,8 +108,8 @@
 <comproute id="2302" btn1="1004" btn2="1001" routes="2208,2202" />
 <comproute id="2303" btn1="1004" btn2="1000" routes="2209,2210" />
 <comproute id="2304" btn1="1000" btn2="1004" routes="2201,2206" />
-<lampgroup btn="3" lamps="503,504" />
-<lampgroup btn="2" lamps="502,501" />
-<lampgroup btn="1" lamps="506,507,508" />
+<lampgroup pos="3" adr="503" val="3" />
+<lampgroup pos="2" adr="501" val="3"/>
+<lampgroup pos="1" adr="506" val="7"/>
 </panel>
 </layout-config>
