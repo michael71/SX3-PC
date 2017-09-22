@@ -394,7 +394,6 @@ public class SettingsUI extends javax.swing.JFrame {
             prefs.put("commPort", comboSelectSerialPort.getSelectedItem().toString());
         } else {
             prefs.put("commPort", "");
-            //prefs.putBoolean("simulation", true); // without serial port only simulation is possible
         }
 
         if (DEBUG) {

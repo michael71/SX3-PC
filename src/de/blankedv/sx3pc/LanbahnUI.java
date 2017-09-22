@@ -16,6 +16,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import static de.blankedv.sx3pc.InterfaceUI.*;
 import java.util.ArrayList;
+import javax.swing.text.BadLocationException;
 
 /**
  *
@@ -55,11 +56,13 @@ public class LanbahnUI extends javax.swing.JFrame {
             }
             try {
                 multicastsocket = new MulticastSocket(LANBAHN_PORT);
+                multicastsocket.setInterface(myip.get(0));
                 mgroup = InetAddress.getByName(LANBAHN_GROUP);
                 multicastsocket.joinGroup(mgroup);
                 // s = new ServerSocket(SXNET_PORT,0,myip.get(0));  
                 // only listen on 1 address on multi homed systems
-                System.out.println("new lanbahn multicast socket " + myip.get(0) + ":" + LANBAHN_PORT);
+                System.out.println("new lanbahn multicast socket " + multicastsocket.getInterface().toString() + ":" + LANBAHN_PORT);
+                System.out.println("interface= " + multicastsocket.getNetworkInterface().toString());
                 // DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, 6789);
             } catch (IOException ex) {
                 System.out.println("could not open server socket on port=" + LANBAHN_PORT + " - closing lanbahn window.");
@@ -117,7 +120,15 @@ public class LanbahnUI extends javax.swing.JFrame {
                     String ipAddr = packet.getAddress().toString().substring(1);
                     // don't react on "self" messages
                     //if (!isOwnIP(ipAddr)) {
-                    lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
+                    String s;
+                    try {
+                        s = message + " (" + ipAddr + ")\n" + lanbahnTa.getText(0,5000);
+                    } catch (BadLocationException ex) {
+                        s = message + " (" + ipAddr + ")\n" + lanbahnTa.getText();
+                    }
+                    lanbahnTa.setText(s);
+                    //lanbahnTa.insert(message + " (" + ipAddr + ")\n", 0);
+                    
                     interpretLanbahnMessage(message, ipAddr);
                     FunkreglerUI.setAliveByIP(ipAddr);
                     //}
@@ -519,8 +530,9 @@ public class LanbahnUI extends javax.swing.JFrame {
 
         jLabel1aa.setText("Messages:");
 
-        lanbahnTa.setColumns(20);
-        lanbahnTa.setRows(5);
+        lanbahnTa.setColumns(30);
+        lanbahnTa.setRows(10);
+        lanbahnTa.setAutoscrolls(false);
         jScrollPane1aa.setViewportView(lanbahnTa);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -530,12 +542,11 @@ public class LanbahnUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1aa, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1aa)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1aa)
-                        .addContainerGap())))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -543,8 +554,8 @@ public class LanbahnUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1aa)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1aa, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1aa, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();

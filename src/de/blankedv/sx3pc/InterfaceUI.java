@@ -50,6 +50,8 @@ public class InterfaceUI extends javax.swing.JFrame {
 
     public static int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
     public static ArrayList<LanbahnSXPair> allLanbahnSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
+    public static ArrayList<LocoNetSXPair> allLocoNetSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
+   
     // locos: always SX0   
     // control(turnouts, signals, buttons, routes) => SX0 OR SX1   
     
@@ -130,6 +132,7 @@ public class InterfaceUI extends javax.swing.JFrame {
         } else if ( ifType.toLowerCase().contains("opensx") ) { // opensx has different interface handling !
              sxi = new SXOpenSXInterface(portName);
         } else {
+            //portName = "/dev/ttyUSB825";
             sxi = new SXInterface(!pollingFlag, portName, baudrate);
         }
         

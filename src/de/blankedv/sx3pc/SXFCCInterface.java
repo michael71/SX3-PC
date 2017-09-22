@@ -269,7 +269,7 @@ public class SXFCCInterface extends GenericSXInterface {
 
     @Override
     public void resetAll() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return; // "Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

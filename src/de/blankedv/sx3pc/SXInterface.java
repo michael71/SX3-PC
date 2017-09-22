@@ -77,6 +77,7 @@ public class SXInterface extends GenericSXInterface {
         enumComm = CommPortIdentifier.getPortIdentifiers();
         while (enumComm.hasMoreElements()) {
             serialPortId = (CommPortIdentifier) enumComm.nextElement();
+            //System.out.println("port: "+serialPortId.getName());
             if (portName.contentEquals(serialPortId.getName())) {
                 foundPort = true;
                 break;

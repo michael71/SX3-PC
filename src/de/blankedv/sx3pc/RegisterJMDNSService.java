@@ -47,9 +47,8 @@ public class RegisterJMDNSService implements Runnable {
     }
 
     public void run() {
-        Random random = new Random();
-        int id = random.nextInt(8999) + 1000;
-        servicename = type + id;     
+
+        servicename = "SX3_PC";     
         
         try {
             jmdns = JmDNS.create(ip,servicename);
@@ -61,13 +60,15 @@ public class RegisterJMDNSService implements Runnable {
         System.out.println("JmDNS for service="+servicename);
     
 
-        final HashMap<String, String> values = new HashMap<String, String>();
-        servicename = type + id;
+        final HashMap<String, String> values = new HashMap<>();
+
         values.put("name", servicename);
         values.put("version", "1.0");
 
         
-        serviceInfo = ServiceInfo.create(servicetype, servicename, port, 0, 0, values);
+        serviceInfo = ServiceInfo.create(servicetype, servicename, port,  0, 0, values);   
+        //       serviceInfo = ServiceInfo.create(servicetype, servicename, port,  "test...");  
+
         try {
             jmdns.registerService(serviceInfo);
             System.out.println("announcing sxnet service '" + servicename+"'");

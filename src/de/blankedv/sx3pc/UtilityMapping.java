@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 
 import static de.blankedv.sx3pc.InterfaceUI.panelName;
 import static de.blankedv.sx3pc.InterfaceUI.allLanbahnSXPairs;
+import static de.blankedv.sx3pc.InterfaceUI.allLocoNetSXPairs;
 
 /**
  * utility function for the mapping of lanbahn addresses to SX addresses (and
@@ -136,13 +137,26 @@ public class UtilityMapping {
         // look for TrackElements - this is the lowest layer
         items = root.getElementsByTagName("sxmapping");
         if (CFG_DEBUG) {
-            System.out.println("config: " + items.getLength() + " sxmappings");
+            System.out.println("config: " + items.getLength() + " lanbahn-sx mappings");
         }
         for (int i = 0; i < items.getLength(); i++) {
             LanbahnSXPair tmp = parseSXMapping(items.item(i));
             if (tmp != null) {
                 System.out.println("map: " + tmp.toString());
                 allLanbahnSXPairs.add(tmp);
+            }
+        }
+        
+        // look for loco net sensor mappings
+        items = root.getElementsByTagName("lnmapping");
+        if (CFG_DEBUG) {
+            System.out.println("config: " + items.getLength() + " loconet-sx mappings");
+        }
+        for (int i = 0; i < items.getLength(); i++) {
+            LocoNetSXPair tmp = parseLocoNetMapping(items.item(i));
+            if (tmp != null) {
+                System.out.println("map: " + tmp.toString());
+                allLocoNetSXPairs.add(tmp);
             }
         }
     }
@@ -182,6 +196,36 @@ public class UtilityMapping {
 
     }
 
+    private static LocoNetSXPair parseLocoNetMapping(Node item) {
+
+        LocoNetSXPair sxmap = new LocoNetSXPair();
+
+        NamedNodeMap attributes = item.getAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node theAttribute = attributes.item(i);
+            // if (CFG_DEBUG_PARSING) Log.d(TAG,theAttribute.getNodeName() + "=" +
+            // theAttribute.getNodeValue());
+            if (theAttribute.getNodeName().equals("adr")) {
+                sxmap.lnAddr = getPositionNode(theAttribute);
+            } else if (theAttribute.getNodeName().equals("sxadr")) {
+                sxmap.sxAddr = getPositionNode(theAttribute);
+            } else {
+                if (CFG_DEBUG) {
+                    System.out.println(
+                            "unknown attribute " + theAttribute.getNodeName()
+                            + " in config file");
+                }
+            }
+        }
+
+        if (sxmap.isValid()) {
+            return sxmap;
+        } else {
+            return null;
+        }
+
+    }
+    
     // code from lanbahnPanel
     private static int getPositionNode(Node a) {
         return Integer.parseInt(a.getNodeValue());
