@@ -31,7 +31,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.63 - 18 May 2017";   // program version, displayed in HELP window
+    public static final String VERSION = "1.63A - 28 May 2017";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -42,6 +42,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static boolean DEBUG = false;
     public static boolean doUpdateFlag = false;
     public static boolean running = true;
+    public static boolean simulation;
     public static int CONFIG_PORT = 8000;
     public static InterfaceUI sx;
     public static GenericSXInterface sxi;
@@ -83,7 +84,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private String portName;
     private int baudrate;
-    private boolean simulation;
+    
     private String ifType;
 
     Boolean pollingFlag = false;  // only needed for trix-standard IF
@@ -768,8 +769,9 @@ public class InterfaceUI extends javax.swing.JFrame {
     }
 
     private void loadOtherPrefs() {
-        portName = prefs.get("commPort", "/dev/ttyS0");
+        portName = prefs.get("commPort", "/dev/ttyUSS0");
         simulation = prefs.getBoolean("simulation", false);
+        System.out.println("simulation=" +simulation);
         enableSxnet = prefs.getBoolean("enableSxnet", false);
         enableLanbahn = prefs.getBoolean("enableLanbahn", false);
 
