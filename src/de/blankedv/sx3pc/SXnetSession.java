@@ -13,6 +13,8 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * hanles one session (=1 mobile device)
@@ -48,7 +50,7 @@ public class SXnetSession implements Runnable {
             Scanner in = new Scanner(inStream);
 
             Timer timer = new Timer();
-            timer.schedule(new Task(), 1000, 1000);
+            timer.schedule(new Task(), 200, 50);
 
             sendMessage("SXnet-Server 1.0 - "+sn);  // welcome string
 
@@ -58,8 +60,10 @@ public class SXnetSession implements Runnable {
                     if (DEBUG) {
                         System.out.println("sxnet"+sn+" read: " + msg);
                     }
-
-                    sendMessage(handleCommand(msg));  // handleCommand returns "OK" or error msg
+                    String[] cmds = msg.split(";");
+                    for (String cmd:cmds) {
+                    sendMessage(handleCommand(cmd.trim()));  // handleCommand returns "OK" or error msg
+                    }
 
                 } else {
                     // ignore empty lines
@@ -67,7 +71,11 @@ public class SXnetSession implements Runnable {
                         System.out.println("sxnet"+sn+" read empty line");
                     }
                 }
-
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SXnetSession.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             SXnetServerUI.taClients.append("client"+sn+" disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
         } catch (IOException e) {
@@ -251,7 +259,7 @@ public class SXnetSession implements Runnable {
 
     }
 
-    private boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
+    private synchronized  boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
         if (!sxi.isConnected()) {
             System.out.println("could not set SX, interface not connected");
             return false;
@@ -416,7 +424,7 @@ public class SXnetSession implements Runnable {
                             for (LanbahnSXPair lbx : allLanbahnSXPairs) {
                                 //if (DEBUG) System.out.println("LBX:"+lbx.toString()+" / sx[i][0]="+sxData[i][0]);
                                 if (lbx.sxAddr == ch) {
-                                    int val = lbx.getLBValueFromSXByte(sxData[ch][0]);
+                                    int val = lbx.getLBValueFromSXByte(sxDataCopy[ch][0]);  //changed->Copy
                                     msg += ";X " + lbx.lbAddr + " " + val;
 
                                 }

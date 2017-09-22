@@ -25,7 +25,7 @@ import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
  *
  * @author mblank
  */
-// TODO open/close serial port NICHT durchführen bei Simulation.
+
 public class SXInterface extends GenericSXInterface {
 
     private boolean noPollingFlag;
@@ -67,7 +67,12 @@ public class SXInterface extends GenericSXInterface {
     }
     
     public boolean open() {
-        
+        if (simulation) {
+            serialPortGeoeffnet = true;
+            connected = true;
+            lastBusnumber = 0;
+            return true;
+        }
         Boolean foundPort = false;
         if (serialPortGeoeffnet != false) {
             System.out.println("Serialport bereits geöffnet");
@@ -129,7 +134,11 @@ public class SXInterface extends GenericSXInterface {
     }
 
     public void close() {
-        
+        if (simulation) {
+            serialPortGeoeffnet = false;
+            connected = false;
+            return;
+        }
         if (!noPollingFlag) {
             stopPolling();
         }
@@ -404,7 +413,7 @@ public class SXInterface extends GenericSXInterface {
     }
 
     // address range 0 ..127 / 128 ... 255 
-    private void setSX(int adr, int data) {
+    private synchronized void setSX(int adr, int data) {
         if (adr >= 0 && adr < SXMAX2) {
             // data for SX0 bus
             sxData[adr][0] = data;
@@ -430,7 +439,7 @@ public class SXInterface extends GenericSXInterface {
         }
     }
 
-    void readSerialPortStandard() {
+    private synchronized void  readSerialPortStandard() {
         // nur jeweils 1 Zeichen wird ausgewertet, die anderen werden ignoriert,
         // da nicht klar ist zu welcher Adresse sie gehören.
         // immer einzelnen bus = SX0
