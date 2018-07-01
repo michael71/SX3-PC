@@ -109,14 +109,14 @@ public class LanbahnUI extends javax.swing.JFrame {
         public void run() {
             try {
 
-                byte[] bytes = new byte[65536];
+                byte[] bytes = new byte[100];
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
 
                 while (running) {
                     // Warten auf Nachricht
                     multicastsocket.receive(packet);
                     String message = new String(packet.getData(), 0, packet.getLength(), TEXT_ENCODING);
-                    message = message.replace("\n", "").replace("  ", " ");
+                    message = message.replace("\n", ""); // .replace("  ", " ");
                     String ipAddr = packet.getAddress().toString().substring(1);
                     // don't react on "self" messages
                     //if (!isOwnIP(ipAddr)) {

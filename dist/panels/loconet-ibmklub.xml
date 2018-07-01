@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<layout-config>
-<panel name="IBM Klub - LN-sensors">
-<mode sx="on" />
-<lnmapping adr="880" sxadr="88" />
-<lnmapping adr="890" sxadr="89" />
-<lnmapping adr="900" sxadr="90" />
-</panel>
-</layout-config>

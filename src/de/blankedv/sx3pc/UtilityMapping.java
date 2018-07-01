@@ -22,6 +22,7 @@ import org.w3c.dom.NodeList;
 import static de.blankedv.sx3pc.InterfaceUI.panelName;
 import static de.blankedv.sx3pc.InterfaceUI.allLanbahnSXPairs;
 import static de.blankedv.sx3pc.InterfaceUI.allLocoNetSXPairs;
+import static de.blankedv.sx3pc.InterfaceUI.panelControl;
 
 /**
  * utility function for the mapping of lanbahn addresses to SX addresses (and
@@ -33,8 +34,6 @@ public class UtilityMapping {
 
     // TODO second sxbit
     private static final boolean CFG_DEBUG = true;
-
-    private static String sxMode = "";
 
     public static void init(String configfilename) {
 
@@ -121,16 +120,15 @@ public class UtilityMapping {
         Element root = doc.getDocumentElement();
 
         items = root.getElementsByTagName("panel");
-        panelName = parsePanelName(items.item(0));
+        panelName = parsePanelAttribute(items.item(0), "name");
         if (CFG_DEBUG) {
             System.out.println("panelName =" + panelName);
         }
-
-        items = root.getElementsByTagName("mode");
-        sxMode = parseMode(items.item(0));
+        panelControl = parsePanelAttribute(items.item(0), "control");
         if (CFG_DEBUG) {
-            System.out.println("sx mode =" + sxMode);
+            System.out.println("panelProtocol =" + panelControl);
         }
+        
         // NamedNodeMap attributes = item.getAttributes();
         // Node theAttribute = attributes.items.item(i);
 
@@ -238,14 +236,14 @@ public class UtilityMapping {
     }
     // code from lanbahnPanel
 
-    private static String parsePanelName(Node item) {
+    private static String parsePanelAttribute(Node item, String att) {
         NamedNodeMap attributes = item.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             Node theAttribute = attributes.item(i);
 
-            if (theAttribute.getNodeName().equals("name")) {
-                String name = theAttribute.getNodeValue();
-                return name;
+            if (theAttribute.getNodeName().equals(att)) {
+                String attrib = theAttribute.getNodeValue();
+                return attrib;
 
             }
         }

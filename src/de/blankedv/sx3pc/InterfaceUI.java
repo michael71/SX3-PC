@@ -31,7 +31,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.64 - 21 Sep 2017";   // program version, displayed in HELP window
+    public static final String VERSION = "1.65 - 07 Jun 2018";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -76,6 +76,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
     public static boolean connectionOK = false;  // watchdog for connection
     public static String panelName = "";
+    public static String panelControl = "";  // command station type
 
     OutputStream outputStream;
     InputStream inputStream;
