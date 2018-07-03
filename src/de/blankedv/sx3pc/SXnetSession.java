@@ -22,15 +22,16 @@ import java.util.logging.Logger;
 public class SXnetSession implements Runnable {
 
     private static int session_counter = 0;  // class variable !
-   
+
     private int sn; // session number
-    private final Socket incoming;   
-    protected PrintWriter out;
-    
+    private final Socket incoming;
+    private PrintWriter out;
+
     // list of channels which are of interest for this device
     private final int[][] sxDataCopy;
-    private final HashMap<Integer,Integer> lanbahnDataCopy = new HashMap<>(N_LANBAHN);
+    private final HashMap<Integer, Integer> lanbahnDataCopy = new HashMap<>(N_LANBAHN);
     private final int ERROR = INVALID_INT;  // ERROR kept for readability
+
     /**
      * Constructs a handler.
      *
@@ -52,46 +53,54 @@ public class SXnetSession implements Runnable {
             Timer timer = new Timer();
             timer.schedule(new Task(), 200, 50);
 
-            sendMessage("SXnet-Server 1.0 - "+sn);  // welcome string
+            sendMessage("SXnet-Server 1.1 - " + sn);  // welcome string
 
             while (in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
                 if (msg.length() > 0) {
                     if (DEBUG) {
-                        System.out.println("sxnet"+sn+" read: " + msg);
+                        System.out.println("sxnet" + sn + " read: " + msg);
                     }
                     String[] cmds = msg.split(";");
-                    for (String cmd:cmds) {
-                    sendMessage(handleCommand(cmd.trim()));  // handleCommand returns "OK" or error msg
+                    for (String cmd : cmds) {
+                        sendMessage(handleCommand(cmd.trim()));  // handleCommand returns "OK" or error msg
                     }
 
                 } else {
                     // ignore empty lines
                     if (DEBUG) {
-                        System.out.println("sxnet"+sn+" read empty line");
+                        System.out.println("sxnet" + sn + " read empty line");
                     }
                 }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(SXnetSession.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                mySleep(100);
+
             }
-            SXnetServerUI.taClients.append("client"+sn+" disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
+            SXnetServerUI.taClients.append("client" + sn + " disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
         } catch (IOException e) {
-            System.out.println("SXnetServerHandler"+sn+" Error: " + e);
+            System.out.println("SXnetServerHandler" + sn + " Error: " + e);
         }
         try {
             incoming.close();
         } catch (IOException ex) {
-            System.out.println("SXnetServerHandler"+sn+" Error: " + ex);
+            System.out.println("SXnetServerHandler" + sn + " Error: " + ex);
         }
 
-        System.out.println("Closing SXnetserverHandler"+sn+"\n");
+        System.out.println("Closing SXnetserverHandler" + sn + "\n");
     }
 
+    // handles feedback, if the sxData have been changed on the SX-Bus
+    // feedback both for low (<256) addresses == SX-only (+ Lanbahn if mapping exists)
+    // and for high "lanbahn" type addresses
+    class Task extends TimerTask {
+        public void run() {
+            checkForChangedSXDataAndSendUpdates();
+            checkForLanbahnChangesAndSendUpdates();
+            mySleep(300);  // send update only every 300msecs
+        }
+    }
+    
     /**
-     * SX Net Protocol (all msg terminated with CR)
+     * SX Net Protocol (all msg terminated with '\n')
      *
      * client sends | SXnetServer Response
      * ---------------------------------------|------------------- R cc = Read
@@ -106,7 +115,7 @@ public class SXnetSession implements Runnable {
      * for a list of channels (which the client has set or read in the past) all
      * changes are transmitted back to the client
      *
-     * addresses > 128 are "lanbahn messages", which can have a mapping to SX
+     * addresses > 256 are "lanbahn messages", which can have a mapping to SX
      * addresses, see "UtilityMapping.java"
      */
     private String handleCommand(String m) {
@@ -235,7 +244,7 @@ public class SXnetSession implements Runnable {
                         lanbahnDataCopy.put(adr, data);   // to not sent it a second time to THIS client
                         return "X " + adr + " " + data;
                     } else {
-                        // selectrix channel range   
+                        // selectrix channel range
 
                         boolean result = try_set_sx_accessory(sx, data);
                         if (result == true) {
@@ -259,7 +268,7 @@ public class SXnetSession implements Runnable {
 
     }
 
-    private synchronized  boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
+    private synchronized boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
         if (!sxi.isConnected()) {
             System.out.println("could not set SX, interface not connected");
             return false;
@@ -389,84 +398,95 @@ public class SXnetSession implements Runnable {
         out.println(res);
         out.flush();
         if (DEBUG) {
-            System.out.println("sxnet"+sn+" send: " + res);
+            System.out.println("sxnet" + sn + " send: " + res);
         }
     }
 
-    // handles feedback, if the sxData have been changed on the SX-Bus
-    // feedback both for low (<256) addresses == SX-only
-    // and for high "lanbahn" type addresses
-    class Task extends TimerTask {
+    private void mySleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SXnetSession.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
 
-        public void run() {
+    private void sendUpdates(int bus, int ch) {
 
-            for (int bus = 0; bus < 2; bus++) {
-                if (sxData[127][bus] != sxDataCopy[127][bus]) {
-                    // POWER ON/OFF state changed, send update to mobile device
-                    sxDataCopy[127][bus] = sxData[127][bus];
-                    //System.out.println("T:X 127 " + sxDataCopy[127][bus]);
-                    // offset 128 for bus=1
-                    int chan = 127 + (bus * 128);
-                    sendMessage("X " + chan + " " + sxDataCopy[127][bus]);
-                }
-                for (int ch = 0; ch < 112; ch++) {
-                    if (sxData[ch][bus] != sxDataCopy[ch][bus]) {
-                        // channel data changed, send update to mobile device
-                        sxDataCopy[ch][bus] = sxData[ch][bus];
-                        int chan = ch + (bus * 128);
-                        String msg = "X " + chan + " " + sxDataCopy[ch][bus];
-
-                        if (DEBUG) {
-                            System.out.println("TS:" + msg + " / bus=" + bus);
-                        }
-                        // check for dependent "lanbahn" feedback
-                        if (bus == 0) {  // only for control bus, BUS=0
-                            for (LanbahnSXPair lbx : allLanbahnSXPairs) {
-                                //if (DEBUG) System.out.println("LBX:"+lbx.toString()+" / sx[i][0]="+sxData[i][0]);
-                                if (lbx.sxAddr == ch) {
-                                    int val = lbx.getLBValueFromSXByte(sxDataCopy[ch][0]);  //changed->Copy
-                                    msg += ";X " + lbx.lbAddr + " " + val;
-
-                                }
-                            }
-                        }
-                        if (DEBUG) {
-                            System.out.println("TL:" + msg);
-                        }
-                        sendMessage(msg);  // send all messages, separated with ";"
-                    }
+        // channel data changed, send update to mobile device
+        sxDataCopy[ch][bus] = sxData[ch][bus];
+        int chan = ch + (bus * 128);
+        String msg = "X " + chan + " " + sxDataCopy[ch][bus];
+        if (DEBUG) {
+            System.out.println("TS:" + msg + " / bus=" + bus);
+        }
+        // check for dependent "lanbahn" feedback
+        if (bus == 0) {  // only for control bus, BUS=0
+            for (LanbahnSXPair lbx : allLanbahnSXPairs) {
+                //if (DEBUG) System.out.println("LBX:"+lbx.toString()+" / sx[i][0]="+sxData[i][0]);
+                if (lbx.sxAddr == ch) {
+                    int val = lbx.getLBValueFromSXByte(sxDataCopy[ch][0]);  //changed->Copy
+                    msg += ";X " + lbx.lbAddr + " " + val;
                 }
             }
-            StringBuilder msg = new StringBuilder();
-            boolean first = true;
-            for (Map.Entry<Integer, Integer> e : lanbahnData.entrySet()) {
-                Integer key = e.getKey();
-                Integer value = e.getValue();
-                if (lanbahnDataCopy.containsKey(key)) {
-                    if (lanbahnDataCopy.get(key) != lanbahnData.get(key)) {
-                       // value has changed
-                       lanbahnDataCopy.put(key, value);
-                       if (!first) {
-                           msg.append(";");
-                       }                           
-                       msg.append("X "+key + " " + value);
-                       first = false;
-                       if (msg.length() > 60) {
-                           sendMessage(msg.toString());
-                           msg.setLength(0);  // =delete content
-                           first = true;
-                       }
-                    }
-                } else {
+        }
+        if (DEBUG) {
+            System.out.println("TL:" + msg);
+        }
+        sendMessage(msg);  // send all messages, separated with ";"
+
+    }
+
+    /** check for changed sxData and send update in case of change
+     */
+    private void checkForChangedSXDataAndSendUpdates() {
+
+        
+        // power channel
+        if (sxData[127][0] != sxDataCopy[127][0]) {
+            sendUpdates(0, 127);
+        }
+        // other channels
+        for (int bus = 0; bus < 2; bus++) {
+            for (int ch = 0; ch < 112; ch++) {
+                if (sxData[ch][bus] != sxDataCopy[ch][bus]) {
+                    // channel data changed, send update to mobile device
+                    sendUpdates(bus, ch);
+                }
+            }
+        }
+    }
+    
+    /** check for changed (exclusiv) lanbahn data and send update in case of change
+     * 
+    */
+    private void checkForLanbahnChangesAndSendUpdates() {
+        StringBuilder msg = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<Integer, Integer> e : lanbahnData.entrySet()) {
+            Integer key = e.getKey();
+            Integer value = e.getValue();
+            if (lanbahnDataCopy.containsKey(key)) {
+                if (lanbahnDataCopy.get(key) != lanbahnData.get(key)) {
+                    // value has changed
                     lanbahnDataCopy.put(key, value);
+                    if (!first) {
+                        msg.append(";");
+                    }
+                    msg.append("X " + key + " " + value);
+                    first = false;
+                    if (msg.length() > 60) {
+                        sendMessage(msg.toString());
+                        msg.setLength(0);  // =delete content
+                        first = true;
+                    }
                 }
+            } else {
+                lanbahnDataCopy.put(key, value);
             }
-            if (msg.length() >0) sendMessage(msg.toString());
-            try {
-                Thread.sleep(300);  // send update only every 300msecs
-            } catch (InterruptedException e) {
-                System.out.println("ERROR: " + e.getMessage());
-            }
+        }
+        if (msg.length() > 0) {
+            sendMessage(msg.toString());
         }
     }
 }

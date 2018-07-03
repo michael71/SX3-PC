@@ -62,12 +62,7 @@ public class UtilityMapping {
                 }
             }
         }
-        if (sxaddr == 70) {
-            for (LanbahnSXPair ls:lbvs) {
-                 System.out.println("sxadr70 / changed="+ls.toString());
-            }
-           
-        }
+        
         return lbvs;  // can be empty
     }
 
