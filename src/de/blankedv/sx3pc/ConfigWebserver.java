@@ -16,7 +16,7 @@ import java.net.InetSocketAddress;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import static de.blankedv.sx3pc.InterfaceUI.myip;
+import static de.blankedv.sx3pc.MainUI.myip;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;

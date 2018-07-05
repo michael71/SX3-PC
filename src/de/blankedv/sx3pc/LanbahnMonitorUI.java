@@ -5,7 +5,7 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.*;
+import static de.blankedv.sx3pc.MainUI.*;
 import java.awt.Color;
 import java.awt.Container;
 import java.util.ArrayList;

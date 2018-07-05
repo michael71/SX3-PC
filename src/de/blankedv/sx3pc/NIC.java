@@ -1,5 +1,5 @@
 package de.blankedv.sx3pc;
-import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
+import static de.blankedv.sx3pc.MainUI.DEBUG;
 import java.net.*;
 import java.util.*;
 

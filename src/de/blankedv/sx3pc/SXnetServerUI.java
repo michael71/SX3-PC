@@ -7,8 +7,8 @@ import java.net.Socket;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 
-import static de.blankedv.sx3pc.InterfaceUI.running;
-import static de.blankedv.sx3pc.InterfaceUI.myip;
+import static de.blankedv.sx3pc.MainUI.running;
+import static de.blankedv.sx3pc.MainUI.myip;
 
 /**
  *

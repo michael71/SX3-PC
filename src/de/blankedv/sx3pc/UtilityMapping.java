@@ -5,7 +5,7 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
+import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,10 +19,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static de.blankedv.sx3pc.InterfaceUI.panelName;
-import static de.blankedv.sx3pc.InterfaceUI.allLanbahnSXPairs;
-import static de.blankedv.sx3pc.InterfaceUI.allLocoNetSXPairs;
-import static de.blankedv.sx3pc.InterfaceUI.panelControl;
+import static de.blankedv.sx3pc.MainUI.panelName;
+import static de.blankedv.sx3pc.MainUI.allLanbahnSXPairs;
+import static de.blankedv.sx3pc.MainUI.allLocoNetSXPairs;
+import static de.blankedv.sx3pc.MainUI.panelControl;
 
 /**
  * utility function for the mapping of lanbahn addresses to SX addresses (and

@@ -5,9 +5,9 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;
-import static de.blankedv.sx3pc.InterfaceUI.useSX1forControl;
+import static de.blankedv.sx3pc.MainUI.DEBUG;
+import static de.blankedv.sx3pc.MainUI.sxData;
+import static de.blankedv.sx3pc.MainUI.useSX1forControl;
 import static de.blankedv.sx3pc.SXInterface.toUnsignedInt;
 import java.io.IOException;
 

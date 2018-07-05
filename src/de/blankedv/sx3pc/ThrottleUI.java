@@ -20,7 +20,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
+import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
 
 /**
  *

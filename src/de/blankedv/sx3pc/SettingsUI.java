@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
 import gnu.io.CommPortIdentifier;
 import java.util.Enumeration;
 import java.util.prefs.Preferences;
-import static de.blankedv.sx3pc.InterfaceUI.*;
+import static de.blankedv.sx3pc.MainUI.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 

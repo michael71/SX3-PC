@@ -19,7 +19,7 @@ package de.blankedv.sx3pc;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import static de.blankedv.sx3pc.InterfaceUI.*;
+import static de.blankedv.sx3pc.MainUI.*;
 
 public class LocoProgUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 5313123456414L;

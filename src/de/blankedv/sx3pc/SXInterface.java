@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
+import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
 
 /**
  *

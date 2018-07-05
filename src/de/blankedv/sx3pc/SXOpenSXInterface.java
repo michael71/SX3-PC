@@ -5,14 +5,14 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.DEBUG;
-import static de.blankedv.sx3pc.InterfaceUI.INVALID_INT;
-import static de.blankedv.sx3pc.InterfaceUI.SXMAX2;
-import static de.blankedv.sx3pc.InterfaceUI.connectionOK;
-import static de.blankedv.sx3pc.InterfaceUI.lanbahnData;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;
-import static de.blankedv.sx3pc.InterfaceUI.sxbusControl;
-import static de.blankedv.sx3pc.InterfaceUI.vtest;
+import static de.blankedv.sx3pc.MainUI.DEBUG;
+import static de.blankedv.sx3pc.MainUI.INVALID_INT;
+import static de.blankedv.sx3pc.MainUI.SXMAX2;
+import static de.blankedv.sx3pc.MainUI.connectionOK;
+import static de.blankedv.sx3pc.MainUI.lanbahnData;
+import static de.blankedv.sx3pc.MainUI.sxData;
+import static de.blankedv.sx3pc.MainUI.sxbusControl;
+import static de.blankedv.sx3pc.MainUI.vtest;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;

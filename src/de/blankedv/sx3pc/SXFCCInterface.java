@@ -5,8 +5,8 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.InterfaceUI.connectionOK;
-import static de.blankedv.sx3pc.InterfaceUI.sxData;
+import static de.blankedv.sx3pc.MainUI.connectionOK;
+import static de.blankedv.sx3pc.MainUI.sxData;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;

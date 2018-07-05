@@ -29,9 +29,9 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author mblank
  *
  */
-public class InterfaceUI extends javax.swing.JFrame {
+public class MainUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.66 - 03 Jul 2018";   // program version, displayed in HELP window 
+    public static final String VERSION = "1.67 - 04 Jul 2018";   // program version, displayed in HELP window 
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
@@ -44,7 +44,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static boolean running = true;
     public static boolean simulation;
     public static final int CONFIG_PORT = 8000;
-    public static InterfaceUI sx;
+    public static MainUI sx;
     public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
     public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
@@ -102,7 +102,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     /**
      * Creates new form InterfaceUI
      */
-    public InterfaceUI() throws Exception {
+    public MainUI() throws Exception {
 
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
@@ -119,7 +119,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             Image img = kit.createImage(url);
             setIconImage(img);
         } catch (Exception ex) {
-            Logger.getLogger(InterfaceUI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         loadOtherPrefs();
@@ -606,9 +606,9 @@ public class InterfaceUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    sx = new InterfaceUI();
+                    sx = new MainUI();
                 } catch (Exception ex) {
-                    Logger.getLogger(InterfaceUI.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 sx.setVisible(true);
             }
