@@ -31,7 +31,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class InterfaceUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.64 - 21 Sep 2017";   // program version, displayed in HELP window
+    public static final String VERSION = "1.65 - 17 Jun 2018";   // program version, displayed in HELP window
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)

@@ -217,11 +217,14 @@ public class LanbahnUI extends javax.swing.JFrame {
                             }
                             lbdata = Integer.parseInt(cmd[2]);
                             SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(lbaddr);
-                            if (DEBUG) {
+                            if (DEBUG && (sx != null)) {
                                 System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
                                 System.out.println("sx: " + sx.toString());
+                            } else {
+                                System.out.println("lb-in: lbaddr=" + lbaddr + " val=" + lbdata);
+                                System.out.println("NO sx mapping");
                             }
-                            if (sx.sxAddr == INVALID_INT) {
+                            if ((sx == null) || (sx.sxAddr == INVALID_INT)) {
                                 // pure lanbahn address range
                                 lanbahnData.put(lbaddr, lbdata);
                             } else {
@@ -248,7 +251,7 @@ public class LanbahnUI extends javax.swing.JFrame {
 
                             String msgToSend = "";
                             SXAddrAndBits sx = UtilityMapping.getSXAddrAndBitsFromLanbahnAddr(lbaddr);
-                            if (sx.sxAddr == INVALID_INT) {
+                            if (( sx == null) || (sx.sxAddr == INVALID_INT)) {
                                 if (!lanbahnData.containsKey(lbaddr)) {
                                     // initialize to "0" (=start simulation and init to "0")
                                     // if not already exists
