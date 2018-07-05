@@ -13,7 +13,7 @@ package de.blankedv.sx3pc;
 import java.util.prefs.Preferences;
 import java.util.List;
 import java.util.ArrayList;
-import static de.blankedv.sx3pc.InterfaceUI.*;   // DAS SX interface.
+import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
 
 
 /**

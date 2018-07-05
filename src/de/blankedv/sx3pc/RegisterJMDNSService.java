@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Random;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
-import static de.blankedv.sx3pc.InterfaceUI.running;
+import static de.blankedv.sx3pc.MainUI.running;
 
 /**
  *

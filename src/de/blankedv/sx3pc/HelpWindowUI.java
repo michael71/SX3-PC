@@ -14,7 +14,7 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.util.prefs.Preferences;
 
-import static de.blankedv.sx3pc.InterfaceUI.VERSION;
+import static de.blankedv.sx3pc.MainUI.VERSION;
 
 /**
  *

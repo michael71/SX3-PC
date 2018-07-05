@@ -15,7 +15,7 @@ import java.util.prefs.Preferences;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
-import static de.blankedv.sx3pc.InterfaceUI.*;
+import static de.blankedv.sx3pc.MainUI.*;
 
 /**
  *

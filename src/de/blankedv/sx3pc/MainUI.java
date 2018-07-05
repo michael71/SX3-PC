@@ -29,40 +29,38 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author mblank
  *
  */
-public class InterfaceUI extends javax.swing.JFrame {
+public class MainUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.65 - 17 Jun 2018";   // program version, displayed in HELP window
+    public static final String VERSION = "1.67 - 04 Jul 2018";   // program version, displayed in HELP window 
+
     public static final int SXMAX = 112;  // maximal angezeigt im Monitor
     public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
     public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
-    public static final int N_LANBAHN = 200;  // number of entries in lanbahn array 
+    public static final int N_LANBAHN = 500;  // number of entries in lanbahn array 
                                  //(i.e. maximum number of usable lanbahn addresses
     public static final int LBMAX = 9999;  // maximum lanbahn channel number
     public static final int INVALID_INT = -1;
-    public static boolean DEBUG = false;
-    public static boolean doUpdateFlag = false;
+    public static boolean DEBUG = true;
+    public static final boolean doUpdateFlag = false;
     public static boolean running = true;
     public static boolean simulation;
-    public static int CONFIG_PORT = 8000;
-    public static InterfaceUI sx;
+    public static final int CONFIG_PORT = 8000;
+    public static MainUI sx;
     public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
     public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
-
-    public static int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
-    public static ArrayList<LanbahnSXPair> allLanbahnSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
-    public static ArrayList<LocoNetSXPair> allLocoNetSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
-   
     // locos: always SX0   
     // control(turnouts, signals, buttons, routes) => SX0 OR SX1   
+    
+    public static final int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
+    public static final ArrayList<LanbahnSXPair> allLanbahnSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
+    public static final ArrayList<LocoNetSXPair> allLocoNetSXPairs = new ArrayList<>();  // maps loconet (DCC) addresses to SX addresses
     
     // lanbahnData = hashmap for storing numerical (key,value) pairs of lanbahnData
     // lanbahn loco data (strings) are always converted to SX0 values
     public static final ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(N_LANBAHN);
 
-    // [3] = SIM
     public static boolean useSX1forControl = false;
-    // locos always control on SX0, "schalten/melden" on SX0 or SX1
     public static int sxbusControl = 0;
     public static MonitorUI sxmon[] = {null, null};
     public static LanbahnMonitorUI lbmon = null;
@@ -76,6 +74,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
     public static boolean connectionOK = false;  // watchdog for connection
     public static String panelName = "";
+    public static String panelControl = "";  // command station type
 
     OutputStream outputStream;
     InputStream inputStream;
@@ -104,7 +103,7 @@ public class InterfaceUI extends javax.swing.JFrame {
     /**
      * Creates new form InterfaceUI
      */
-    public InterfaceUI() throws Exception {
+    public MainUI() throws Exception {
 
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
@@ -121,7 +120,7 @@ public class InterfaceUI extends javax.swing.JFrame {
             Image img = kit.createImage(url);
             setIconImage(img);
         } catch (Exception ex) {
-            Logger.getLogger(InterfaceUI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         loadOtherPrefs();
@@ -608,9 +607,9 @@ public class InterfaceUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    sx = new InterfaceUI();
+                    sx = new MainUI();
                 } catch (Exception ex) {
-                    Logger.getLogger(InterfaceUI.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 sx.setVisible(true);
             }
