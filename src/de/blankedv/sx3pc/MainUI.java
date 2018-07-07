@@ -177,8 +177,9 @@ public class MainUI extends javax.swing.JFrame {
             if (enableLanbahn) {
                 lanbahnserver = new LanbahnUI();
             }
-            
-           // configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
+            if (!configFile.equalsIgnoreCase("-keiner-")) {
+                configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
+            }
         }
 
         initTimer();
