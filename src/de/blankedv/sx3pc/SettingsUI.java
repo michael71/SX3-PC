@@ -69,7 +69,15 @@ public class SettingsUI extends javax.swing.JFrame {
         cbDebug.setSelected(prefs.getBoolean("enableDebug", false));
 
         comboSXBusControl.setSelectedIndex(prefs.getInt("sxbusControl", 0));
-        lblConfigFilename.setText(prefs.get("configfilename","-keiner-"));
+        String fname = prefs.get("configfilename","-keiner-");
+        if (fname.length() > 60) {
+            String fname1 = fname.substring(0,59);
+            String fname2 = fname.substring(60);
+             txtConfigFilename.setText(fname1+"\n"+fname2);
+        } else {
+        txtConfigFilename.setText(fname);
+        }
+        lblConfigFilenameHelp.setText("download von http://hostname:8000/config");
         // if (DEBUG) { System.out.println("type="+comboSelectType.getSelectedItem().toString()); }
         checkBusMode();
 
@@ -109,7 +117,8 @@ public class SettingsUI extends javax.swing.JFrame {
         cbEnableSxnet = new javax.swing.JCheckBox();
         cbEnableLanbahn = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
-        lblConfigFilename = new javax.swing.JLabel();
+        txtConfigFilename = new javax.swing.JTextArea();
+        lblConfigFilenameHelp = new javax.swing.JLabel();
         btnChangeConfigFile = new javax.swing.JButton();
 
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
@@ -311,7 +320,12 @@ public class SettingsUI extends javax.swing.JFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Anlagen-XML-ConfigFile", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 14))); // NOI18N
 
-        lblConfigFilename.setText("-keiner-");
+        txtConfigFilename.setEditable(false);
+        txtConfigFilename.setBackground(java.awt.SystemColor.controlHighlight);
+        txtConfigFilename.setColumns(20);
+        txtConfigFilename.setRows(3);
+
+        lblConfigFilenameHelp.setText("-keiner-");
 
         btnChangeConfigFile.setText("ändern");
         btnChangeConfigFile.addActionListener(new java.awt.event.ActionListener() {
@@ -327,9 +341,11 @@ public class SettingsUI extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblConfigFilename, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblConfigFilenameHelp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnChangeConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 528, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnChangeConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -337,7 +353,9 @@ public class SettingsUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblConfigFilename)
+                .addComponent(txtConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblConfigFilenameHelp)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnChangeConfigFile)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -366,13 +384,13 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnSave))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -462,7 +480,7 @@ public class SettingsUI extends javax.swing.JFrame {
             prefs.put("configfilename", chooser.getSelectedFile().getAbsolutePath());
             System.out.println("You chose to open this file: "
                     + chooser.getSelectedFile().getAbsolutePath());
-            lblConfigFilename.setText(prefs.get("configfilename","-keiner-"));
+            lblConfigFilenameHelp.setText(prefs.get("configfilename","-keiner-"));
         }
     }//GEN-LAST:event_btnChangeConfigFileActionPerformed
 
@@ -594,11 +612,12 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JLabel lblConfigFilename;
+    private javax.swing.JLabel lblConfigFilenameHelp;
     private javax.swing.JLabel lblControl;
     private javax.swing.JLabel lblLoco;
     private javax.swing.JLabel lblLocoSX0;
     private javax.swing.JLabel lblSerial;
+    private javax.swing.JTextArea txtConfigFilename;
     // End of variables declaration//GEN-END:variables
 
 }
