@@ -480,7 +480,7 @@ public class SettingsUI extends javax.swing.JFrame {
             prefs.put("configfilename", chooser.getSelectedFile().getAbsolutePath());
             System.out.println("You chose to open this file: "
                     + chooser.getSelectedFile().getAbsolutePath());
-            lblConfigFilenameHelp.setText(prefs.get("configfilename","-keiner-"));
+            txtConfigFilename.setText(prefs.get("configfilename","-keiner-"));
         }
     }//GEN-LAST:event_btnChangeConfigFileActionPerformed
 
