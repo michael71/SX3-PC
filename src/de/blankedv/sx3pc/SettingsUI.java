@@ -10,8 +10,6 @@
  */
 package de.blankedv.sx3pc;
 
-import java.util.ResourceBundle;
-import java.util.Locale;
 import javax.swing.JOptionPane;
 import gnu.io.CommPortIdentifier;
 import java.util.Enumeration;
@@ -64,8 +62,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
         cbSimulation.setSelected(prefs.getBoolean("simulation", false));
 
-        cbEnableSxnet.setSelected(prefs.getBoolean("enableSxnet", false));
-        cbEnableLanbahn.setSelected(prefs.getBoolean("enableLanbahn", false));
         cbDebug.setSelected(prefs.getBoolean("enableDebug", false));
 
         comboSXBusControl.setSelectedIndex(prefs.getInt("sxbusControl", 0));
@@ -114,8 +110,6 @@ public class SettingsUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         cbDebug = new javax.swing.JCheckBox();
         btnSensorList = new javax.swing.JButton();
-        cbEnableSxnet = new javax.swing.JCheckBox();
-        cbEnableLanbahn = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         txtConfigFilename = new javax.swing.JTextArea();
         lblConfigFilenameHelp = new javax.swing.JLabel();
@@ -284,25 +278,16 @@ public class SettingsUI extends javax.swing.JFrame {
             }
         });
 
-        cbEnableSxnet.setText("SXNet Server");
-        cbEnableSxnet.setActionCommand("SXNET Server");
-
-        cbEnableLanbahn.setText("Enable Lanbahn ");
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbDebug)
-                    .addComponent(btnSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(cbDebug)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbEnableSxnet)
-                    .addComponent(cbEnableLanbahn))
-                .addGap(47, 47, 47))
+                .addComponent(btnSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(69, 69, 69))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,12 +295,8 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbDebug)
-                    .addComponent(cbEnableSxnet))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbEnableLanbahn)
                     .addComponent(btnSensorList))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Anlagen-XML-ConfigFile", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 14))); // NOI18N
@@ -370,11 +351,11 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -386,7 +367,7 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnSave))
@@ -402,8 +383,6 @@ public class SettingsUI extends javax.swing.JFrame {
         prefs.put("busmode", comboBusmode.getSelectedItem().toString());
         prefs.put("baudrate", cbBaudrate.getSelectedItem().toString());
         prefs.putBoolean("simulation", cbSimulation.isSelected());
-        prefs.putBoolean("enableSxnet", cbEnableSxnet.isSelected());
-        prefs.putBoolean("enableLanbahn", cbEnableLanbahn.isSelected());
         prefs.putBoolean("enableDebug", cbDebug.isSelected());
 
         prefs.putInt("sxbusControl", comboSXBusControl.getSelectedIndex());
@@ -424,8 +403,6 @@ public class SettingsUI extends javax.swing.JFrame {
             System.out.println("saving Busmode=" + comboBusmode.getSelectedItem().toString());
             System.out.println("saving sxbusControl=" + comboSXBusControl.getSelectedIndex());
             System.out.println("saving Simulation=" + cbSimulation.isSelected());
-            System.out.println("saving enableSxnet=" + cbEnableSxnet.isSelected());
-            System.out.println("saving enableLanbahn=" + cbEnableLanbahn.isSelected());
             System.out.println("saving enableDebug=" + cbDebug.isSelected());
             System.out.println("configfilename="+prefs.get("configfilename","-keiner-"));
 
@@ -539,7 +516,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
         lblSerial.setText("Select Serial Port");
 
-        cbEnableSxnet.setText("Enable Sxnet");
         btnSave.setText("Save Settings");
         btnCancel.setText("Cancel");
 
@@ -599,8 +575,6 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JButton btnSensorList;
     private javax.swing.JComboBox cbBaudrate;
     private javax.swing.JCheckBox cbDebug;
-    private javax.swing.JCheckBox cbEnableLanbahn;
-    private javax.swing.JCheckBox cbEnableSxnet;
     private javax.swing.JCheckBox cbSimulation;
     private javax.swing.JComboBox comboBusmode;
     private javax.swing.JComboBox comboSXBusControl;

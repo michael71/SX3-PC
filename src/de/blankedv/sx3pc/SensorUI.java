@@ -244,9 +244,6 @@ public class SensorUI extends javax.swing.JFrame {
         sl.remove(this);
     }//GEN-LAST:event_formWindowClosing
 
-    /**
-    * @param args the command line arguments
-    */
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> jComboBox1;

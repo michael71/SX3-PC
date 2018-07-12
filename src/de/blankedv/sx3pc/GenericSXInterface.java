@@ -6,10 +6,10 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.DEBUG;
-import static de.blankedv.sx3pc.MainUI.SXMAX2;
 import static de.blankedv.sx3pc.MainUI.sxData;
 import static de.blankedv.sx3pc.MainUI.sxbusControl;
 import static de.blankedv.sx3pc.MainUI.useSX1forControl;
+import static de.blankedv.sx3pc.MainUI.N_SX;
 
 /**
  * abstract class for generic selectrix interfaces
@@ -44,7 +44,7 @@ abstract public class GenericSXInterface {
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
         // static int sxbusControl = 0;
         int bus = 0;
-        if (adr > SXMAX2) {
+        if (adr > N_SX) {
             if (useSX1forControl == true) {
                 bus = 1;
                 adr = adr - 128;
@@ -106,7 +106,7 @@ abstract public class GenericSXInterface {
     public synchronized void send2SXBusses(int adr, int data) {
         // accepts adresses >127 and then sends data to SX1 (instead of SX0)
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
-        if (adr > SXMAX2) {
+        if (adr > N_SX) {
             if (useSX1forControl == true) {
                 adr = adr - 128;  // to make channel number clear.
                 Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben

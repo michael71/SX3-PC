@@ -414,7 +414,7 @@ public class SXInterface extends GenericSXInterface {
 
     // address range 0 ..127 / 128 ... 255 
     private synchronized void setSX(int adr, int data) {
-        if (adr >= 0 && adr < SXMAX2) {
+        if (adr >= 0 && adr < N_SX) {
             // data for SX0 bus
             sxData[adr][0] = data;
             if ((regFeedback) && (sxbusControl == 0)
@@ -424,7 +424,7 @@ public class SXInterface extends GenericSXInterface {
             if (DEBUG) {
                 //System.out.println("set: SX0[" + adr + "]=" + data + " ");
             }
-        } else if (adr >= SXMAX2 && adr < (2 * SXMAX2)) {
+        } else if (adr >= N_SX && adr < (2 * N_SX)) {
             // data for SX1 bus
             sxData[adr - 128][1] = data;
             if ((regFeedback) && (sxbusControl == 1)

@@ -26,39 +26,108 @@ import javax.swing.UnsupportedLookAndFeelException;
 /**
  * This class is the SX3 MAIN class and starts all other UI-windows.
  *
+ * now (July 2018) using protocol version 3: separation of SX and Lanbahn
+ * commands S 47 67 == SX Command, Feedback returned X 47 67 Read channel : R 47
+ * SET 902 1 == LANBAHN COMMAND (internally interpretet as "set addr 90, bit 2
+ * FEEDBACK RETURN XS 902 1 READ 987 == READ LANBAHN CHANNEL 987
+ *
  * @author mblank
  *
  */
 public class MainUI extends javax.swing.JFrame {
 
-    public static final String VERSION = "1.67 - 04 Jul 2018";   // program version, displayed in HELP window 
+    /**
+     * {@value #VERSION} = program version, displayed in HELP window
+     */
+    public static final String VERSION = "1.71 - 12 Jul 2018; protocol3";
 
-    public static final int SXMAX = 112;  // maximal angezeigt im Monitor
-    public static final int SXMAX_USED = 104;  // maximale Adresse für normale Benutzung (Loco, Weiche, Signal)
-    public static final int SXMAX2 = 128; // maximal möglich (pro SX Kanal)
-    public static final int N_LANBAHN = 500;  // number of entries in lanbahn array 
-                                 //(i.e. maximum number of usable lanbahn addresses
-    public static final int LBMAX = 9999;  // maximum lanbahn channel number
+    /**
+     * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
+     */
+    public static final int SXMIN = 0;
+    /**
+     * maximale SX adresse (SX0), maximale adr angezeigt im Monitor
+     */
+    public static final int SXMAX = 111;
+    /**
+     * {@value #SX_MAX_USED} = maximale Adresse für normale Benutzung (Loco,
+     * Weiche, Signal) higher addresses reserved for command stations/loco
+     * programming
+     */
+    public static final int SXMAX_USED = 104;
+    /**
+     * {@value #SX_POWER} = virtual addr to transmit power state
+     */
+    public static final int SXPOWER = 127;   // 
+    /**
+     * {@value #N_SX} maximum index for data arrays
+     */
+    public static final int N_SX = 128; // maximal möglich (pro SX Kanal)
+
+    /**
+     * {@value #N_LANBAHN} number of entries in lanbahn array (i.e. maximum
+     * number of usable lanbahn addresses)
+     */
+    public static final int N_LANBAHN = 500;
+    /**
+     * {@value #LBMIN} minimum lanbahn channel number
+     */
+    public static final int LBMIN = 1; // 
+    /**
+     * {@value #LBMIN_LB} all address lower or equal this address have a fixed
+     * mapping to SX-addresses, lbaddr / 10 => sxaddr, sbit = lbaddr % 10
+     */
+    public static final int LBMIN_LB = 1278;
+    /**
+     * {@value #LBMAX} =maximum lanbahn channel number
+     */
+    public static final int LBMAX = 9999;
+    /**
+     * {@value #LBDATAMIN} =minimum lanbahn data value
+     */
+    public static final int LBDATAMIN = 0;
+    /**
+     * {@value #LBDATAMAX} =maximum lanbahn data value (== 4 bits in SX world)
+     */
+    public static final int LBDATAMAX = 15;  // 
+    /**
+     * {@value #INVALID_INT} = denotes a value as invalid (not usable)
+     */
     public static final int INVALID_INT = -1;
     public static boolean DEBUG = true;
     public static final boolean doUpdateFlag = false;
     public static boolean running = true;
     public static boolean simulation;
+    /**
+     * {@value #CONFIG_PORT} = use this port to request config.xml 
+     * from webserver 
+     * url = "http://hostname:{@value #CONFIG_PORT}/config"
+     */
     public static final int CONFIG_PORT = 8000;
     public static MainUI sx;
     public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
-    public static final int NBUSSES = 2;   // 0 => SX0, 1 => SX1 (if it exists)
-    // locos: always SX0   
-    // control(turnouts, signals, buttons, routes) => SX0 OR SX1   
-    
-    public static final int[][] sxData = new int[SXMAX2][NBUSSES];   // the [0]=SX0, [1]=SX1
-    public static final ArrayList<LanbahnSXPair> allLanbahnSXPairs = new ArrayList<>();  // maps lanbahn addresses to SX addresses
-    public static final ArrayList<LocoNetSXPair> allLocoNetSXPairs = new ArrayList<>();  // maps loconet (DCC) addresses to SX addresses
-    
-    // lanbahnData = hashmap for storing numerical (key,value) pairs of lanbahnData
-    // lanbahn loco data (strings) are always converted to SX0 values
-    public static final ConcurrentHashMap<Integer,Integer> lanbahnData = new ConcurrentHashMap<Integer,Integer>(N_LANBAHN);
+
+    /**
+     * // 0 => SX0, 1 => SX1 (if it exists)
+     */
+    public static final int NBUSSES = 2;
+    /**
+     * contains the complete state (all SX0/SX1 data) of command station - all
+     * data olocos: always SX0 control(turnouts, signals, buttons, routes) =>
+     * SX0 sxdata[][0] OR SX1 sxdata[][1]
+     */
+    public static final int[][] sxData = new int[N_SX][NBUSSES];
+
+    /**
+     * hashmap for storing numerical (key,value) pairs of lanbahnData lanbahn
+     * loco data (strings) are always converted to SX0 values lanbahn values are
+     * only stored, if they cannot be mapped to SX values, i.e. SET/READ of
+     * channel >1278 {
+     *
+     * @see LBMIN_LB}
+     */
+    public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
 
     public static boolean useSX1forControl = false;
     public static int sxbusControl = 0;
@@ -66,7 +135,7 @@ public class MainUI extends javax.swing.JFrame {
     public static LanbahnMonitorUI lbmon = null;
     public static SXnetServerUI sxnetserver;
     public static List<InetAddress> myip;
-    public static LanbahnUI lanbahnserver;
+
     public static boolean pollingIsRunning = false;
     public static LocoProgUI locoprog = null;
     public static VtestUI vtest = null;
@@ -85,16 +154,12 @@ public class MainUI extends javax.swing.JFrame {
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private String portName;
     private int baudrate;
-    
+
     private String ifType;
 
     Boolean pollingFlag = false;  // only needed for trix-standard IF
 
-    private boolean enableSxnet;
-    private boolean enableLanbahn;
-    
     private ConfigWebserver configWebserver;
-    
 
     private final ImageIcon green, red;
     private List<Integer> pList = new LinkedList<>();
@@ -127,15 +192,15 @@ public class MainUI extends javax.swing.JFrame {
         if (simulation) {
             sxi = new SXSimulationInterface();
 
-        } else if ( ifType.contains("FCC") ) { // fcc has different interface handling ! 
+        } else if (ifType.contains("FCC")) { // fcc has different interface handling ! 
             sxi = new SXFCCInterface(portName);
-        } else if ( ifType.toLowerCase().contains("opensx") ) { // opensx has different interface handling !
-             sxi = new SXOpenSXInterface(portName);
+        } else if (ifType.toLowerCase().contains("opensx")) { // opensx has different interface handling !
+            sxi = new SXOpenSXInterface(portName);
         } else {
             //portName = "/dev/ttyUSB825";
             sxi = new SXInterface(!pollingFlag, portName, baudrate);
         }
-        
+
         // init status icon
         green = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/greendot.png"));
         red = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/reddot.png"));
@@ -143,7 +208,7 @@ public class MainUI extends javax.swing.JFrame {
 
         // set status text
         if (simulation) {
-            if ( ifType.contains("ZS1") || ifType.contains("FCC") || ifType.contains("SLX 852")) {
+            if (ifType.contains("ZS1") || ifType.contains("FCC") || ifType.contains("SLX 852")) {
                 labelStatus.setText("Simulation SX0/SX1");
             } else {
                 labelStatus.setText("Simulation SX0");
@@ -168,36 +233,30 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("Number of usable Network Interfaces=" + myip.size());
 
         String configFile = prefs.get("configfilename", "-keiner-");
-        
-        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
-            if (enableSxnet) {
-                sxnetserver = new SXnetServerUI();
-            }
 
-            if (enableLanbahn) {
-                lanbahnserver = new LanbahnUI();
-            }
+        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
+            sxnetserver = new SXnetServerUI();
+
             if (!configFile.equalsIgnoreCase("-keiner-")) {
-                configWebserver = new ConfigWebserver(configFile,CONFIG_PORT);
+                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
             }
         }
 
         initTimer();
-        
-        UtilityMapping.init(configFile);
-        this.setTitle("SX3-PC - "+panelName);
-        
+
+        this.setTitle("SX3-PC - " + panelName);
+
     }
 
     private void closeAll() {
         System.out.println("close all.");
         running = false;  // flag for stopping services
-        
+
         if (configWebserver != null) {
             // stop webserver
             configWebserver.stop();
         }
-        
+
         try {  // close jmdns etc.
             Thread.sleep(500);
         } catch (InterruptedException e1) {
@@ -208,7 +267,7 @@ public class MainUI extends javax.swing.JFrame {
         sxi.close();
         System.exit(0);
     }
-    
+
     private boolean powerIsOn() {
         if (sxData[127][0] != 0) {
             return true;
@@ -465,7 +524,7 @@ public class MainUI extends javax.swing.JFrame {
     private void btnConnectDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectDisconnectActionPerformed
         // this button can never be pressed in simulation mode.
         toggleConnectStatus();
-        
+
     }//GEN-LAST:event_btnConnectDisconnectActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
@@ -568,7 +627,6 @@ public class MainUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnVtestActionPerformed
 
-    
     private void toggleConnectStatus() {
         if (sxi.isConnected()) {
             closeConnection();
@@ -586,13 +644,15 @@ public class MainUI extends javax.swing.JFrame {
             }
         }
     }
+
     /**
-     * @param argsstatic the command line arguments
+     *
+     *
      */
     public static void main(String args[]) {
 
         try {
-            
+
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException e) {
@@ -617,8 +677,8 @@ public class MainUI extends javax.swing.JFrame {
         });
     }
 
-    /** 250 msec update timer for FCC
-     *  1000 msecs used for GUI update
+    /**
+     * 250 msec update timer for FCC 1000 msecs used for GUI update
      */
     private void initTimer() {
         timer = new Timer(250, new ActionListener() {
@@ -667,7 +727,6 @@ public class MainUI extends javax.swing.JFrame {
 
     }
 
-    
     public void doUpdate() {
         String result = sxi.doUpdate();
         if (!result.isEmpty()) {
@@ -675,11 +734,13 @@ public class MainUI extends javax.swing.JFrame {
             toggleConnectStatus();
         }
         updateCount++;
-        if (updateCount < 4) return;
-        
+        if (updateCount < 4) {
+            return;
+        }
+
         updateCount = 0;
         checkConnection();
-        
+
         // do GUI update only every second
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
@@ -688,7 +749,9 @@ public class MainUI extends javax.swing.JFrame {
                 sxmon[i].update();
             }
         }
-        if (lbmon != null) lbmon.update();
+        if (lbmon != null) {
+            lbmon.update();
+        }
 
         SensorUI.updateAll();
         WeichenUI.updateAll();
@@ -698,12 +761,15 @@ public class MainUI extends javax.swing.JFrame {
 
     }
 
-    /** called every second
-     * 
+    /**
+     * called every second
+     *
      */
     private void checkConnection() {
-        if (simulation) return;
-        
+        if (simulation) {
+            return;
+        }
+
         timeoutCounter++;
 
         if ((timeoutCounter > TIMEOUT_SECONDS) && (sxi.isConnected())) {
@@ -726,7 +792,7 @@ public class MainUI extends javax.swing.JFrame {
     private void closeConnection() {
         if (sxi.isConnected()) {
             sxi.close();
-            
+
         }
         statusIcon.setEnabled(false);
         btnConnectDisconnect.setText("Connect");
@@ -752,9 +818,6 @@ public class MainUI extends javax.swing.JFrame {
         if (sxnetserver != null) {
             sxnetserver.savePrefs();
         }
-        if (lanbahnserver != null) {
-            lanbahnserver.savePrefs();
-        }
 
     }
 
@@ -774,9 +837,7 @@ public class MainUI extends javax.swing.JFrame {
     private void loadOtherPrefs() {
         portName = prefs.get("commPort", "/dev/ttyUSS0");
         simulation = prefs.getBoolean("simulation", false);
-        System.out.println("simulation=" +simulation);
-        enableSxnet = prefs.getBoolean("enableSxnet", false);
-        enableLanbahn = prefs.getBoolean("enableLanbahn", false);
+        System.out.println("simulation=" + simulation);
 
         ifType = prefs.get("type", "");
         if (ifType.toLowerCase().contains("66824") && (!simulation)) {

@@ -7,7 +7,6 @@ package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
-import static de.blankedv.sx3pc.MainUI.SXMAX2;
 import static de.blankedv.sx3pc.MainUI.connectionOK;
 import static de.blankedv.sx3pc.MainUI.lanbahnData;
 import static de.blankedv.sx3pc.MainUI.sxData;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static de.blankedv.sx3pc.MainUI.N_SX;
 
 /**
  * for opensx USB interface
@@ -256,7 +256,7 @@ public class SXOpenSXInterface extends GenericSXInterface implements SerialPortE
                 addr = Integer.parseInt(cmd[1]);
                 data = Integer.parseInt(cmd[2]);
 
-                if (addr >= 0 && addr < SXMAX2) {
+                if (addr >= 0 && addr < N_SX) {
                     // data for SX0 bus
                     sxData[addr][0] = data;
                     if ((regFeedback) && (sxbusControl == 0)

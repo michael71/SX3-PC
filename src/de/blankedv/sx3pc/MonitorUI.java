@@ -23,7 +23,7 @@ public class MonitorUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 5313123456415L;
     static final int ROWS = 16;
     static final int COLS = 14; // *2
-    private int[] oldSxData = new int[SXMAX2];
+    private int[] oldSxData = new int[N_SX];
     private int index = 0;  //SX0 or SX1 or SIM
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
