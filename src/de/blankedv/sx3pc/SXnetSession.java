@@ -669,7 +669,7 @@ public class SXnetSession implements Runnable {
                     if (!first) {
                         msg.append(";");
                     }
-                    msg.append("XS" + key + " " + value);
+                    msg.append("XL " + key + " " + value);
                     first = false;
                     if (msg.length() > 60) {
                         sendMessage(msg.toString());
