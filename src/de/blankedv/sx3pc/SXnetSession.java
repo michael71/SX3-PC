@@ -191,7 +191,7 @@ public class SXnetSession implements Runnable {
 
     private String createLanbahnFeedbackMessage(String[] par) {
         if (DEBUG) {
-            System.out.println("createLanbahnFeedbackMessage");
+            //System.out.println("createLanbahnFeedbackMessage");
         }
         int lbAddr = getLanbahnAddrFromString(par[1]);
         if (lbAddr == ERROR) {
@@ -248,7 +248,7 @@ public class SXnetSession implements Runnable {
     
     private String setLanbahnMessage(String[] par) {
         if (DEBUG) {
-            System.out.println("setLanbahnMessage");
+           // System.out.println("setLanbahnMessage");
         }
 
         // convert the lanbahn "SET" message to an SX-S Message if in SX address range
@@ -259,9 +259,6 @@ public class SXnetSession implements Runnable {
         int lbdata = getLanbahnDataFromString(par[2]);
         if ((lbadr == INVALID_INT) || (lbdata == INVALID_INT)) {
             return "ERROR";
-        }
-        if (DEBUG) {
-            System.out.println("LB: lbaddr=" + lbadr + " data=" + lbdata);
         }
 
         // check whether we are in an SX or lanbahn address range
@@ -355,9 +352,9 @@ public class SXnetSession implements Runnable {
      * (TODO implement for range of sxaddr 128 ..255 */
     
     private int getLanbahnValueFromSXControlBus(int lbaddr) {
-        if (DEBUG) {
-            System.out.println("getLanbahnValueFromSXdata");
-        }
+        //if (DEBUG) {
+        //    System.out.println("getLanbahnValueFromSXdata");
+        //}
         if (lbaddr > LBMIN_LB) {
             return ERROR; // should not happen
         }
