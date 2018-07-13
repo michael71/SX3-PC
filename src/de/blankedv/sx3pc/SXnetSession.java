@@ -532,17 +532,17 @@ public class SXnetSession implements Runnable {
     private boolean isValidSXAddress(int a) {
 
         if (((a >= SXMIN) && (a <= SXMAX)) || (a == SXPOWER)) {
-            if (DEBUG) System.out.println("isValidSXAddress? "+a + " true (SX0");
+            //if (DEBUG) System.out.println("isValidSXAddress? "+a + " true (SX0");
             return true;  // 0..111 or 127
         }
         if (useSX1forControl) {
             a = a - 128;
             if (((a >= SXMIN) && (a <= SXMAX)) || (a == SXPOWER)) {
-                if (DEBUG) System.out.println("isValidSXAddress? "+a + " true (SX1)");
+                //if (DEBUG) System.out.println("isValidSXAddress? "+a + " true (SX1)");
                 return true;  // 128..239 or 255
             }
         }
-        if (DEBUG) System.out.println("isValidSXAddress? "+a + " false");
+        //if (DEBUG) System.out.println("isValidSXAddress? "+a + " false");
         return false;
     }
     
