@@ -45,11 +45,11 @@ public class SXnetServerUI extends javax.swing.JFrame {
                 
             } catch (IOException ex) {
                 System.out.println("could not open server socket on port=" + SXNET_PORT + " - closing SXnet window.");
-                JOptionPane.showMessageDialog(null, "could not open SXnet server socket!\n" + ex.toString(), "Error", JOptionPane.OK_CANCEL_OPTION);
+                JOptionPane.showMessageDialog(null, "Läuft bereits eine Instanz des Programms? (could not open SXnet server socket!)\n[" + ex.toString()+"]", "Error", JOptionPane.OK_CANCEL_OPTION);
                 return;
             }
             startSXnetServer();
-            setVisible(true);
+
             new Thread(new RegisterJMDNSService("sxnet", SXNET_PORT, myip.get(0))).start();
         }
     }

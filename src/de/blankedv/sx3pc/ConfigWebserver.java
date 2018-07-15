@@ -20,8 +20,6 @@ import static de.blankedv.sx3pc.MainUI.myip;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConfigWebserver {
 
