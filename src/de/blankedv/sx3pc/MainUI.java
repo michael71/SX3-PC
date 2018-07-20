@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "1.72 - 15 Jul 2018; protocol3";
+    public static final String VERSION = "1.73 - 20 Juli 2018; protocol3";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -48,7 +48,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * maximale SX adresse (SX0), maximale adr angezeigt im Monitor
      */
-    public static final int SXMAX = 111;
+    public static final int SXMAX = 107;
     /**
      * {@value #SX_MAX_USED} = maximale Adresse für normale Benutzung (Loco,
      * Weiche, Signal) higher addresses reserved for command stations/loco

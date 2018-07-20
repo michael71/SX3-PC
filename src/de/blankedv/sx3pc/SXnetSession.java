@@ -639,7 +639,7 @@ public class SXnetSession implements Runnable {
         }
         // other channels
         for (int bus = 0; bus < 2; bus++) {
-            for (int ch = 0; ch < 112; ch++) {
+            for (int ch = 0; ch < SXMAX; ch++) {
                 if (sxData[ch][bus] != sxDataCopy[ch][bus]) {
                     // channel data changed, send update to mobile device
                     sendSXUpdates(bus, ch);
