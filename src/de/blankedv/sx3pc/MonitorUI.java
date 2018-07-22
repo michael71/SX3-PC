@@ -29,31 +29,11 @@ public class MonitorUI extends javax.swing.JFrame {
 
       
     /** Creates new form MonitorUI */
-    public MonitorUI(int sxIndex) {   // used for SX0 and SX1 and SIM display
+    public MonitorUI() {   // used for SX0 and SX1 and SIM display
         initComponents();
-        index = sxIndex;
-        switch (sxIndex) {
-            case 0:
-                if (useSX1forControl) {
-                   this.setTitle("SX0 Monitor [Locos]");
-                } else {
-                   this.setTitle("SX0 Monitor [Locos, Turnouts, Signals]");
-                }
-                break;
-            case 1:
-                this.setTitle("SX1 Monitor [Turnouts, Signals]");
-                Color c = new Color(255,140,140);
-		Container con = this.getContentPane();
-		con.setBackground( c ); 
-                break;
-            case 2:
-                this.setTitle("SIM Monitor [virtual and Routes]");
-                Color c1 = new Color(140,140,255);
-		Container con1 = this.getContentPane();
-		con1.setBackground( c1 ); 
-                break;            
-        }
-       
+ 
+                   this.setTitle("SX0 Monitor");
+            
         loadPrefs();
         initTable1();  // adressen schreiben
         update(); // from SX Bus data
@@ -164,7 +144,7 @@ public class MonitorUI extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         savePrefs();
-        sxmon[index] = null;  // to enable opening a MonitorUI window again in Interface UI
+        sxmon = null;  // to enable opening a MonitorUI window again in Interface UI
     }//GEN-LAST:event_formWindowClosing
 
     public void update() {
@@ -174,14 +154,14 @@ public class MonitorUI extends javax.swing.JFrame {
         // set adresses
         for (int i = 1; i < COLS; i = i + 2) {
             for (int j = 0; j < ROWS; j++) {
-                if (sxData[count][index] != oldSxData[count]) {
+                if (sxData[count] != oldSxData[count]) {
                     redflag = true;
                 } else {
                     redflag =false;
                 }
-                jTable1.setValueAt(SXBinaryString(sxData[count][index], redflag), j, i);
+                jTable1.setValueAt(SXBinaryString(sxData[count], redflag), j, i);
                 // if (count > 106/2)  System.out.println("S="+SXBinaryString(sxData[count])+".");
-                oldSxData[count] = sxData[count][index];
+                oldSxData[count] = sxData[count];
                 count++;
 
             }
@@ -249,23 +229,17 @@ public class MonitorUI extends javax.swing.JFrame {
         // fuer SX3 Programm, zB Belegtmelder: Instanz-Nummer (Klassenvariable) mit im
         // String, um mehrere Fensterpositionen zu speichern
         // auch SX-adresse jeweils speichern.
-        if (index == 0 ) {
+
             prefs.putInt("monitorwindowX", getX());
             prefs.putInt("monitorwindowY", getY());
-        } else {
-            prefs.putInt("monitor"+index+"windowX", getX());
-            prefs.putInt("monitor"+index+"windowY", getY());
-        }
+
 
     }
 
     private void loadPrefs() {
         // reload the positions for the right instance
-        if (index == 0) {
+
              setLocation(prefs.getInt("monitorwindowX", 200), prefs.getInt("monitorwindowY", 200));
-        } else {
-            setLocation(prefs.getInt("monitor"+index+"windowX", 200+index*10), prefs.getInt("monitor"+index+"windowY", 200+index*10));
-        }
 
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

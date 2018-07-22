@@ -7,9 +7,8 @@ package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.sxData;
-import static de.blankedv.sx3pc.MainUI.sxbusControl;
-import static de.blankedv.sx3pc.MainUI.useSX1forControl;
 import static de.blankedv.sx3pc.MainUI.N_SX;
+import static de.blankedv.sx3pc.MainUI.SXMAX;
 
 /**
  * abstract class for generic selectrix interfaces
@@ -37,22 +36,11 @@ abstract public class GenericSXInterface {
         return "";
     }
 
-    public synchronized void send2SXBussesBit(int adr, int bit, int data) {
-        // accepts adresses >127 and then sends data to SX1 (instead of SX0)
-        //  sxData[adr];
-        // twoBusses = false;
-        // locos always control on SX0, "schalten/melden" on SX0 or SX1
-        // static int sxbusControl = 0;
-        int bus = 0;
-        if (adr > N_SX) {
-            if (useSX1forControl == true) {
-                bus = 1;
-                adr = adr - 128;
-            } else {
-                System.out.println("ERROR, trying to send to channel=" + adr + ", but only one SX Bus enabled.");
-            }
-        }
-        int d = sxData[adr][bus];
+    public synchronized void send2SXBit(int adr, int bit, int data) {
+
+        if (adr >= SXMAX) return;
+                
+        int d = sxData[adr];
         Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
         if (data == 1) {  // set bit
             d |= (1 << (bit - 1));  // sx bit von 1 bis 8
@@ -61,7 +49,7 @@ abstract public class GenericSXInterface {
             d = d & ~(1 << (bit - 1));  // sx bit von 1 bis 8
         }
         b[1] = (byte) (d);
-        send(b, bus);
+        send(b);
 
     }
 
@@ -71,7 +59,7 @@ abstract public class GenericSXInterface {
      * @param data (Byte[], first byte address, second byte data
      * @param busnumber (either 0=> SX0 or 1=>SX1)
      */
-    abstract public void send(Byte[] data, int busnumber);
+    abstract public void send(Byte[] data);
 
     /** 
      * set or reset a bit on the control channel (SX0 when only 1 bus, SX1 when
@@ -81,7 +69,7 @@ abstract public class GenericSXInterface {
      * @param data 
      */
     public synchronized void sendAccessoryBit(int adr, int bit, int data) {
-        int d = sxData[adr][sxbusControl];
+        int d = sxData[adr];
         Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
         if (data == 1) {  // set bit
             d |= (1 << (bit - 1));  // sx bit von 1 bis 8
@@ -92,7 +80,7 @@ abstract public class GenericSXInterface {
         b[1] = (byte) (d);
         // ???? sxData[adr][sxbusControl] = d;
         if (DEBUG) System.out.println("SendAc: a="+adr+" d="+b[1]);
-        send(b, sxbusControl);
+        send(b);
     }
 
     /**
@@ -103,21 +91,13 @@ abstract public class GenericSXInterface {
      * @param adr
      * @param data 
      */
-    public synchronized void send2SXBusses(int adr, int data) {
+    public synchronized void send2SX(int adr, int data) {
         // accepts adresses >127 and then sends data to SX1 (instead of SX0)
         // locos always control on SX0, "schalten/melden" on SX0 or SX1
-        if (adr > N_SX) {
-            if (useSX1forControl == true) {
-                adr = adr - 128;  // to make channel number clear.
-                Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-                send(b, 1);
-            } else {
-                System.out.println("ERROR, trying to send to channel=" + adr + ", but only one SX Bus enabled.");
-            }
-        } else {
+
             Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-            send(b, 0);
-        }
+            send(b);
+
     }
 
     /**
@@ -157,7 +137,7 @@ abstract public class GenericSXInterface {
         }
         Byte[] b = {(byte) (lok_adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
         b[1] = (byte) data;
-        send(b, 0);
+        send(b);
     }
 
     abstract public void registerFeedback(int adr);
@@ -173,23 +153,13 @@ abstract public class GenericSXInterface {
         Byte[] b = {(byte) 0xFF, (byte) 0x00};
         for (int i = 0; i < 112; i++) {
             b[0] = (byte) ((i & 0x7F) | 0x80);  // write command
-            send(b, 0);
+            send(b);
             try {
                 Thread.sleep(50);
             } catch (Exception e) {
             };
         };
 
-        if (useSX1forControl) {
-            for (int i = 0; i < 112; i++) {
-                b[0] = (byte) ((i & 0x7F) | 0x80);  // write command
-                send(b, 1);
-                try {
-                    Thread.sleep(50);
-                } catch (Exception e) {
-                };
-            };
-        }
     }
 
     public void unregisterFeedback() {
@@ -203,7 +173,7 @@ abstract public class GenericSXInterface {
     public synchronized void sendAccessory(int adr, int data) {
         //  sxData[adr];
         Byte[] b = {(byte) (adr + 128), (byte) data};  // bit 7 muss gesetzt sein zum Schreiben
-        send(b, sxbusControl);
+        send(b);
     }
 
 }

@@ -10,10 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -39,7 +37,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.0 - 22 Juli 2018; protocol3";
+    public static final String VERSION = "2.0-puresx - 22 Juli 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -48,7 +46,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * maximale SX adresse (SX0), maximale adr angezeigt im Monitor
      */
-    public static final int SXMAX = 107;
+    public static final int SXMAX = 111;
     /**
      * {@value #SX_MAX_USED} = maximale Adresse für normale Benutzung (Loco,
      * Weiche, Signal) higher addresses reserved for command stations/loco
@@ -64,32 +62,7 @@ public class MainUI extends javax.swing.JFrame {
      */
     public static final int N_SX = 128; // maximal möglich (pro SX Kanal)
 
-    /**
-     * {@value #N_LANBAHN} number of entries in lanbahn array (i.e. maximum
-     * number of usable lanbahn addresses)
-     */
-    public static final int N_LANBAHN = 500;
-    /**
-     * {@value #LBMIN} minimum lanbahn channel number
-     */
-    public static final int LBMIN = 1; // 
-    /**
-     * {@value #LBMIN_LB} all address lower or equal this address have a fixed
-     * mapping to SX-addresses, lbaddr / 10 => sxaddr, sbit = lbaddr % 10
-     */
-    public static final int LBMIN_LB = 1278;
-    /**
-     * {@value #LBMAX} =maximum lanbahn channel number
-     */
-    public static final int LBMAX = 9999;
-    /**
-     * {@value #LBDATAMIN} =minimum lanbahn data value
-     */
-    public static final int LBDATAMIN = 0;
-    /**
-     * {@value #LBDATAMAX} =maximum lanbahn data value (== 4 bits in SX world)
-     */
-    public static final int LBDATAMAX = 15;  // 
+
     /**
      * {@value #INVALID_INT} = denotes a value as invalid (not usable)
      */
@@ -109,36 +82,15 @@ public class MainUI extends javax.swing.JFrame {
     public static SettingsUI settingsWindow;
 
     /**
-     * // 0 => SX0, 1 => SX1 (if it exists)
+     * contains the complete state of command station
      */
-    public static final int NBUSSES = 2;
-    /**
-     * contains the complete state (all SX0/SX1 data) of command station - all
-     * data olocos: always SX0 control(turnouts, signals, buttons, routes) =>
-     * SX0 sxdata[][0] OR SX1 sxdata[][1]
-     */
-    public static final int[][] sxData = new int[N_SX][NBUSSES];
+    public static final int[] sxData = new int[N_SX];
 
-    /**
-     * hashmap for storing numerical (key,value) pairs of lanbahnData lanbahn
-     * loco data (strings) are always converted to SX0 values lanbahn values are
-     * only stored, if they cannot be mapped to SX values, i.e. SET/READ of
-     * channel >1278 {
-     *
-     * @see LBMIN_LB}
-     */
-    public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
 
-    public static boolean useSX1forControl = false;
-    public static int sxbusControl = 0;
-    public static MonitorUI sxmon[] = {null, null};
-    public static LanbahnMonitorUI lbmon = null;
+    public static MonitorUI sxmon = null;
+
     public static SXnetServerUI sxnetserver;
     public static List<InetAddress> myip;
-
-    public static boolean pollingIsRunning = false;
-    public static LocoProgUI locoprog = null;
-    public static VtestUI vtest = null;
     public static int timeoutCounter = 0;
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
     public static boolean connectionOK = false;  // watchdog for connection
@@ -156,8 +108,6 @@ public class MainUI extends javax.swing.JFrame {
     private int baudrate;
 
     private String ifType;
-
-    Boolean pollingFlag = false;  // only needed for trix-standard IF
 
     private ConfigWebserver configWebserver;
 
@@ -191,14 +141,11 @@ public class MainUI extends javax.swing.JFrame {
         loadOtherPrefs();
         if (simulation) {
             sxi = new SXSimulationInterface();
-
         } else if (ifType.contains("FCC")) { // fcc has different interface handling ! 
             sxi = new SXFCCInterface(portName);
-        } else if (ifType.toLowerCase().contains("opensx")) { // opensx has different interface handling !
-            sxi = new SXOpenSXInterface(portName);
-        } else {
+        }  else {
             //portName = "/dev/ttyUSB825";
-            sxi = new SXInterface(!pollingFlag, portName, baudrate);
+            sxi = new SXInterface(portName, baudrate);
         }
 
         // init status icon
@@ -208,12 +155,8 @@ public class MainUI extends javax.swing.JFrame {
 
         // set status text
         if (simulation) {
-            if (ifType.contains("ZS1") || ifType.contains("FCC") || ifType.contains("SLX 852")) {
-                labelStatus.setText("Simulation SX0/SX1");
-            } else {
                 labelStatus.setText("Simulation SX0");
-            }
-            sxi.open();
+             sxi.open();
             btnConnectDisconnect.setEnabled(false);
             btnConnectDisconnect.setText(" ");
             btnPowerOnOff.setEnabled(true);  // works always in simulation
@@ -224,7 +167,7 @@ public class MainUI extends javax.swing.JFrame {
             statusIcon.setEnabled(false);  // works only after connection
         }
 
-        btnSxMonitor.setEnabled(!pollingFlag); // disable for standard trix interface
+        btnSxMonitor.setEnabled(true); // disable for standard trix interface
         addToPlist((Integer) 127);  // Power Status wird immer abgefragt.
         setVisible(true);
 
@@ -275,7 +218,7 @@ public class MainUI extends javax.swing.JFrame {
     }
 
     private boolean powerIsOn() {
-        if (sxData[127][0] != 0) {
+        if (sxData[127] != 0) {
             return true;
         } else {
             return false;
@@ -299,7 +242,6 @@ public class MainUI extends javax.swing.JFrame {
         btnSensor = new javax.swing.JButton();
         btnSxMonitor = new javax.swing.JButton();
         btnReset = new javax.swing.JButton();
-        btnVtest = new javax.swing.JButton();
         panelInterface = new javax.swing.JPanel();
         btnConnectDisconnect = new javax.swing.JButton();
         btnPowerOnOff = new javax.swing.JButton();
@@ -364,22 +306,13 @@ public class MainUI extends javax.swing.JFrame {
             }
         });
 
-        btnVtest.setText("Speed Meas.");
-        btnVtest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnVtestActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout panelWindowsLayout = new javax.swing.GroupLayout(panelWindows);
         panelWindows.setLayout(panelWindowsLayout);
         panelWindowsLayout.setHorizontalGroup(
             panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelWindowsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnThrottle, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
-                    .addComponent(btnVtest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(btnThrottle, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(35, 35, 35)
                 .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelWindowsLayout.createSequentialGroup()
@@ -404,8 +337,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnReset)
-                    .addComponent(btnSxMonitor)
-                    .addComponent(btnVtest))
+                    .addComponent(btnSxMonitor))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -592,18 +524,9 @@ public class MainUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnThrottleActionPerformed
 
     private void btnSxMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSxMonitorActionPerformed
-        if (sxmon[0] == null) {
-            if (useSX1forControl) {
-                sxmon[1] = new MonitorUI(1);
-                sxmon[1].update();
-            } else {
-                sxmon[1] = null;
-            }
-
-            sxmon[0] = new MonitorUI(0);
-            sxmon[0].update();
-
-            lbmon = new LanbahnMonitorUI();
+        if (sxmon == null) {
+            sxmon = new MonitorUI();
+            sxmon.update();
 
         } else {
             JOptionPane.showMessageDialog(this, "SXmonitorRunning");
@@ -649,20 +572,10 @@ public class MainUI extends javax.swing.JFrame {
         }
         if (simulation) {
             for (int i = 0; i < SXMAX_USED; i++) {  // nur bis 103, die oberen (=system) Channels werden nicht auf 0 gesetzt
-                sxData[i][0] = 0;
-                sxData[i][1] = 0;
+                sxData[i] = 0;
             }
         }
     }//GEN-LAST:event_btnResetActionPerformed
-
-    private void btnVtestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVtestActionPerformed
-        if (vtest == null) {
-            vtest = new VtestUI();
-
-        } else {
-            JOptionPane.showMessageDialog(this, "already running");
-        }
-    }//GEN-LAST:event_btnVtestActionPerformed
 
     private void toggleConnectStatus() {
         if (sxi.isConnected()) {
@@ -754,7 +667,7 @@ public class MainUI extends javax.swing.JFrame {
         // other sources can switch power off and on, therefor
         // regular update needed 
 
-        if (sxData[127][0] == 0x00) {
+        if (sxData[127] == 0x00) {
             btnPowerOnOff.setText("Track Power On");
             statusIcon.setIcon(red);
         } else {
@@ -781,15 +694,11 @@ public class MainUI extends javax.swing.JFrame {
         // do GUI update only every second
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
-        for (int i = 0; i < NBUSSES; i++) {
-            if (sxmon[i] != null) {
-                sxmon[i].update();
+            if (sxmon != null) {
+                sxmon.update();
             }
-        }
-        if (lbmon != null) {
-            lbmon.update();
-        }
 
+       
         SensorUI.updateAll();
         WeichenUI.updateAll();
         ThrottleUI.updateAll();
@@ -841,11 +750,9 @@ public class MainUI extends javax.swing.JFrame {
     public void saveAllPrefs() {
         //System.out.println("save all preferences.");
 
-        for (int i = 0; i < NBUSSES; i++) {
-            if (sxmon[i] != null) {
-                sxmon[i].savePrefs();
+            if (sxmon != null) {
+                sxmon.savePrefs();
             }
-        }
 
         SensorUI.saveAllPrefs();
         WeichenUI.saveAllPrefs();
@@ -877,26 +784,7 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("simulation=" + simulation);
 
         ifType = prefs.get("type", "");
-        if (ifType.toLowerCase().contains("66824") && (!simulation)) {
-            pollingFlag = true;
-        } else {
-            pollingFlag = false; // wird auch bei Simulation verwendet.
-        }
 
-        String busmode = prefs.get("busmode", "SX");
-        if (busmode.equalsIgnoreCase("SX0/SX1")) {
-            useSX1forControl = true;
-            sxbusControl = prefs.getInt("sxbusControl", 1);
-            if (DEBUG) {
-                System.out.println("2 SX buses, control=SX" + sxbusControl);
-            }
-        } else {
-            useSX1forControl = false;
-            sxbusControl = 0;
-            if (DEBUG) {
-                System.out.println("1 SX bus ");
-            }
-        }
         String baudStr = prefs.get("baudrate", "9600");
         baudrate = Integer.parseInt(baudStr);
         if (DEBUG) {
@@ -908,6 +796,8 @@ public class MainUI extends javax.swing.JFrame {
         if (DEBUG) {
             System.out.println("reading sensors:" + sel);
         }
+        
+        // TODO : is redundant for Rautenhaus and FCC interface -> remove ??
         String[] slist = sel.split(";");
         if (slist.length > 0 && !slist[0].isEmpty()) {
             for (int i = 0; i < slist.length; i++) {
@@ -925,7 +815,6 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JButton btnSxMonitor;
     private javax.swing.JButton btnThrottle;
     private javax.swing.JButton btnTurnout;
-    private javax.swing.JButton btnVtest;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;

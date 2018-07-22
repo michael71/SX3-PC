@@ -50,10 +50,10 @@ public class WeichenUI extends javax.swing.JFrame {
         initComponents();
         myInstance = WeichenUIInstance++;
         loadPrefs(); //myInstance is used here.
-        if (DEBUG) System.out.println("constr. w adr="+w_adr+"/SX"+sxbusControl);
+        if (DEBUG) System.out.println("constr. w adr="+w_adr);
         jComboBox1.setSelectedIndex(w_adr);  // index starts from 0, addresses start also at 0
         wl.add(this);
-        this.setTitle("Turnouts/Signals"+ "  [SX"+sxbusControl+"]");
+        this.setTitle("Turnouts/Signals");
         
         update(); // from SX Bus data
         this.setVisible(true);
@@ -373,7 +373,7 @@ public class WeichenUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void update() {
-        data = sxData[w_adr][sxbusControl];
+        data = sxData[w_adr];
 
         if ((data & 0x01) == 0x01) { jCheckBox1.setSelected(true);  } else { jCheckBox1.setSelected(false); }
         if ((data & 0x02) == 0x02) { jCheckBox2.setSelected(true);  } else { jCheckBox2.setSelected(false); }

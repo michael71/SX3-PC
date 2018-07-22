@@ -5,6 +5,7 @@
  */
 package de.blankedv.sx3pc;
 
+import static de.blankedv.sx3pc.MainUI.SXMAX;
 import static de.blankedv.sx3pc.MainUI.connectionOK;
 import static de.blankedv.sx3pc.MainUI.sxData;
 import gnu.io.CommPortIdentifier;
@@ -37,8 +38,6 @@ public class SXFCCInterface extends GenericSXInterface {
     OutputStream outputStream;
     InputStream inputStream;
     Boolean serialPortGeoeffnet = false;
-
-    private SXInterface.PollingActivity pa;
 
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
@@ -173,24 +172,16 @@ public class SXFCCInterface extends GenericSXInterface {
                     } */
                 for (int count =0; count < 226; count++) {
                     
-                    if (count < 110) {
-                        sxData[count][0] = buf[count] & 0xff;
+                    if (count < SXMAX) {
+                        sxData[count] = buf[count] & 0xff;
                     } else if (count == 112) {
                         //System.out.println("power="+b);
                         if (buf[count] == 0) {
-                            sxData[127][0] = 0;
+                            sxData[127] = 0;
                         } else {
-                            sxData[127][0] = 80;
+                            sxData[127] = 80;
                         }
-                    } else if (count < 226) {
-                        //sxData[count-114][1] = b & 0xff;                           
-                    } else if (count == 226) {
-                        //if (b == 0) {
-                            // sxData[127][1] = 0;
-                        //} else {
-                            //  sxData[127][1] = 80;
-                       // }
-                    }
+                    } // ignore SX1 data
       
                 }
                 
@@ -283,12 +274,13 @@ public class SXFCCInterface extends GenericSXInterface {
         connectionOK = true;
     }
 
-    // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
-    // das höchste Bit auf 1 gesetzt werden
+    /** für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
+    * das höchste Bit auf 1 gesetzt werden
+    * * TODO check FCC */
     @Override
-    public synchronized void send(Byte[] data, int busnumber) {
+    public synchronized void send(Byte[] data) {
         try {
-            outputStream.write((byte) busnumber);
+            outputStream.write((byte)0);  // TODO ????
             outputStream.write(data[0]);
             outputStream.write(data[1]);
             outputStream.flush();

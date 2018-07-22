@@ -151,10 +151,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="btnThrottle" alignment="0" pref="116" max="32767" attributes="0"/>
-                      <Component id="btnVtest" max="32767" attributes="1"/>
-                  </Group>
+                  <Component id="btnThrottle" min="-2" pref="116" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
@@ -186,7 +183,6 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btnReset" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnSxMonitor" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnVtest" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -232,14 +228,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnResetActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnVtest">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Speed Meas."/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnVtestActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

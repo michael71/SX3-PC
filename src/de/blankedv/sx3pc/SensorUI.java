@@ -55,7 +55,7 @@ public class SensorUI extends javax.swing.JFrame {
         loadPrefs(); //myInstance is used here.
         jComboBox1.setSelectedIndex(s_adr-1);  // index starts from 0, addresses +1
         if (DEBUG) System.out.println("s adr="+s_adr);
-        this.setTitle("Sensor"+ "  [SX"+sxbusControl+"]");
+        this.setTitle("Sensor");
         lblAddress.setText("Addr");
        
         this.setVisible(true);
@@ -269,7 +269,7 @@ public class SensorUI extends javax.swing.JFrame {
 
     private void update() {
         //
-        int data = sxData[s_adr][sxbusControl];
+        int data = sxData[s_adr];
         if ((data & 0x01) != 0) jLabel2.setIcon(red) ;
         else jLabel2.setIcon(green) ;
         if ((data & 0x02) != 0) jLabel3.setIcon(red) ;

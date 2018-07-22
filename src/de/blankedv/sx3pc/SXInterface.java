@@ -28,13 +28,12 @@ import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
 
 public class SXInterface extends GenericSXInterface {
 
-    private boolean noPollingFlag;
     private String portName;
-    
-    private int baudrate;
-    private int dataBits = SerialPort.DATABITS_8;
-    private int stopBits = SerialPort.STOPBITS_1;
-    private int parity = SerialPort.PARITY_NONE;
+   
+    private final int baudrate;
+    private final int dataBits = SerialPort.DATABITS_8;
+    private final int stopBits = SerialPort.STOPBITS_1;
+    private final int parity = SerialPort.PARITY_NONE;
     CommPortIdentifier serialPortId;
     Enumeration enumComm;
     SerialPort serialPort;
@@ -42,12 +41,8 @@ public class SXInterface extends GenericSXInterface {
     InputStream inputStream;
     Boolean serialPortGeoeffnet = false;
     private int lastAdrSent = -1;
-    private PollingActivity pa;
-    private int pollIndex = 0;
-    private List<Integer> pListCopy;
 
-    private boolean sx1Flag = false;
-    private int lastBusnumber = 0;
+    private List<Integer> pListCopy;
 
     private static int leftover;
     private static boolean leftoverFlag = false;
@@ -55,9 +50,8 @@ public class SXInterface extends GenericSXInterface {
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
 
-    public SXInterface(boolean noPoll, String portName, int baud) {
+    public SXInterface( String portName, int baud) {
 
-        this.noPollingFlag = noPoll;
         this.portName = portName;
         this.baudrate = baud;
     }
@@ -70,7 +64,6 @@ public class SXInterface extends GenericSXInterface {
         if (simulation) {
             serialPortGeoeffnet = true;
             connected = true;
-            lastBusnumber = 0;
             return true;
         }
         Boolean foundPort = false;
@@ -124,12 +117,9 @@ public class SXInterface extends GenericSXInterface {
 
         serialPortGeoeffnet = true;
         connected = true;
-        lastBusnumber = 0;
+
         setInterfaceMode();
 
-        if (!noPollingFlag) {
-            startPolling();
-        }
         return true;
     }
 
@@ -139,9 +129,7 @@ public class SXInterface extends GenericSXInterface {
             connected = false;
             return;
         }
-        if (!noPollingFlag) {
-            stopPolling();
-        }
+
         if (serialPortGeoeffnet == true) {
             System.out.println("Schließe Serialport");
             serialPort.close();
@@ -153,29 +141,15 @@ public class SXInterface extends GenericSXInterface {
     }
 
     @Override
-    public synchronized void send(Byte[] data, int busnumber) {
-        // darf nicht unterbrochen werden
-        // TODO check if switch from SX0 to Sx1 is necessary or vice versa
-        // ************************************** using 0 only
-      
+    public synchronized void send(Byte[] data) {
+        // darf nicht unterbrochen werden     
 
         if (serialPortGeoeffnet != true) {
             System.out.println("Fehler beim Senden, serial port nicht geöffnet und simul. nicht gesetzt");
             return;
         }
 
-        // check if sent on same bus as last command
-        if ((busnumber != lastBusnumber)) {
-            // send bus-command on channel 126
-            lastBusnumber = busnumber;
-            setBus(busnumber);
-        }
 
-        // falls im Trix Mode und schreib befehl, dann daten in sxData speichern
-        // TODO ??? if ((value & (1L << x)) != 0)
-        if ((!noPollingFlag) && ((data[0] & 0x80) != 0)) {
-            sxData[data[0] & 0x7f][busnumber] = data[1];
-        }
         lastAdrSent = toUnsignedInt(data[0]) & 0x7f;  // wird nur fuer NICHT slx825 format gebraucht
         if ((data[0] & 0x80) != 0) {
             System.out.println("wr-Cmd: adr " + (toUnsignedInt(data[0]) & 0x7f) + " / data " + toUnsignedInt(data[1]));
@@ -184,13 +158,11 @@ public class SXInterface extends GenericSXInterface {
         }
 
         try {
-            //if (fccMode) {
-            //    outputStream.write((byte)busnumber);
-            //}
+
             outputStream.write(data[0]);
             outputStream.write(data[1]);
             outputStream.flush();
-            // done via polling of sx data in LanbahnUI / this.doLanbahnUpdate((byte)(data[0] & 0x7f), data[1]);
+
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
         }
@@ -232,14 +204,9 @@ public class SXInterface extends GenericSXInterface {
         * Falls ZS1/ZS" ebenfalls 128+32 setzen
          * */
 
-        if (noPollingFlag) {
             b[0] = (byte) 0xFE; // Rautenhaus ein
             b[1] = (byte) 0xA0; // Feedback ein
-            // wird also immer im Echo-Modus (Feedback) betrieben.
-        } else {
-            b[0] = (byte) 0xFE; // Rautenhaus aus
-            b[1] = (byte) 0x48; // Feedback aus
-        }
+        
 
         try {
             outputStream.write(b[0]);
@@ -255,28 +222,7 @@ public class SXInterface extends GenericSXInterface {
         }
     }
 
-    public void setBus(int busnumber) {
-
-        System.out.println("bus=" + busnumber);
-        Byte[] b = {(byte) 0xFE, (byte) 0x00};   // == Kanel 126
-
-        if (busnumber == 1) {
-            b[1] = (byte) 0x01;
-        }
-
-        try {
-            outputStream.write(b[0]);
-            outputStream.write(b[1]);
-            outputStream.flush();
-        } catch (IOException e) {
-            System.out.println("Fehler beim Senden");
-        }
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SXInterface.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+   
 
     @Override
     public synchronized void switchPowerOff() {
@@ -311,12 +257,9 @@ public class SXInterface extends GenericSXInterface {
 @Override
     public void readPower() {
         Byte[] b = {(byte) 127, (byte) 0x00};   // read power state
-        send(b, 0);
+        send(b);
     }
 
-    public boolean is825() {
-        return noPollingFlag;
-    }
 
 
     @Override
@@ -340,11 +283,7 @@ public class SXInterface extends GenericSXInterface {
             switch (event.getEventType()) {
                 case SerialPortEvent.DATA_AVAILABLE:
                     connectionOK = true;
-                    if (noPollingFlag) {
                         readSerialPortWriteToSX();
-                    } else {
-                        readSerialPortStandard();
-                    }
                     break;
                 case SerialPortEvent.BI:
                 case SerialPortEvent.CD:
@@ -367,13 +306,6 @@ public class SXInterface extends GenericSXInterface {
         try {
             int adr, data;
 
-
-            /*      case SerialPortEvent.DATA_AVAILABLE:
-           readBuffer = new byte[8];
-           try {
-                while (inputStream.available()>0) {
-                int numBytes = inputStream.read(readBuffer);
-                * */
             byte[] readBuffer = new byte[200];
 
             while (inputStream.available() > 1) {
@@ -404,8 +336,7 @@ public class SXInterface extends GenericSXInterface {
                 }
 
             }
-            //sx.doUpdate(); // nur im Rautenhaus Format nach jeder Info
-
+   
         } catch (IOException e) {
             System.out.println("Fehler beim Lesen empfangener Daten");
         }
@@ -415,24 +346,10 @@ public class SXInterface extends GenericSXInterface {
     // address range 0 ..127 / 128 ... 255 
     private synchronized void setSX(int adr, int data) {
         if (adr >= 0 && adr < N_SX) {
-            // data for SX0 bus
-            sxData[adr][0] = data;
-            if ((regFeedback) && (sxbusControl == 0)
-                    && (adr == regFeedbackAdr)) {
-                vtest.sensorFeedback(data);
-            }
+                sxData[adr] = data;
+           
             if (DEBUG) {
-                //System.out.println("set: SX0[" + adr + "]=" + data + " ");
-            }
-        } else if (adr >= N_SX && adr < (2 * N_SX)) {
-            // data for SX1 bus
-            sxData[adr - 128][1] = data;
-            if ((regFeedback) && (sxbusControl == 1)
-                    && (adr == regFeedbackAdr)) {
-                vtest.sensorFeedback(data);
-            }
-            if (DEBUG) {
-                //System.out.println("set: SX1[" + (adr - SXMAX2) + "]=" + data + " ");
+                System.out.println("set: SX[" + adr + "]=" + data + " ");
             }
         } else {
                 System.out.println("set: ERROR adr="+adr+" to high");
@@ -458,7 +375,7 @@ public class SXInterface extends GenericSXInterface {
                     if (DEBUG) {
                         System.out.println(" (adr=" + lastAdrSent + ")");
                     }
-                    sxData[lastAdrSent][0] = num;
+                    sxData[lastAdrSent] = num;
                     lastAdrSent = -1;
                 } else {
                     System.out.println(" (ignoriert)");
@@ -475,61 +392,4 @@ public class SXInterface extends GenericSXInterface {
         return (value & 0x7F) + (value < 0 ? 128 : 0);
     }
 
-    public void pollNextAdr() {
-        // wird nur für 66824 Interface verwendet.
-        if ((pListCopy == null) || (pollIndex >= pListCopy.size())) {
-            // (wieder) am Anfang, erzeuge Kopie der PollingListe
-            pListCopy = new LinkedList<Integer>(sx.getpList());
-            pollIndex = 0;
-        }
-        if (!pListCopy.isEmpty()) {
-            if (DEBUG) {
-                System.out.println("polling adr:" + pListCopy.get(pollIndex));
-            }
-            Byte[] b = {(byte) (pListCopy.get(pollIndex) + 0), 0};
-            send(b, 0);
-            pollIndex++;
-        } else {
-            System.out.println("pList leer.");
-        }
-    }
-
-    public void startPolling() {
-        pListCopy = null; // to (re-)init pollNextAdr()
-        pa = new PollingActivity();
-        pa.execute();
-    }
-
-    public void stopPolling() {
-        if (pa != null) {
-            pa.cancel(true);
-        }
-
-    }
-
-    class PollingActivity extends SwingWorker<Void, Void> {
-
-        /**
-         * Polling is used to get info about SX Bus from old trix interface
-         * every 100ms
-         *
-         */
-        protected Void doInBackground() throws Exception {
-            try {
-                while (true) {
-                    Thread.sleep(100);
-                    publish();    // ruft process() auf im UI Thread.
-                }
-            } catch (InterruptedException e) {
-            }
-            return null;
-        }
-
-        protected void process() {
-            pollNextAdr(); // do in UI thread
-        }
-//        protected void done() {
-//            // what needs to be done if DONE??
-//        }
-    }
 }
