@@ -53,7 +53,7 @@ public class SXnetSession implements Runnable {
             Timer timer = new Timer();
             timer.schedule(new Task(), 200, 50);
 
-            sendMessage("SXnet-Server 3.0 - " + sn);  // welcome string
+            sendMessage("SXnet-Server 3.1 - " + sn);  // welcome string
 
             while (in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
@@ -61,11 +61,10 @@ public class SXnetSession implements Runnable {
                     if (DEBUG) {
                         System.out.println("sxnet" + sn + " read: " + msg);
                     }
-                    String[] cmds = msg.split(";");
+                    String[] cmds = msg.split(";");  // multiple commands per line possible, separated by semicolon
                     for (String cmd : cmds) {
                         sendMessage(handleCommand(cmd.trim()));  // handleCommand returns "OK" or error msg
                     }
-
                 } else {
                     // ignore empty lines
                     if (DEBUG) {
@@ -100,23 +99,16 @@ public class SXnetSession implements Runnable {
     }
 
     /**
-     * SX Net Protocol (all msg terminated with '\n')
+     * SX Net Protocol (ASCII, all msg terminated with '\n')
      *
-     * client sends | SXnetServer Response
-     * ---------------------------------------|------------------- R cc = Read
-     * channel cc (0..127) | "X" cc dd B cc b = SetBit Ch. cc Bit b (1..8) |
-     * "OK" (and later, when changed in CS: X cc dd ) C cc b = Clear Ch cc Bit b
-     * (1..8) | "OK" (and later, when changed in CS: X cc dd ) S cc dd = set
-     * channel cc Data dd (<256)| "OK" (and later, when changed in CS: X cc dd )
-     * DSDF 89sf (i.e. garbage) | "ERROR" *********** NO LONGER BIT MESSAGES
-     * ************ July 2018 ********** *********** protocol 3
-     * **************************************
-     *
+     * ---------------------------------------|------------------- 
+     * R cc = Read channel cc (0..127) 
+     * S cc dd = Set channel cc to Data dd   (instead of 'S' 'SX' is also possible)
+     * 
      * channel 127 bit 8 == Track Power
      *
-     * for a list of channels (which the client has set or read in the past) all
-     * changes are transmitted back to the client
-     *
+     * for all channels 0 ... 104 (SXMAX_USED) and 127 all
+     * changes are transmitted to all connected clients
      * ,
      */
     private String handleCommand(String m) {
@@ -185,72 +177,7 @@ public class SXnetSession implements Runnable {
 
     }
 
-    /**
-     * calculate the lanbahn value from state of SX system (only controlbus) at
-     * a given sxaddr = lbaddr / 10 and sxbit = lbaddr % 10
-     *
-     * @param lbAddress
-     * @return lbValue (or INVALID_INT)
-     *
-     * (TODO implement for range of sxaddr 128 ..255
-     */
-    private synchronized boolean try_set_sx_accessory(SXAddrAndBits sx, int data) {
-        if (!sxi.isConnected()) {
-            System.out.println("could not set SX, interface not connected");
-            return false;
-        }
-        if ((sx.bit >= 1) && (sx.bit <= 8) && (sx.nbit <= 4) && (sx.nbit >= 1)) {
-            int d = sxData[sx.sxAddr];
-            switch (sx.nbit) {
-                case 1:
-                    if (data > 1) {
-                        System.out.println("could not set SX, data >1 (nbit = 1)");
-                        return false;
-                    }
-                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
-                    break;
-                case 2:
-                    if (data > 3) {
-                        System.out.println("could not set SX, data >3 (nbit = 2)");
-                        return false;
-                    }
-                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
-                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
-                    break;
-                case 3:
-                    if (data > 7) {
-                        System.out.println("could not set SX, data >7 (nbit = 3)");
-                        return false;
-                    }
-                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
-                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
-                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
-                    break;
-                case 4:
-                    if (data > 15) {
-                        System.out.println("could not set SX, data >15 (nbit = 4)");
-                        return false;
-                    }
-                    d = SXUtils.bitOperation(d, sx.bit, (data & 0x01));
-                    d = SXUtils.bitOperation(d, sx.bit + 1, (data & 0x02));
-                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x04));
-                    d = SXUtils.bitOperation(d, sx.bit + 2, (data & 0x08));
-                    break;
-
-            }
-            sxi.sendAccessory(sx.sxAddr, d);  // set changed data value
-            if (DEBUG) {
-                System.out.println("setting sx-adr=" + " val=" + d);
-            }
-            return true;
-        } else {
-            if (DEBUG) {
-                System.out.println("could not set sx-adr=" + sx.sxAddr + " bit=" + sx.bit);
-            }
-            return false;
-        }
-    }
-
+    
     private int getBitFromString(String s) {
         // converts String to an integer between 1 and 8 (=SX Bit)
         Integer bit = ERROR;
