@@ -72,7 +72,7 @@ public class SXnetSession implements Runnable {
                         System.out.println("sxnet" + sn + " read empty line");
                     }
                 }
-                mySleep(100);
+                mySleep(10);
 
             }
             SXnetServerUI.taClients.append("client" + sn + " disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
@@ -96,7 +96,7 @@ public class SXnetSession implements Runnable {
         public void run() {
             checkForChangedSXDataAndSendUpdates();
             checkForLanbahnChangesAndSendUpdates();
-            mySleep(300);  // send update only every 300msecs
+            mySleep(200);  // send update only every 200msecs
         }
     }
 
