@@ -36,7 +36,7 @@ abstract public class GenericSXInterface {
         return "";
     }
 
-    public synchronized void send2SXBit(int adr, int bit, int data) {
+    /** TODO unused? public synchronized void send2SXBit(int adr, int bit, int data) {
 
         if (adr >= SXMAX) return;
                 
@@ -51,7 +51,7 @@ abstract public class GenericSXInterface {
         b[1] = (byte) (d);
         send(b);
 
-    }
+    } */
 
     /** 
      * send a data byte to a specific bus number

@@ -5,11 +5,9 @@
  */
 package de.blankedv.sx3pc;
 
-import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.sxData;
 
 import static de.blankedv.sx3pc.SXInterface.toUnsignedInt;
-import java.io.IOException;
 
 /**
  *
@@ -48,14 +46,14 @@ public class SXSimulationInterface extends GenericSXInterface {
     @Override
     public void switchPowerOn() {
 
-        sxData[127] = 0x80;
+        sxData[127] = 128;
 
     }
 
     @Override
     public void switchPowerOff() {
 
-        sxData[127] = 0x00;
+        sxData[127] = 0;
 
     }
 

@@ -4,9 +4,6 @@
  */
 package de.blankedv.sx3pc;
 
-import java.util.LinkedList;
-import java.util.List;
-import javax.swing.SwingWorker;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import gnu.io.CommPortIdentifier;
@@ -41,8 +38,6 @@ public class SXInterface extends GenericSXInterface {
     InputStream inputStream;
     Boolean serialPortGeoeffnet = false;
     private int lastAdrSent = -1;
-
-    private List<Integer> pListCopy;
 
     private static int leftover;
     private static boolean leftoverFlag = false;
@@ -226,9 +221,7 @@ public class SXInterface extends GenericSXInterface {
 
     @Override
     public synchronized void switchPowerOff() {
-        // 127 (ZE ein/aus) +128(schreiben) = 0xFF
-       
-
+        // 127 (ZE ein/aus) +128(schreiben) = 0x00       
         Byte[] b = {(byte) 0xFF, (byte) 0x00};
         try {
             outputStream.write(b[0]);
@@ -243,7 +236,6 @@ public class SXInterface extends GenericSXInterface {
 @Override
     public synchronized void switchPowerOn() {
         // 127 (ZE ein/aus) +128(schreiben) = 0xFF   
-
         Byte[] b = {(byte) 0xFF, (byte) 0x80};
         try {
             outputStream.write(b[0]);

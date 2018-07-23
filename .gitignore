@@ -2,6 +2,7 @@
 nbproject/private/
 nbproject/project.properties
 build/
+nbproject/build-impl.xml
 nbbuild/
 nbdist/
 .nb-gradle/

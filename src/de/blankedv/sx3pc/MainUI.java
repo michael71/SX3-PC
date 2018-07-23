@@ -218,7 +218,7 @@ public class MainUI extends javax.swing.JFrame {
     }
 
     private boolean powerIsOn() {
-        if (sxData[127] != 0) {
+        if ((sxData[127] & 0x80) != 0) {    // bit8 of channel 127
             return true;
         } else {
             return false;
