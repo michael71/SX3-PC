@@ -197,7 +197,6 @@ public class SXnetServerUI extends javax.swing.JFrame {
             }
 
         }
-    }
-    
+    }   
    
 }

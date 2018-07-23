@@ -103,7 +103,7 @@ public class SXnetSession implements Runnable {
 
     /**
      * SX Net Protocol (ASCII, all msg terminated with '\n')
-     *
+     * REV JULY 2018
      * sent by mobile device -> SX3-PC sends back:
      * ---------------------------------------|------------------- R cc = Read
      * channel cc (0..127) -> returns "X cc dd" S cc.b dd = Set channel cc bit b
