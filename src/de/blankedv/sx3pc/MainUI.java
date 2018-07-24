@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -62,7 +64,28 @@ public class MainUI extends javax.swing.JFrame {
      */
     public static final int N_SX = 128; // maximal möglich (pro SX Kanal)
 
+    /**
+     * {@value #N_LANBAHN} number of entries in lanbahn array (i.e. maximum
+     * number of usable lanbahn addresses)
+     */
+    public static final int N_LANBAHN = 500;
+    /**
+     * {@value #LBMIN} minimum lanbahn channel number
+     */
+    public static final int LBMIN = 1000; // 
 
+    /**
+     * {@value #LBMAX} =maximum lanbahn channel number
+     */
+    public static final int LBMAX = 9999;
+    /**
+     * {@value #LBDATAMIN} =minimum lanbahn data value
+     */
+    public static final int LBDATAMIN = 0;
+    /**
+     * {@value #LBDATAMAX} =maximum lanbahn data value (== 4 bits in SX world)
+     */
+    public static final int LBDATAMAX = 15;  // 
     /**
      * {@value #INVALID_INT} = denotes a value as invalid (not usable)
      */
@@ -72,9 +95,8 @@ public class MainUI extends javax.swing.JFrame {
     public static boolean running = true;
     public static boolean simulation;
     /**
-     * {@value #CONFIG_PORT} = use this port to request config.xml 
-     * from webserver 
-     * url = "http://hostname:{@value #CONFIG_PORT}/config"
+     * {@value #CONFIG_PORT} = use this port to request config.xml from
+     * webserver url = "http://hostname:{@value #CONFIG_PORT}/config"
      */
     public static final int CONFIG_PORT = 8000;
     public static MainUI sx;
@@ -85,9 +107,10 @@ public class MainUI extends javax.swing.JFrame {
      * contains the complete state of command station
      */
     public static final int[] sxData = new int[N_SX];
-
+    public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
 
     public static MonitorUI sxmon = null;
+    public static LanbahnMonitorUI lbmon = null;
 
     public static SXnetServerUI sxnetserver;
     public static List<InetAddress> myip;
@@ -143,7 +166,7 @@ public class MainUI extends javax.swing.JFrame {
             sxi = new SXSimulationInterface();
         } else if (ifType.contains("FCC")) { // fcc has different interface handling ! 
             sxi = new SXFCCInterface(portName);
-        }  else {
+        } else {
             //portName = "/dev/ttyUSB825";
             sxi = new SXInterface(portName, baudrate);
         }
@@ -155,8 +178,8 @@ public class MainUI extends javax.swing.JFrame {
 
         // set status text
         if (simulation) {
-                labelStatus.setText("Simulation SX0");
-             sxi.open();
+            labelStatus.setText("Simulation SX0");
+            sxi.open();
             btnConnectDisconnect.setEnabled(false);
             btnConnectDisconnect.setText(" ");
             btnPowerOnOff.setEnabled(true);  // works always in simulation
@@ -177,23 +200,21 @@ public class MainUI extends javax.swing.JFrame {
 
         String configFile = prefs.get("configfilename", "-keiner-");
 
-         if (!configFile.equalsIgnoreCase("-keiner-")) {
-                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
-                lblMainConfigFilename.setText(configFile);
-            } else {
-                lblMainConfigFilename.setText("bisher nicht ausgewählt");
-            }
+        if (!configFile.equalsIgnoreCase("-keiner-")) {
+            configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
+            lblMainConfigFilename.setText(configFile);
+        } else {
+            lblMainConfigFilename.setText("bisher nicht ausgewählt");
+        }
         initTimer();
 
         this.setTitle("SX3-PC - " + panelName);
-        
+
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
-        
-        }
 
-        
+        }
 
     }
 
@@ -528,6 +549,7 @@ public class MainUI extends javax.swing.JFrame {
             sxmon = new MonitorUI();
             sxmon.update();
 
+            lbmon = new LanbahnMonitorUI();
         } else {
             JOptionPane.showMessageDialog(this, "SXmonitorRunning");
         }
@@ -694,15 +716,23 @@ public class MainUI extends javax.swing.JFrame {
         // do GUI update only every second
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
-            if (sxmon != null) {
-                sxmon.update();
-            }
+        if (sxmon != null) {
+            sxmon.update();
+        }
 
-       
+        if (lbmon
+                != null) {
+            lbmon.update();
+        }
+
         SensorUI.updateAll();
+
         WeichenUI.updateAll();
+
         ThrottleUI.updateAll();
+
         FunkreglerUI.updateAll();
+
         FunkreglerUI.checkAlive();
 
     }
@@ -750,9 +780,9 @@ public class MainUI extends javax.swing.JFrame {
     public void saveAllPrefs() {
         //System.out.println("save all preferences.");
 
-            if (sxmon != null) {
-                sxmon.savePrefs();
-            }
+        if (sxmon != null) {
+            sxmon.savePrefs();
+        }
 
         SensorUI.saveAllPrefs();
         WeichenUI.saveAllPrefs();
@@ -796,7 +826,7 @@ public class MainUI extends javax.swing.JFrame {
         if (DEBUG) {
             System.out.println("reading sensors:" + sel);
         }
-        
+
         // TODO : is redundant for Rautenhaus and FCC interface -> remove ??
         String[] slist = sel.split(";");
         if (slist.length > 0 && !slist[0].isEmpty()) {

@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +29,8 @@ public class SXnetSession implements Runnable {
 
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
+    private final HashMap<Integer, Integer> lanbahnDataCopy = new HashMap<>(N_LANBAHN);
+    private final int ERROR = INVALID_INT;  // ERROR kept for readability
 
     /**
      * Constructs a handler.
@@ -97,14 +99,14 @@ public class SXnetSession implements Runnable {
 
         public void run() {
             checkForChangedSXDataAndSendUpdates();
+            checkForLanbahnChangesAndSendUpdates();
             mySleep(200);  // send update only every 200msecs
         }
     }
 
     /**
-     * SX Net Protocol (ASCII, all msg terminated with '\n')
-     * REV JULY 2018
-     * sent by mobile device -> SX3-PC sends back:
+     * SX Net Protocol (ASCII, all msg terminated with '\n') REV JULY 2018 sent
+     * by mobile device -> SX3-PC sends back:
      * ---------------------------------------|------------------- R cc = Read
      * channel cc (0..127) -> returns "X cc dd" S cc.b dd = Set channel cc bit b
      * to Data dd (0 or 1) -> returns "X cc dd" SX cc dd = Set channgel cc to
@@ -135,6 +137,11 @@ public class SXnetSession implements Runnable {
             case "SX":   // complete byte set (for loco typically)
                 setSXByteMessage(param);
                 break;
+            case "SET": //TODO, for addresses > 1000 (lanbahn sim./routes)
+                setLanbahnMessage(param);
+                break;
+            case "READ": //TODO, for addresses > 1000 (lanbahn sim./routes)
+            // FEEDBACK für diese Adressen "XL" 
             default:
         }
         return result;
@@ -170,7 +177,6 @@ public class SXnetSession implements Runnable {
         SXUtils.setSxData(adr, data);
     }
 
-    
     private void setSXBitMessage(String[] par) {
         if (par.length < 3) {
             return;
@@ -195,17 +201,45 @@ public class SXnetSession implements Runnable {
 
     }
 
-    /* NOT USED private int getBitFromString(String s) {
-        // converts String to an integer between 1 and 8 (=SX Bit)
-        try {
-            int bit = Integer.parseInt(s);
-            if ((bit >= 1) || (bit <= 8)) {
-                return bit;
-            }
-        } catch (NumberFormatException e) {
+    private String setLanbahnMessage(String[] par) {
+        if (DEBUG) {
+            // System.out.println("setLanbahnMessage");
         }
-        return INVALID_INT;
-    } */
+
+        // convert the lanbahn "SET" message to an SX-S Message if in SX address range
+        if (par.length <= 2) {
+            return "ERROR";
+        }
+        int lbadr = getLanbahnAddrFromString(par[1]);
+        int lbdata = getLanbahnDataFromString(par[2]);
+        if ((lbadr == INVALID_INT) || (lbdata == INVALID_INT)) {
+            return "ERROR";
+        } else {
+            lanbahnData.put(lbadr, lbdata);  // update (or create) data    
+            // send lanbahnData
+            return "XL " + lbadr + " " + lanbahnData.get(lbadr);
+        }
+    }
+
+    private String createLanbahnFeedbackMessage(String[] par) {
+        if (DEBUG) {
+            //System.out.println("createLanbahnFeedbackMessage");
+        }
+        int lbAddr = getLanbahnAddrFromString(par[1]);
+        if (lbAddr == ERROR) {
+            return "ERROR";
+        }
+
+        if (!lanbahnData.containsKey(lbAddr)) {
+            // initialize to "0" (=start simulation and init to "0")
+            // if not already exists
+            lanbahnData.put(lbAddr, 0);
+        }
+        // send lanbahnData, when already set
+        return "XL " + lbAddr + " " + lanbahnData.get(lbAddr);
+
+    }
+
     private int getByteFromString(String s) {
         // converts String to integer between 0 and 255 
         //    (= range of SX Data and of Lanbahn data values)
@@ -218,6 +252,21 @@ public class SXnetSession implements Runnable {
             //
         }
         return INVALID_INT;
+    }
+
+    private int getLanbahnDataFromString(String s) {
+        // converts String to integer between 0 and 15
+        //    (= range Lanbahn data values)
+        Integer data;
+        try {
+            data = Integer.parseInt(s);
+            if ((data >= LBDATAMIN) && (data <= LBDATAMAX)) {
+                return data;
+            }
+        } catch (Exception e) {
+            //
+        }
+        return ERROR;
     }
 
     /**
@@ -290,6 +339,30 @@ public class SXnetSession implements Runnable {
         return new SxAbit(INVALID_INT, INVALID_INT);
     }
 
+    /**
+     * parse String to extract a lanbahn address
+     *
+     * @param s
+     * @return lbaddr (or INVALID_INT)
+     */
+    int getLanbahnAddrFromString(String s) {
+        //System.out.println("getLanbahnAddrFromString s=" + s);
+        Integer lbAddr;
+        try {
+            lbAddr = Integer.parseInt(s);
+            if ((lbAddr >= LBMIN) && (lbAddr <= LBMAX)) {
+                return lbAddr;
+                // OK, valid lanbahn channel
+            } else {
+                System.out.println("ERROR: lbAddr=" + lbAddr + " not valid");
+                return ERROR;
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR: number conversion error input=" + s);
+            return ERROR;
+        }
+    }
+
     private void sendMessage(String res) {
         if (res.isEmpty()) {
             return;
@@ -348,5 +421,40 @@ public class SXnetSession implements Runnable {
 
         }
 
+    }
+
+    /**
+     * check for changed (exclusiv) lanbahn data and send update in case of
+     * change
+     *
+     */
+    private void checkForLanbahnChangesAndSendUpdates() {
+        StringBuilder msg = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<Integer, Integer> e : lanbahnData.entrySet()) {
+            Integer key = e.getKey();
+            Integer value = e.getValue();
+            if (lanbahnDataCopy.containsKey(key)) {
+                if (lanbahnDataCopy.get(key) != lanbahnData.get(key)) {
+                    // value has changed
+                    lanbahnDataCopy.put(key, value);
+                    if (!first) {
+                        msg.append(";");
+                    }
+                    msg.append("XL " + key + " " + value);
+                    first = false;
+                    if (msg.length() > 60) {
+                        sendMessage(msg.toString());
+                        msg.setLength(0);  // =delete content
+                        first = true;
+                    }
+                }
+            } else {
+                lanbahnDataCopy.put(key, value);
+            }
+        }
+        if (msg.length() > 0) {
+            sendMessage(msg.toString());
+        }
     }
 }
