@@ -7,6 +7,8 @@ nbbuild/
 nbdist/
 .nb-gradle/
 
+archiv/
+
 # Class Files #
 *.class
 
