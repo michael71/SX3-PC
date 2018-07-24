@@ -33,7 +33,7 @@ public class ConfigWebserver {
         server.createContext("/config", new MyHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-
+        
         new Thread(new RegisterJMDNSService(jmdnsService, port, myip.get(0))).start();
 
         /* GUI:

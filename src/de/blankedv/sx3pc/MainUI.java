@@ -146,6 +146,9 @@ public class MainUI extends javax.swing.JFrame {
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
+        if (myip.size() == 0) {
+            System.out.println("ERROR: not network !!! cannot do anything");
+        }
 
         loadWindowPrefs();
 
@@ -200,20 +203,25 @@ public class MainUI extends javax.swing.JFrame {
 
         String configFile = prefs.get("configfilename", "-keiner-");
 
-        if (!configFile.equalsIgnoreCase("-keiner-")) {
-            configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
-            lblMainConfigFilename.setText(configFile);
-        } else {
-            lblMainConfigFilename.setText("bisher nicht ausgewählt");
-        }
         initTimer();
 
-        this.setTitle("SX3-PC - " + panelName);
+        this.setTitle("SX3-PC"); // + panelName);
 
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
 
+            if (!configFile.equalsIgnoreCase("-keiner-")) {
+                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
+                lblMainConfigFilename.setText(configFile);
+            } else {
+                lblMainConfigFilename.setText("bisher nicht ausgewählt");
+            }
+
+        } else {
+             lblMainConfigFilename.setText("kein Netzwerk!!");
+            JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
+           
         }
 
     }

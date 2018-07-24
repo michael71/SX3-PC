@@ -141,7 +141,8 @@ public class SXnetSession implements Runnable {
                 setLanbahnMessage(param);
                 break;
             case "READ": //TODO, for addresses > 1000 (lanbahn sim./routes)
-            // FEEDBACK für diese Adressen "XL" 
+                createLanbahnFeedbackMessage(param);
+                break;
             default:
         }
         return result;
