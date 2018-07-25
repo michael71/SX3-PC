@@ -72,7 +72,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #LBMIN} minimum lanbahn channel number
      */
-    public static final int LBMIN = 1000; // 
+    public static final int LBMIN = 1; // 
 
     /**
      * {@value #LBMAX} =maximum lanbahn channel number

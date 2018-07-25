@@ -29,7 +29,7 @@ public class SXnetSession implements Runnable {
 
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
-    private final HashMap<Integer, Integer> lanbahnDataCopy = new HashMap<>(N_LANBAHN);
+    private final ConcurrentHashMap<Integer, Integer> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
     private final int ERROR = INVALID_INT;  // ERROR kept for readability
 
     /**
@@ -55,7 +55,7 @@ public class SXnetSession implements Runnable {
             Scanner in = new Scanner(inStream);
 
             Timer sendUpdatesTimer = new Timer();
-            sendUpdatesTimer.schedule(new SendUpdatesTask(), 200, 50);
+            sendUpdatesTimer.schedule(new SendUpdatesTask(), 200, 100);
 
             sendMessage("SXnet-Server 3.1 - " + sn);  // welcome string
 
@@ -67,8 +67,8 @@ public class SXnetSession implements Runnable {
                     }
                     String[] cmds = msg.split(";");  // multiple commands per line possible, separated by semicolon
                     for (String cmd : cmds) {
-                        sendMessage(handleCommand(cmd.trim()));
-                        // sends feedback message  X 'addr' 'data' (or INVALID_INT) back to mobile device
+                        handleCommand(cmd.trim());
+                        // sends feedback message  XL 'addr' 'data' (or INVALID_INT) back to mobile device
                     }
                 } else {
                     // ignore empty lines
@@ -100,7 +100,6 @@ public class SXnetSession implements Runnable {
         public void run() {
             checkForChangedSXDataAndSendUpdates();
             checkForLanbahnChangesAndSendUpdates();
-            mySleep(200);  // send update only every 200msecs
         }
     }
 
@@ -117,7 +116,7 @@ public class SXnetSession implements Runnable {
      * for all channels 0 ... 104 (SXMAX_USED) and 127 all changes are
      * transmitted to all connected clients ,
      */
-    private String handleCommand(String m) {
+    private void handleCommand(String m) {
         String[] param = m.split("\\s+");  // remove >1 whitespace
         if (param == null) {
             System.out.println("irregular msg: " + m);
@@ -141,11 +140,11 @@ public class SXnetSession implements Runnable {
                 setLanbahnMessage(param);
                 break;
             case "READ": //TODO, for addresses > 1000 (lanbahn sim./routes)
-                createLanbahnFeedbackMessage(param);
+                result = createLanbahnFeedbackMessage(param);
                 break;
             default:
         }
-        return result;
+        sendMessage(result);
 
     }
 
@@ -224,7 +223,7 @@ public class SXnetSession implements Runnable {
 
     private String createLanbahnFeedbackMessage(String[] par) {
         if (DEBUG) {
-            //System.out.println("createLanbahnFeedbackMessage");
+            System.out.println("createLanbahnFeedbackMessage");
         }
         int lbAddr = getLanbahnAddrFromString(par[1]);
         if (lbAddr == ERROR) {
@@ -347,7 +346,9 @@ public class SXnetSession implements Runnable {
      * @return lbaddr (or INVALID_INT)
      */
     int getLanbahnAddrFromString(String s) {
-        //System.out.println("getLanbahnAddrFromString s=" + s);
+        if (DEBUG) {
+            System.out.println("getLanbahnAddrFromString s=" + s);
+        }
         Integer lbAddr;
         try {
             lbAddr = Integer.parseInt(s);
@@ -407,21 +408,43 @@ public class SXnetSession implements Runnable {
      * check for changed sxData and send update in case of change
      */
     private void checkForChangedSXDataAndSendUpdates() {
+        StringBuilder msg = new StringBuilder();
+        boolean first = true;
 
         // power channel
         if (sxData[127] != sxDataCopy[127]) {
-            sendSXUpdates(127);
+            sxDataCopy[127] = sxData[127];
+            msg.append("X ");
+            msg.append(127);
+            msg.append(" ");
+            msg.append(sxDataCopy[127]);  // SX Feedback Message
+            first = false;
         }
         // other channels
 
         for (int ch = 0; ch < SXMAX; ch++) {
             if (sxData[ch] != sxDataCopy[ch]) {
-                // channel data changed, send update to mobile device
-                sendSXUpdates(ch);
+                sxDataCopy[ch] = sxData[ch];
+                // channel data changed, send update to mobile device 
+                if (!first) {
+                    msg.append(";");
+                }
+
+                msg.append("X ");
+                msg.append(ch);
+                msg.append(" ");
+                msg.append(sxDataCopy[ch]);  // SX Feedback Message
+                first = false;
+
+                if (msg.length() > 60) {
+                    sendMessage(msg.toString());
+                    msg.setLength(0);  // =delete content
+                    first = true;
+                }
             }
 
         }
-
+        sendMessage(msg.toString());  // send all messages, separated with ";"
     }
 
     /**
@@ -452,6 +475,16 @@ public class SXnetSession implements Runnable {
                 }
             } else {
                 lanbahnDataCopy.put(key, value);
+                if (!first) {
+                    msg.append(";");
+                }
+                msg.append("XL " + key + " " + value);
+                first = false;
+                if (msg.length() > 60) {
+                    sendMessage(msg.toString());
+                    msg.setLength(0);  // =delete content
+                    first = true;
+                }
             }
         }
         if (msg.length() > 0) {

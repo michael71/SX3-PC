@@ -37,7 +37,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
     public LanbahnMonitorUI() {
         initComponents();
 
-        this.setTitle("Lanbahn/SIM Monitor [virtual and Routes] >=1000");
+        this.setTitle("Virtual Channels Monitor");
         Color c1 = new Color(140, 140, 255);
         Container con1 = this.getContentPane();
         con1.setBackground(c1);
