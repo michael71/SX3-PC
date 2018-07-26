@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.1-puresx - 23 Juli 2018";
+    public static final String VERSION = "2.21 - 26 Juli 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -107,6 +107,11 @@ public class MainUI extends javax.swing.JFrame {
      * contains the complete state of command station
      */
     public static final int[] sxData = new int[N_SX];
+        /**
+     * locoAddresses ArrayList contains addresses of all locos to be able to
+     * generate loco specific feedback messages
+     */
+    public static final ArrayList<Integer> locoAddresses = new ArrayList<Integer>(); 
     public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
 
     public static MonitorUI sxmon = null;

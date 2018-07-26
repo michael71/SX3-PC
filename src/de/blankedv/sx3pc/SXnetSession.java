@@ -121,21 +121,30 @@ public class SXnetSession implements Runnable {
         if (param == null) {
             System.out.println("irregular msg: " + m);
         }
+        if (param[0].equals("READPOWER"))   {
+            String res = readPower();  // no parameters
+            sendMessage(res);
+            return;
+        }
         if (param.length < 2) {
             System.out.println("not enough params in msg: " + m);
         }
 
         String result = "";
         switch (param[0]) {
-            case "R":    // returns byte
-                result = readSXByteMessage(param);
+            case "SETPOWER":
+                setPower(param);
+                break;
+            case "SETLOCO":   // complete byte set (for loco typically)
+                setLocoMessage(param);
+                break;
+            case "READLOCO":    // returns byte
+                result = readLocoMessage(param);
                 break;
             case "S":    // single bit set / unset
                 setSXBitMessage(param);
                 break;
-            case "SX":   // complete byte set (for loco typically)
-                setSXByteMessage(param);
-                break;
+
             case "SET": //TODO, for addresses > 1000 (lanbahn sim./routes)
                 setLanbahnMessage(param);
                 break;
@@ -160,7 +169,41 @@ public class SXnetSession implements Runnable {
         return "X " + adr + " " + sxData[adr];
     }
 
+    private String readLocoMessage(String[] par) {
+        if (DEBUG) {
+            System.out.println("readLocoMessage");
+        }
+        int adr = getSXAddrFromString(par[1]);
+        if (adr == INVALID_INT) {
+            System.out.println("addr in msg invalid");
+            return "";
+        }
+        if (!locoAddresses.contains(adr)) {
+            locoAddresses.add(adr);
+        }
+        return "XLOCO " + adr + " " + sxData[adr];
+    }
+
     private void setSXByteMessage(String[] par) {
+        if (par.length < 3) {
+            return;
+        }
+        if (DEBUG) {
+            System.out.println("setLocoMessage");
+        }
+        int adr = getSXAddrFromString(par[1]);
+        int data = getByteFromString(par[2]);
+
+        if ((adr == INVALID_INT) || (data == INVALID_INT)) {
+            return;
+        }
+        if (!locoAddresses.contains(adr)) {
+            locoAddresses.add(adr);
+        }
+        SXUtils.setSxData(adr, data);  // synchronized
+    }
+
+    private void setLocoMessage(String[] par) {
         if (par.length < 3) {
             return;
         }
@@ -174,7 +217,38 @@ public class SXnetSession implements Runnable {
             return;
         }
 
-        SXUtils.setSxData(adr, data);
+        SXUtils.setSxData(adr, data);  // synchronized
+    }
+
+    private String setPower(String[] par) {
+        if (DEBUG) {
+            System.out.println("setPowerMessage");
+        }
+        int value = getByteFromString(par[1]);
+        switch (value) {
+            case 1:
+                SXUtils.setSxData(127, 128);  // synchronized
+                return "XPOWER 1";
+            case 0:
+                SXUtils.setSxData(127, 0);  // synchronized
+                return "XPOWER 0";
+            default:
+                return "";   // invalid value
+        }
+
+    }
+
+    private String readPower() {
+        if (DEBUG) {
+            System.out.println("readPowerMessage");
+        }
+        if (sxData[127] != 0) {
+            return "XPOWER 1";
+        } else {
+            return "XPOWER 0";
+
+        }
+
     }
 
     private void setSXBitMessage(String[] par) {
@@ -414,10 +488,11 @@ public class SXnetSession implements Runnable {
         // power channel
         if (sxData[127] != sxDataCopy[127]) {
             sxDataCopy[127] = sxData[127];
-            msg.append("X ");
-            msg.append(127);
-            msg.append(" ");
-            msg.append(sxDataCopy[127]);  // SX Feedback Message
+            if (sxDataCopy[127] != 0) {
+                msg.append("XPOWER 1");
+            } else {
+                msg.append("XPOWER 0");
+            }
             first = false;
         }
         // other channels
@@ -430,7 +505,11 @@ public class SXnetSession implements Runnable {
                     msg.append(";");
                 }
 
-                msg.append("X ");
+                if (locoAddresses.contains(ch)) {
+                    msg.append("XLOCO ");
+                } else {
+                    msg.append("X ");
+                }
                 msg.append(ch);
                 msg.append(" ");
                 msg.append(sxDataCopy[ch]);  // SX Feedback Message
