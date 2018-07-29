@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.21 - 26 Juli 2018";
+    public static final String VERSION = "2.22 - 29 Juli 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor

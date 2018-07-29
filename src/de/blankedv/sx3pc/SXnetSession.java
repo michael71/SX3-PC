@@ -121,7 +121,7 @@ public class SXnetSession implements Runnable {
         if (param == null) {
             System.out.println("irregular msg: " + m);
         }
-        if (param[0].equals("READPOWER"))   {
+        if (param[0].equals("READPOWER")) {
             String res = readPower();  // no parameters
             sendMessage(res);
             return;
@@ -144,7 +144,9 @@ public class SXnetSession implements Runnable {
             case "S":    // single bit set / unset
                 setSXBitMessage(param);
                 break;
-
+            case "R":    // read sx value
+                result = readSXByteMessage(param);
+                break;
             case "SET": //TODO, for addresses > 1000 (lanbahn sim./routes)
                 setLanbahnMessage(param);
                 break;
@@ -280,7 +282,6 @@ public class SXnetSession implements Runnable {
             // System.out.println("setLanbahnMessage");
         }
 
-        // convert the lanbahn "SET" message to an SX-S Message if in SX address range
         if (par.length <= 2) {
             return "ERROR";
         }
@@ -289,9 +290,29 @@ public class SXnetSession implements Runnable {
         if ((lbadr == INVALID_INT) || (lbdata == INVALID_INT)) {
             return "ERROR";
         } else {
-            lanbahnData.put(lbadr, lbdata);  // update (or create) data    
-            // send lanbahnData
-            return "XL " + lbadr + " " + lanbahnData.get(lbadr);
+            // convert the lanbahn "SET" message to an SX-S Message if in SX address range
+            if (lbadr <= (SXMAX * 10 + 8)) { // max possible address (1118)
+                int sxadr = lbadr / 10;
+                int sxbit = lbadr % 10;
+                if (lbdata == 1) {
+                    //set bit
+                    SXUtils.setBitSxData(sxadr, sxbit);
+                } else if (lbdata == 0) {
+                    // clear bit
+                    SXUtils.clearBitSxData(sxadr, sxbit);
+                } else {
+                    if (DEBUG) {
+                        System.out.println("invalid lbdata in sx addr a=" + lbadr + " d=" + lbdata);
+                    }
+                    return "ERROR";
+                }
+                return "";   //feedback sent in SXUtils.set/clear...
+            } else {
+                // put in lanbahn array only if not in SX address range
+                lanbahnData.put(lbadr, lbdata);  // update (or create) data    
+                // send lanbahnData
+                return "XL " + lbadr + " " + lanbahnData.get(lbadr);
+            }
         }
     }
 
@@ -304,13 +325,18 @@ public class SXnetSession implements Runnable {
             return "ERROR";
         }
 
-        if (!lanbahnData.containsKey(lbAddr)) {
-            // initialize to "0" (=start simulation and init to "0")
-            // if not already exists
-            lanbahnData.put(lbAddr, 0);
+        if (lbAddr <= (SXMAX * 10 + 8)) { // we are in sx range, create SX Feedback Msg
+            sendSXUpdates(lbAddr / 10);  //includes sending the message
+            return "";
+        } else {
+            if (!lanbahnData.containsKey(lbAddr)) {
+                // initialize to "0" (=start simulation and init to "0")
+                // if not already exists
+                lanbahnData.put(lbAddr, 0);
+            }
+            // send lanbahnData, when already set
+            return "XL " + lbAddr + " " + lanbahnData.get(lbAddr);
         }
-        // send lanbahnData, when already set
-        return "XL " + lbAddr + " " + lanbahnData.get(lbAddr);
 
     }
 
@@ -454,8 +480,10 @@ public class SXnetSession implements Runnable {
     private void mySleep(int millis) {
         try {
             Thread.sleep(millis);
+
         } catch (InterruptedException ex) {
-            Logger.getLogger(SXnetSession.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SXnetSession.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
