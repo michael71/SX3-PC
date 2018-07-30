@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -31,6 +32,7 @@ public class SXnetSession implements Runnable {
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
     private final ConcurrentHashMap<Integer, Integer> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
+    public static final ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread worker;

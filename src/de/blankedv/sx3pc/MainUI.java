@@ -225,6 +225,7 @@ public class MainUI extends javax.swing.JFrame {
                 configWebserver = new ConfigWebserver(configFile, locoConfigFile, CONFIG_PORT);
                 lblMainConfigFilename.setText(configFile);
                 lblMainLocoConfigFilename.setText(locoConfigFile);
+                ReadSignalMapping.init(configFile);
 
             } else {
                 lblMainConfigFilename.setText("bisher nicht ausgewählt");
