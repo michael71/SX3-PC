@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.22 - 29 Juli 2018";
+    public static final String VERSION = "2.23 - 30 Juli 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -142,6 +142,7 @@ public class MainUI extends javax.swing.JFrame {
     private final ImageIcon green, red;
     private List<Integer> pList = new LinkedList<>();
     Timer timer;  // user for updating UI every second
+    private String downloadFrom;
 
     /**
      * Creates new form InterfaceUI
@@ -153,6 +154,9 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("Number of usable Network Interfaces=" + myip.size());
         if (myip.size() == 0) {
             System.out.println("ERROR: not network !!! cannot do anything");
+            downloadFrom = "download von http://hostname:8000/config\"";
+        } else {
+            downloadFrom = "download from http:/" + myip.get(0).toString() + ":8000/config";
         }
 
         loadWindowPrefs();
@@ -207,6 +211,7 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("Number of usable Network Interfaces=" + myip.size());
 
         String configFile = prefs.get("configfilename", "-keiner-");
+        String locoConfigFile = prefs.get("locofilename", "");
 
         initTimer();
 
@@ -216,9 +221,10 @@ public class MainUI extends javax.swing.JFrame {
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
 
-            if (!configFile.equalsIgnoreCase("-keiner-")) {
-                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
+            if (!configFile.equalsIgnoreCase("-keiner-")) {                
+                configWebserver = new ConfigWebserver(configFile, locoConfigFile, CONFIG_PORT);
                 lblMainConfigFilename.setText(configFile);
+                 
             } else {
                 lblMainConfigFilename.setText("bisher nicht ausgewählt");
             }
@@ -240,7 +246,7 @@ public class MainUI extends javax.swing.JFrame {
             configWebserver.stop();
         }
 
-        try {  // close jmdns etc.
+        try {  // close threads
             Thread.sleep(500);
         } catch (InterruptedException e1) {
             ;
@@ -423,7 +429,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Layout file ( http://hostname:8000/config )"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), downloadFrom));
 
         lblMainConfigFilename.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
         lblMainConfigFilename.setText("jLabel1");

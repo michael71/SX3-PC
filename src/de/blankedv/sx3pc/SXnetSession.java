@@ -13,6 +13,7 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +31,9 @@ public class SXnetSession implements Runnable {
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
     private final ConcurrentHashMap<Integer, Integer> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
-    private final int ERROR = INVALID_INT;  // ERROR kept for readability
+
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private Thread worker;
 
     /**
      * Constructs a handler.
@@ -43,23 +46,31 @@ public class SXnetSession implements Runnable {
         sn = session_counter++;
     }
 
+    public void stop() {
+        running.set(false);
+        worker.interrupt();   
+    }
+
     /**
      * Thread receives messages from one mobile device
      *
      */
     public void run() {
+        running.set(true);
+        worker = Thread.currentThread();
         try {
             OutputStream outStream = incoming.getOutputStream();
             out = new PrintWriter(outStream, true /* autoFlush */);
             InputStream inStream = incoming.getInputStream();
             Scanner in = new Scanner(inStream);
+            long lastCommand = System.currentTimeMillis();
 
             Timer sendUpdatesTimer = new Timer();
             sendUpdatesTimer.schedule(new SendUpdatesTask(), 200, 100);
 
             sendMessage("SXnet-Server 3.1 - " + sn);  // welcome string
 
-            while (in.hasNextLine()) {
+            while (running.get() && in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
                 if (msg.length() > 0) {
                     if (DEBUG) {
@@ -70,16 +81,29 @@ public class SXnetSession implements Runnable {
                         handleCommand(cmd.trim());
                         // sends feedback message  XL 'addr' 'data' (or INVALID_INT) back to mobile device
                     }
+                    lastCommand = System.currentTimeMillis();
                 } else {
                     // ignore empty lines
                     if (DEBUG) {
                         System.out.println("sxnet" + sn + " read empty line");
                     }
                 }
-                mySleep(10);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println(
+                            "client" + sn +" Thread was interrupted");
+                }
 
             }
-            SXnetServerUI.taClients.append("client" + sn + " disconnected " + incoming.getRemoteSocketAddress().toString() + "\n");
+            if ((System.currentTimeMillis() - lastCommand) < 60000) {
+                SXnetServerUI.taClients.append("client" + sn + " timeout" + incoming.getRemoteSocketAddress().toString() + "\n");
+
+            } else {
+                SXnetServerUI.taClients.append("client" + sn + " disconnected" + incoming.getRemoteSocketAddress().toString() + "\n");
+
+            }
         } catch (IOException e) {
             System.out.println("SXnetServerHandler" + sn + " Error: " + e);
         }

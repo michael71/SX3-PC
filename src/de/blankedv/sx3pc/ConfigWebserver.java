@@ -17,6 +17,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import static de.blankedv.sx3pc.MainUI.myip;
+import java.net.URI;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,28 +25,17 @@ import java.nio.file.Paths;
 public class ConfigWebserver {
 
     String fileName = "";
-    static final String jmdnsService = "sxconfig";
+    String locoFileName = "";
     HttpServer server;
 
-    public ConfigWebserver(String fName, int port) throws Exception {
+    public ConfigWebserver(String fName, String lName, int port) throws Exception {
         fileName = fName;
+        locoFileName = lName;
         server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/config", new MyHandler());
+        server.createContext("/", new MyHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
         
-        new Thread(new RegisterJMDNSService(jmdnsService, port, myip.get(0))).start();
-
-        /* GUI:
-    JFileChooser chooser = new JFileChooser();
-    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-        "xml", "XML");
-    chooser.setFileFilter(filter);
-    int returnVal = chooser.showOpenDialog(parent);
-    if(returnVal == JFileChooser.APPROVE_OPTION) {
-       System.out.println("You chose to open this file: " +
-            chooser.getSelectedFile().getName());
-    }   */
     }
 
     public void stop() {
@@ -58,15 +48,25 @@ public class ConfigWebserver {
         @Override
         public void handle(HttpExchange t) {
             String response;
+            URI requestURI = t.getRequestURI();
+            System.out.println("URI="+requestURI.getPath());
+            String fname = "";
             try {
-                response = new String(Files.readAllBytes(Paths.get(fileName)));
+                if (requestURI.getPath().contains("config")) {
+                    fname = fileName;
+                } else if (requestURI.getPath().contains("loco")) {
+                    fname = locoFileName;
+                } else {
+                    fname = "___";
+                }
+                response = new String(Files.readAllBytes(Paths.get(fname)));
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
             } catch (IOException ex) {
-                System.out.println("Config File: " + fileName + " not found");
-                response = "Config File: " + fileName + " not found";
+                System.out.println("Config/Loco File: " + fname + " not found - only :8000/config and :8000/loco allowed");
+                response = "Config/Loco File: " + fname + " not found - only :8000/config and :8000/loco allowed";
                 try {
                     t.sendResponseHeaders(200, response.length());
                      OutputStream os = t.getResponseBody();
