@@ -48,4 +48,16 @@ public class SignalMapping {
        return false;
     }
     
+    public String toString() {
+        StringBuilder sb = new StringBuilder("");
+        sb.append("lbAddr=");
+        sb.append(lbAddr);
+        sb.append(" sxAddr=");
+        sb.append(sxAddr);
+        sb.append(" sxBit=");
+        sb.append(sxBit);
+        sb.append(" nBit=");
+        sb.append(nBit);
+        return sb.toString();
+    }
 }

@@ -50,7 +50,7 @@ public class SXnetSession implements Runnable {
 
     public void stop() {
         running.set(false);
-        worker.interrupt();   
+        worker.interrupt();
     }
 
     /**
@@ -95,7 +95,7 @@ public class SXnetSession implements Runnable {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     System.out.println(
-                            "client" + sn +" Thread was interrupted");
+                            "client" + sn + " Thread was interrupted");
                 }
 
             }
@@ -212,7 +212,7 @@ public class SXnetSession implements Runnable {
         return "XLOCO " + adr + " " + sxData[adr];
     }
 
-    private void setSXByteMessage(String[] par) {
+    /* private void setSXByteMessage(String[] par) {
         if (par.length < 3) {
             return;
         }
@@ -229,7 +229,7 @@ public class SXnetSession implements Runnable {
             locoAddresses.add(adr);
         }
         SXUtils.setSxData(adr, data);  // synchronized
-    }
+    } */
 
     private void setLocoMessage(String[] par) {
         if (par.length < 3) {
@@ -320,17 +320,48 @@ public class SXnetSession implements Runnable {
             if (lbadr <= (SXMAX * 10 + 8)) { // max possible address (1118)
                 int sxadr = lbadr / 10;
                 int sxbit = lbadr % 10;
-                if (lbdata == 1) {
-                    //set bit
-                    SXUtils.setBitSxData(sxadr, sxbit);
-                } else if (lbdata == 0) {
-                    // clear bit
-                    SXUtils.clearBitSxData(sxadr, sxbit);
-                } else {
-                    if (DEBUG) {
-                        System.out.println("invalid lbdata in sx addr a=" + lbadr + " d=" + lbdata);
+                if (SignalMapping.exists(lbadr)) {
+                    // 4 aspect signal
+                    switch (lbdata) {
+                        case 0:
+                            SXUtils.clearBitSxData(sxadr, sxbit);
+                            SXUtils.clearBitSxData(sxadr, sxbit + 1);
+                            break;
+                        case 1:
+                            SXUtils.setBitSxData(sxadr, sxbit);
+                            SXUtils.clearBitSxData(sxadr, sxbit + 1);
+                            break;
+                        case 2:
+                            SXUtils.clearBitSxData(sxadr, sxbit);
+                            SXUtils.setBitSxData(sxadr, sxbit + 1);
+                            break;
+                        case 3:
+                            SXUtils.setBitSxData(sxadr, sxbit);
+                            SXUtils.setBitSxData(sxadr, sxbit + 1);
+                            break;
+                        default:
+                            if (DEBUG) {
+                                System.out.println("invalid lbdata in sx (4-aspect) addr a=" + lbadr + " d=" + lbdata);
+                            }
+                            return "ERROR";
                     }
-                    return "ERROR";
+                } else {
+                    // set single sx bit
+                    switch (lbdata) {
+                        case 1:
+                            //set bit
+                            SXUtils.setBitSxData(sxadr, sxbit);
+                            break;
+                        case 0:
+                            // clear bit
+                            SXUtils.clearBitSxData(sxadr, sxbit);
+                            break;
+                        default:
+                            if (DEBUG) {
+                                System.out.println("invalid lbdata in sx addr a=" + lbadr + " d=" + lbdata);
+                            }
+                            return "ERROR";
+                    }
                 }
                 return "";   //feedback sent in SXUtils.set/clear...
             } else {

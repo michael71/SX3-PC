@@ -97,7 +97,7 @@ public class ReadSignalMapping {
         // NamedNodeMap attributes = item.getAttributes();
         // Node theAttribute = attributes.items.item(i);
         // look for TrackElements - this is the lowest layer
-        items = root.getElementsByTagName("signalg");
+        items = root.getElementsByTagName("signal");
         if (CFG_DEBUG) {
             System.out.println("config: " + items.getLength() + " signals");
         }

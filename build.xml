@@ -71,7 +71,7 @@
 
     -->
     <target name="-post-jar">
-        <copy file="src/de/blankedv/sx3pc/assets/lb-panel2.xml" flatten="true" todir="${dist.dir}/panels"/>
+        <copy file="src/de/blankedv/sx3pc/assets/lb-panel4.xml" flatten="true" todir="${dist.dir}/panels"/>
         <copy file="src/de/blankedv/sx3pc/assets/panel-ibm26a.xml" flatten="true" todir="${dist.dir}/panels"/>
         <copy file="src/de/blankedv/sx3pc/assets/panel_sxtest.xml" flatten="true" todir="${dist.dir}/panels"/>
         <copy file="src/de/blankedv/sx3pc/assets/start_sx3.sh" flatten="true" todir="${dist.dir}"/>
