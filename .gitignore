@@ -1,11 +1,11 @@
 # NetBeans specific #
 nbproject/private/
-nbproject/project.properties
+dist/
 build/
-nbproject/build-impl.xml
 nbbuild/
 nbdist/
-.nb-gradle/
+nbactions.xml
+nb-configuration.xml
 
 archiv/
 
