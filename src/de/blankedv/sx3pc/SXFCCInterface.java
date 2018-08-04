@@ -278,7 +278,7 @@ public class SXFCCInterface extends GenericSXInterface {
     * das höchste Bit auf 1 gesetzt werden
     * * TODO check FCC */
     @Override
-    public synchronized void send(Byte[] data) {
+    public synchronized boolean send(Byte[] data) {
         try {
             outputStream.write((byte)0);  // TODO ????
             outputStream.write(data[0]);
@@ -287,6 +287,7 @@ public class SXFCCInterface extends GenericSXInterface {
             // done via polling in LanbahnUI // doLanbahnUpdate((byte)(data[0] & 0x7f), data[1]);
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
+            return false;
         }
         shortSleep();
         // quittung abwarten
@@ -294,10 +295,15 @@ public class SXFCCInterface extends GenericSXInterface {
             int result = inputStream.read();
             if (result != 0) {
                 System.out.println("Error: Serial Fehler beim Senden");
+                return false;
+            } else {
+                return true;
             }
         } catch (IOException ex) {
             System.out.println("Error: Serial Fehler beim Empfangen");
+            return false;
         }
+        
     }
 
 }

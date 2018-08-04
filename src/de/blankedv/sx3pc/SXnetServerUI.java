@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 
 import static de.blankedv.sx3pc.MainUI.running;
 import static de.blankedv.sx3pc.MainUI.myip;
+import java.util.ArrayList;
 
 /**
  *
@@ -19,6 +20,7 @@ public class SXnetServerUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 534251256456436L;
     private static final int SXNET_PORT = 4104;
     static SXnetServer server;
+
     // Preferences
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     protected Thread t;
@@ -176,9 +178,10 @@ public class SXnetServerUI extends javax.swing.JFrame {
                     taClients.append("new client connected " + incoming.getRemoteSocketAddress().toString() + "\n");
 
                     // after new client has connected start new thread to handle this client
-                    Runnable r = new SXnetSession(incoming);
+                    SXnetSession r = new SXnetSession(incoming);                   
                     Thread t = new Thread(r);
                     t.start();
+
                 }
                 System.out.println("SXnet Server closing.");
                 s.close();

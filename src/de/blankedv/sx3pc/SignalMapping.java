@@ -7,7 +7,7 @@ package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
-import static de.blankedv.sx3pc.SXnetSession.allSignalMappings;
+import static de.blankedv.sx3pc.MainUI.allSignalMappings;
 
 /**
  *

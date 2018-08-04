@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
+import java.util.TooManyListenersException;
 
 /**
  *
@@ -41,7 +42,7 @@ public class SXInterface extends GenericSXInterface {
 
     private static int leftover;
     private static boolean leftoverFlag = false;
-    private static long lastReceived = 0;
+
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
 
@@ -51,10 +52,12 @@ public class SXInterface extends GenericSXInterface {
         this.baudrate = baud;
     }
 
+    @Override
     public void setPort(String port) {
         portName = port;
     }
     
+    @Override
     public boolean open() {
         if (simulation) {
             serialPortGeoeffnet = true;
@@ -99,7 +102,7 @@ public class SXInterface extends GenericSXInterface {
         }
         try {
             serialPort.addEventListener(new serialPortEventListener());
-        } catch (Exception e) {
+        } catch (TooManyListenersException e) {
             System.out.println("TooManyListenersException für Serialport");
         }
         serialPort.notifyOnDataAvailable(true);
@@ -118,6 +121,7 @@ public class SXInterface extends GenericSXInterface {
         return true;
     }
 
+    @Override
     public void close() {
         if (simulation) {
             serialPortGeoeffnet = false;
@@ -136,12 +140,12 @@ public class SXInterface extends GenericSXInterface {
     }
 
     @Override
-    public synchronized void send(Byte[] data) {
+    public synchronized boolean send(Byte[] data) {
         // darf nicht unterbrochen werden     
 
         if (serialPortGeoeffnet != true) {
             System.out.println("Fehler beim Senden, serial port nicht geöffnet und simul. nicht gesetzt");
-            return;
+            return false;
         }
 
 
@@ -160,7 +164,9 @@ public class SXInterface extends GenericSXInterface {
 
         } catch (IOException e) {
             System.out.println("Fehler beim Senden");
+            return false;
         }
+        return true;
 
     }
 
@@ -271,6 +277,7 @@ public class SXInterface extends GenericSXInterface {
     }
 
     class serialPortEventListener implements SerialPortEventListener {
+        @Override
         public void serialEvent(SerialPortEvent event) {
             switch (event.getEventType()) {
                 case SerialPortEvent.DATA_AVAILABLE:
@@ -305,7 +312,7 @@ public class SXInterface extends GenericSXInterface {
                 if (DEBUG) {
                     // System.out.println("read n=" + numBytes);
                 }
-                int offset = 0;
+                int offset;
                 if (leftoverFlag) {
                     offset = 1;
                     data = (int) (readBuffer[0] & 0xFF);

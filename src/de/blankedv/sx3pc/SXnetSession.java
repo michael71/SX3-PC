@@ -7,16 +7,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * hanles one session (=1 mobile device)
@@ -24,6 +20,8 @@ import java.util.logging.Logger;
 public class SXnetSession implements Runnable {
 
     private static int session_counter = 0;  // class variable !
+    private String lastRes = "";
+    private long lastSent = 0;
 
     private int sn; // session number
     private final Socket incoming;
@@ -31,8 +29,8 @@ public class SXnetSession implements Runnable {
 
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
+    private int lastConnected = INVALID_INT;
     private final ConcurrentHashMap<Integer, Integer> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
-    public static final ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread worker;
@@ -70,7 +68,8 @@ public class SXnetSession implements Runnable {
             Timer sendUpdatesTimer = new Timer();
             sendUpdatesTimer.schedule(new SendUpdatesTask(), 200, 100);
 
-            sendMessage("SXnet-Server 3.1 - " + sn);  // welcome string
+            String welcomeString = S_XNET_SERVER_REV + " client" + sn;
+            // TODO sendMessage(welcomeString);  // welcome string
 
             while (running.get() && in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
@@ -99,13 +98,9 @@ public class SXnetSession implements Runnable {
                 }
 
             }
-            if ((System.currentTimeMillis() - lastCommand) < 60000) {
-                SXnetServerUI.taClients.append("client" + sn + " timeout" + incoming.getRemoteSocketAddress().toString() + "\n");
+            SXnetServerUI.taClients.append("client" + sn + " disconnected" + incoming.getRemoteSocketAddress().toString() + "\n");
+            sendUpdatesTimer.cancel();
 
-            } else {
-                SXnetServerUI.taClients.append("client" + sn + " disconnected" + incoming.getRemoteSocketAddress().toString() + "\n");
-
-            }
         } catch (IOException e) {
             System.out.println("SXnetServerHandler" + sn + " Error: " + e);
         }
@@ -179,6 +174,9 @@ public class SXnetSession implements Runnable {
             case "READ": //TODO, for addresses > 1000 (lanbahn sim./routes)
                 result = createLanbahnFeedbackMessage(param);
                 break;
+            case "QUIT": //terminate this client thread
+                stop();
+                break;
             default:
         }
         sendMessage(result);
@@ -230,7 +228,6 @@ public class SXnetSession implements Runnable {
         }
         SXUtils.setSxData(adr, data);  // synchronized
     } */
-
     private void setLocoMessage(String[] par) {
         if (par.length < 3) {
             return;
@@ -522,25 +519,21 @@ public class SXnetSession implements Runnable {
         }
     }
 
-    private void sendMessage(String res) {
-        if (res.isEmpty()) {
+    public void sendMessage(String res) {
+
+        // don't send duplicate messages within 1 second
+        if (res.isEmpty() || (res.equals(lastRes) && (System.currentTimeMillis() - lastSent < 1000))) {
             return;
         }
 
+        // store for later use
+        lastRes = res;
+        lastSent = System.currentTimeMillis();
+
         out.println(res);
-        out.flush();
+        //out.flush(); autoflush is set to true
         if (DEBUG) {
             System.out.println("sxnet" + sn + " send: " + res);
-        }
-    }
-
-    private void mySleep(int millis) {
-        try {
-            Thread.sleep(millis);
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SXnetSession.class
-                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -570,7 +563,7 @@ public class SXnetSession implements Runnable {
         StringBuilder msg = new StringBuilder();
         boolean first = true;
 
-        // power channel
+        // report change in power channel
         if (sxData[127] != sxDataCopy[127]) {
             sxDataCopy[127] = sxData[127];
             if (sxDataCopy[127] != 0) {
@@ -580,8 +573,19 @@ public class SXnetSession implements Runnable {
             }
             first = false;
         }
-        // other channels
 
+        // report change in connect status
+        if ((lastConnected == INVALID_INT) || (sxi.connState() != lastConnected)) {
+            lastConnected = sxi.connState();
+            if (!first) {
+                    msg.append(";");
+                }
+            msg.append("XCONN ");
+            msg.append(lastConnected); // 1 or 0
+            first = false;
+        }
+
+        // report changes in other channels
         for (int ch = 0; ch < SXMAX; ch++) {
             if (sxData[ch] != sxDataCopy[ch]) {
                 sxDataCopy[ch] = sxData[ch];
@@ -595,9 +599,7 @@ public class SXnetSession implements Runnable {
                 } else {
                     msg.append("X ");
                 }
-                msg.append(ch);
-                msg.append(" ");
-                msg.append(sxDataCopy[ch]);  // SX Feedback Message
+                msg.append(ch).append(" ").append(sxDataCopy[ch]);  // SX Feedback Message
                 first = false;
 
                 if (msg.length() > 60) {
@@ -629,7 +631,7 @@ public class SXnetSession implements Runnable {
                     if (!first) {
                         msg.append(";");
                     }
-                    msg.append("XL " + key + " " + value);
+                    msg.append("XL ").append(key).append(" ").append(value);
                     first = false;
                     if (msg.length() > 60) {
                         sendMessage(msg.toString());
@@ -642,7 +644,7 @@ public class SXnetSession implements Runnable {
                 if (!first) {
                     msg.append(";");
                 }
-                msg.append("XL " + key + " " + value);
+                msg.append("XL ").append(key).append(" ").append(value);
                 first = false;
                 if (msg.length() > 60) {
                     sendMessage(msg.toString());

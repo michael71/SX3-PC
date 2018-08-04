@@ -77,11 +77,12 @@ public class SXSimulationInterface extends GenericSXInterface {
     }
 
     @Override
-    public synchronized void send(Byte[] data) {
+    public synchronized boolean send(Byte[] data) {
         // only write commands in simulation
         // convert "signed" byte to unsigned int.
         // (byte is ALLWAYS signed in Java)
         sxData[data[0] & 0x7F] = toUnsignedInt(data[1]);
+        return true;
     }
 
     

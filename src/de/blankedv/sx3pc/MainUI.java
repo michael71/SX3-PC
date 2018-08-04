@@ -39,7 +39,8 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.24 - 31 Juli 2018";
+    public static final String VERSION = "2.30 - 04 Aug 2018";
+    public static final String S_XNET_SERVER_REV = "SXnet-Server 3.1 - 04 Aug 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -90,6 +91,8 @@ public class MainUI extends javax.swing.JFrame {
      * {@value #INVALID_INT} = denotes a value as invalid (not usable)
      */
     public static final int INVALID_INT = -1;
+    public static final int STATUS_CONNECTED = 1;
+    public static final int STATUS_NOT_CONNECTED = 0;
     public static boolean DEBUG = true;
     public static final boolean doUpdateFlag = false;
     public static boolean running = true;
@@ -113,7 +116,7 @@ public class MainUI extends javax.swing.JFrame {
      */
     public static final ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
     public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
-
+    public static final ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
     public static MonitorUI sxmon = null;
     public static LanbahnMonitorUI lbmon = null;
 
@@ -262,11 +265,7 @@ public class MainUI extends javax.swing.JFrame {
     }
 
     private boolean powerIsOn() {
-        if ((sxData[127] & 0x80) != 0) {    // bit8 of channel 127
-            return true;
-        } else {
-            return false;
-        }
+        return (sxData[127] & 0x80) != 0; // bit8 of channel 127
     }
 
     /**
@@ -607,7 +606,6 @@ public class MainUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuSettingsActionPerformed
 
     private void jMenu3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu3ActionPerformed
-        ;
     }//GEN-LAST:event_jMenu3ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -633,7 +631,6 @@ public class MainUI extends javax.swing.JFrame {
             closeConnection();
         } else {
             if (sxi.open()) {
-
                 statusIcon.setEnabled(true);
                 btnConnectDisconnect.setText("Disconnect");
                 btnPowerOnOff.setEnabled(true);
@@ -642,7 +639,7 @@ public class MainUI extends javax.swing.JFrame {
                 timeoutCounter = 0;
             } else {
                 JOptionPane.showMessageDialog(this, "Check Serial Port Settings");
-            }
+             }
         }
     }
 
@@ -653,40 +650,28 @@ public class MainUI extends javax.swing.JFrame {
     public static void main(String args[]) {
 
         try {
-
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException e) {
-            // handle exception
-        } catch (ClassNotFoundException e) {
-            // handle exception
-        } catch (InstantiationException e) {
-            // handle exception
-        } catch (IllegalAccessException e) {
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             // handle exception
         }
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    sx = new MainUI();
-                } catch (Exception ex) {
-                    Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                sx.setVisible(true);
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                sx = new MainUI();
+            } catch (Exception ex) {
+                Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
             }
+            sx.setVisible(true);
         });
     }
 
     /**
-     * 250 msec update timer for FCC 1000 msecs used for GUI update
+     * 250 msec update timer for FCC , 1000 msecs used for GUI update
      */
     private void initTimer() {
-        timer = new Timer(250, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doUpdate();
-
-            }
+        timer = new Timer(250, (ActionEvent e) -> {
+            doUpdate();
         });
         timer.start();
     }
@@ -728,6 +713,10 @@ public class MainUI extends javax.swing.JFrame {
 
     }
 
+    /**
+     * called every 250 msecs
+     *
+     */
     public void doUpdate() {
         String result = sxi.doUpdate();
         if (!result.isEmpty()) {
@@ -735,14 +724,13 @@ public class MainUI extends javax.swing.JFrame {
             toggleConnectStatus();
         }
         updateCount++;
-        if (updateCount < 4) {
+        if (updateCount < 4) {  // do GUI update only every second
             return;
         }
 
         updateCount = 0;
         checkConnection();
 
-        // do GUI update only every second
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
         if (sxmon != null) {
@@ -781,8 +769,9 @@ public class MainUI extends javax.swing.JFrame {
             sxi.readPower();
             try {
                 Thread.sleep(50);
-            } catch (Exception e) {;
-            };  // wait a few milliseconds for response
+            } catch (InterruptedException e) {
+            }
+            // wait a few milliseconds for response
             // check if connectionOK flag was reset
             if (!connectionOK) {
                 JOptionPane.showMessageDialog(this, "Verbindung verloren !! ");
@@ -804,7 +793,7 @@ public class MainUI extends javax.swing.JFrame {
         btnPowerOnOff.setEnabled(false);
         btnReset.setEnabled(false);
         connectionOK = false;
-    }
+          }
 
     public void saveAllPrefs() {
         //System.out.println("save all preferences.");
