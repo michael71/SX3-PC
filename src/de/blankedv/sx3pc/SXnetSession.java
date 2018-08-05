@@ -66,10 +66,9 @@ public class SXnetSession implements Runnable {
             long lastCommand = System.currentTimeMillis();
 
             Timer sendUpdatesTimer = new Timer();
-            sendUpdatesTimer.schedule(new SendUpdatesTask(), 200, 100);
+            sendUpdatesTimer.schedule(new SendUpdatesTask(), 1000, 100);
 
-            String welcomeString = S_XNET_SERVER_REV + " client" + sn;
-            // TODO sendMessage(welcomeString);  // welcome string
+            sendMessage(S_XNET_SERVER_REV + " client" + sn);  // welcome string
 
             while (running.get() && in.hasNextLine()) {
                 String msg = in.nextLine().trim().toUpperCase();
