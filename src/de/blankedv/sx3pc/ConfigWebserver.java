@@ -54,19 +54,20 @@ public class ConfigWebserver {
             try {
                 if (requestURI.getPath().contains("config")) {
                     fname = fileName;
+                    response = new String(Files.readAllBytes(Paths.get(fname)));
                 } else if (requestURI.getPath().contains("loco")) {
                     fname = locoFileName;
+                    response = new String(Files.readAllBytes(Paths.get(fname)));
                 } else {
-                    fname = "___";
+                    response = "ERROR:  only URLs :8000/config or:8000/loco are possible";
                 }
-                response = new String(Files.readAllBytes(Paths.get(fname)));
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
             } catch (IOException ex) {
                 System.out.println("Config/Loco File: " + fname + " not found - only :8000/config and :8000/loco allowed");
-                response = "Config/Loco File: " + fname + " not found - only :8000/config and :8000/loco allowed";
+                response = "ERROR FILE NOT FOUND OR WRONG URL: " + fname + " - only :8000/config and :8000/loco allowed";
                 try {
                     t.sendResponseHeaders(200, response.length());
                      OutputStream os = t.getResponseBody();
