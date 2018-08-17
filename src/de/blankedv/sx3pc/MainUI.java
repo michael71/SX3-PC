@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.33 - 17 Aug 2018";
+    public static final String VERSION = "2.34 - 17 Aug 2018";
     public static final String S_XNET_SERVER_REV = "SXnet-Server 3.2 - SX3PC - 17 Aug 2018";
 
     /**
@@ -155,11 +155,19 @@ public class MainUI extends javax.swing.JFrame {
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
-        if (myip.size() == 0) {
+        
+        String configFile = prefs.get("configfilename", "-keiner-");
+        String resultReadConfigFile = ReadSignalMapping.readXML(configFile);
+        
+        if (myip.isEmpty()) {
             System.out.println("ERROR: not network !!! cannot do anything");
-            downloadFrom = "download von http://hostname:8000/config ";
+            downloadFrom = "no network - no download of config file ";
         } else {
-            downloadFrom = "download from http:/" + myip.get(0).toString() + ":8000/config";
+            if (resultReadConfigFile.equalsIgnoreCase("OK")) {
+                downloadFrom = "download von http:/" + myip.get(0).toString() + ":8000/config";
+            } else {
+                downloadFrom = "corrupt config file - no download";
+            }
         }
 
         loadWindowPrefs();
@@ -213,7 +221,7 @@ public class MainUI extends javax.swing.JFrame {
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
 
-        String configFile = prefs.get("configfilename", "-keiner-");
+        
 
         initTimer();
 
@@ -224,9 +232,14 @@ public class MainUI extends javax.swing.JFrame {
             sxnetserver.setVisible(true);
 
             if (!configFile.equalsIgnoreCase("-keiner-")) {
-                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
-                lblMainConfigFilename.setText(configFile);
-                ReadSignalMapping.init(configFile);
+                
+                if (resultReadConfigFile.equalsIgnoreCase("OK")) {
+                    lblMainConfigFilename.setText(configFile);
+                    configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
+                } else {                   
+                    lblMainConfigFilename.setText(resultReadConfigFile.substring(0, Math.min(60, resultReadConfigFile.length()-1))+" ...");
+                    JOptionPane.showMessageDialog(this, "ERROR in reading XML File, cannot start ConfigFile-Webserver");
+                }
 
             } else {
                 lblMainConfigFilename.setText("bisher nicht ausgewählt");
@@ -628,7 +641,7 @@ public class MainUI extends javax.swing.JFrame {
                 timeoutCounter = 0;
             } else {
                 JOptionPane.showMessageDialog(this, "Check Serial Port Settings");
-             }
+            }
         }
     }
 
@@ -782,7 +795,7 @@ public class MainUI extends javax.swing.JFrame {
         btnPowerOnOff.setEnabled(false);
         btnReset.setEnabled(false);
         connectionOK = false;
-          }
+    }
 
     public void saveAllPrefs() {
         //System.out.println("save all preferences.");

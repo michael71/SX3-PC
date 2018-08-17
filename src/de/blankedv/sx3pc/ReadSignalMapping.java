@@ -37,17 +37,8 @@ public class ReadSignalMapping {
     // TODO second sxbit
     private static final boolean CFG_DEBUG = true;
 
-    public static void init(String configfilename) {
-
-        readXMLConfigFile(configfilename);
-
-        // example UtilityMapping      
-        // allLanbahnSXPairs.add(new LanbahnSXPair(722, 72, 2));
-        // allLanbahnSXPairs.add(new LanbahnSXPair(721, 74, 1));
-    }
-
     // code template taken from lanbahnPanel
-    private static String readXMLConfigFile(String fname) {
+    public static String readXML(String fname) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
 
@@ -69,9 +60,13 @@ public class ReadSignalMapping {
         } catch (IOException e) {
             System.out.println("IO Exception - " + e.getMessage());
             return "IO Exception - " + e.getMessage();
+        } catch (Exception e) {
+            System.out.println("other Exception - " + e.getMessage());
+            return "other Exception - " + e.getMessage();
         }
 
-        return "";
+
+        return "OK";
     }
 
     // code template from lanbahnPanel
@@ -107,7 +102,7 @@ public class ReadSignalMapping {
         for (int i = 0; i < items.getLength(); i++) {
             SignalMapping tmp = parseSXMapping(items.item(i));
             if ((tmp != null) && (tmp.lbAddr != INVALID_INT)) {
-                System.out.println("signal mapping: " + tmp.toString());
+                System.out.println("multi-aspect signal: " + tmp.toString());
                 allSignalMappings.add(tmp);
             }
         }
