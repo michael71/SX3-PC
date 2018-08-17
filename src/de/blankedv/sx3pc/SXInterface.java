@@ -347,7 +347,7 @@ public class SXInterface extends GenericSXInterface {
         if (adr >= 0 && adr < N_SX) {
                 sxData[adr] = data;
            
-            if (DEBUG) {
+            if ( (adr <= SXMAX_USED) && DEBUG) {
                 System.out.println("set: SX[" + adr + "]=" + data + " ");
             }
         } else {
@@ -355,6 +355,7 @@ public class SXInterface extends GenericSXInterface {
         }
     }
 
+    /*
     private synchronized void  readSerialPortStandard() {
         // nur jeweils 1 Zeichen wird ausgewertet, die anderen werden ignoriert,
         // da nicht klar ist zu welcher Adresse sie gehören.
@@ -386,6 +387,7 @@ public class SXInterface extends GenericSXInterface {
         }
 
     }
+*/
 
     public static int toUnsignedInt(byte value) {
         return (value & 0x7F) + (value < 0 ? 128 : 0);

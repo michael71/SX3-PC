@@ -28,10 +28,8 @@ public class SXFCCInterface extends GenericSXInterface {
 
     private String portName;
 
-    private int baudrate = 230400;
-    private int dataBits = SerialPort.DATABITS_8;
-    private int stopBits = SerialPort.STOPBITS_1;
-    private int parity = SerialPort.PARITY_NONE;
+    private final int baudrate = 230400;   // fix for FCC
+
     CommPortIdentifier serialPortId;
     Enumeration enumComm;
     SerialPort serialPort;
@@ -99,7 +97,7 @@ public class SXFCCInterface extends GenericSXInterface {
         serialPort.notifyOnDataAvailable(true); */
 
         try {
-            serialPort.setSerialPortParams(baudrate, dataBits, stopBits, parity);
+            serialPort.setSerialPortParams(baudrate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (UnsupportedCommOperationException e) {
             System.out.println("Konnte Schnittstellen-Paramter nicht setzen");
         }

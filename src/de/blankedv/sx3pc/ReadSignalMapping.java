@@ -60,7 +60,9 @@ public class ReadSignalMapping {
         Document doc;
         try {
             doc = builder.parse(new File(fname));
-            parseSignals(doc);
+            System.out.println("reading config file: "+fname);
+            // we need only the multi-aspect signals for a correct mapping
+            parseSignals(doc);  
         } catch (SAXException e) {
             System.out.println("SAX Exception - " + e.getMessage());
             return "SAX Exception - " + e.getMessage();
@@ -85,6 +87,7 @@ public class ReadSignalMapping {
 
         items = root.getElementsByTagName("panel");
         if (items.getLength() == 0) {
+            System.out.println("no <panel> tag");
             return;
         }
 
@@ -197,4 +200,5 @@ public class ReadSignalMapping {
         }
         return "";
     }
+    
 }

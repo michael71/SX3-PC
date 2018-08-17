@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.32 - 17 Aug 2018";
+    public static final String VERSION = "2.33 - 17 Aug 2018";
     public static final String S_XNET_SERVER_REV = "SXnet-Server 3.2 - SX3PC - 17 Aug 2018";
 
     /**
@@ -157,9 +157,9 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("Number of usable Network Interfaces=" + myip.size());
         if (myip.size() == 0) {
             System.out.println("ERROR: not network !!! cannot do anything");
-            downloadFrom = "download von http://hostname:8000/config  .../loco";
+            downloadFrom = "download von http://hostname:8000/config ";
         } else {
-            downloadFrom = "download from http:/" + myip.get(0).toString() + ":8000/config   .../loco";
+            downloadFrom = "download from http:/" + myip.get(0).toString() + ":8000/config";
         }
 
         loadWindowPrefs();
@@ -214,7 +214,6 @@ public class MainUI extends javax.swing.JFrame {
         System.out.println("Number of usable Network Interfaces=" + myip.size());
 
         String configFile = prefs.get("configfilename", "-keiner-");
-        String locoConfigFile = prefs.get("locofilename", "");
 
         initTimer();
 
@@ -225,19 +224,16 @@ public class MainUI extends javax.swing.JFrame {
             sxnetserver.setVisible(true);
 
             if (!configFile.equalsIgnoreCase("-keiner-")) {
-                configWebserver = new ConfigWebserver(configFile, locoConfigFile, CONFIG_PORT);
+                configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
                 lblMainConfigFilename.setText(configFile);
-                lblMainLocoConfigFilename.setText(locoConfigFile);
                 ReadSignalMapping.init(configFile);
 
             } else {
                 lblMainConfigFilename.setText("bisher nicht ausgewählt");
-                lblMainLocoConfigFilename.setText(locoConfigFile);
             }
 
         } else {
             lblMainConfigFilename.setText("kein Netzwerk!!");
-            lblMainLocoConfigFilename.setText("");
             JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
 
         }
@@ -292,7 +288,6 @@ public class MainUI extends javax.swing.JFrame {
         statusIcon = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         lblMainConfigFilename = new javax.swing.JLabel();
-        lblMainLocoConfigFilename = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         menuExit = new javax.swing.JMenuItem();
@@ -438,25 +433,19 @@ public class MainUI extends javax.swing.JFrame {
         lblMainConfigFilename.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
         lblMainConfigFilename.setText("jLabel1");
 
-        lblMainLocoConfigFilename.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
-        lblMainLocoConfigFilename.setText("jLabel1");
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblMainConfigFilename)
-                    .addComponent(lblMainLocoConfigFilename))
+                .addComponent(lblMainConfigFilename)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(lblMainConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lblMainLocoConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jMenu1.setText("File");
@@ -533,7 +522,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addComponent(panelWindows, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -873,7 +862,6 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JLabel labelStatus;
     private javax.swing.JLabel lblMainConfigFilename;
-    private javax.swing.JLabel lblMainLocoConfigFilename;
     private javax.swing.JMenuItem menuExit;
     private javax.swing.JMenuItem menuSettings;
     private javax.swing.JPanel panelInterface;

@@ -15,6 +15,7 @@ import gnu.io.CommPortIdentifier;
 import java.util.Enumeration;
 import java.util.prefs.Preferences;
 import static de.blankedv.sx3pc.MainUI.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -87,11 +88,9 @@ public class SettingsUI extends javax.swing.JFrame {
             txtConfigFilename.setText(fname);
         }
         if (myip.isEmpty()) {
-            lblConfigFilenameHelp.setText("download von http://hostname:8000/config");
-            lblLocoConfigFilenameHelp.setText("download von http://hostname:8000/locos");
+            lblConfigFilenameHelp.setText("download von http://hostname:8000/config");           
         } else {
             lblConfigFilenameHelp.setText("download von http:/" + myip.get(0).toString() + ":8000/config");
-            lblLocoConfigFilenameHelp.setText("download von http:/" + myip.get(0).toString() + ":8000/locos");
         }
 
         // if (DEBUG) { System.out.println("type="+comboSelectType.getSelectedItem().toString()); }
@@ -134,10 +133,6 @@ public class SettingsUI extends javax.swing.JFrame {
         txtConfigFilename = new javax.swing.JTextArea();
         lblConfigFilenameHelp = new javax.swing.JLabel();
         btnChangeConfigFile = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
-        btnChangeLocoConfigFile = new javax.swing.JButton();
-        txtLocoConfigFilename = new javax.swing.JTextArea();
-        lblLocoConfigFilenameHelp = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
         jFrame1.getContentPane().setLayout(jFrame1Layout);
@@ -365,53 +360,6 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addComponent(btnChangeConfigFile))
         );
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Lok-XML-ConfigFile", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 14))); // NOI18N
-
-        btnChangeLocoConfigFile.setText("ändern");
-        btnChangeLocoConfigFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeLocoConfigFileActionPerformed(evt);
-            }
-        });
-
-        txtLocoConfigFilename.setEditable(false);
-        txtLocoConfigFilename.setBackground(java.awt.SystemColor.controlHighlight);
-        txtLocoConfigFilename.setColumns(20);
-        txtLocoConfigFilename.setRows(3);
-
-        lblLocoConfigFilenameHelp.setText("-keiner-");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtLocoConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 528, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnChangeLocoConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel4Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(lblLocoConfigFilenameHelp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap()))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(txtLocoConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(36, 36, 36)
-                .addComponent(btnChangeLocoConfigFile)
-                .addContainerGap())
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel4Layout.createSequentialGroup()
-                    .addGap(51, 51, 51)
-                    .addComponent(lblLocoConfigFilenameHelp)
-                    .addContainerGap(52, Short.MAX_VALUE)))
-        );
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -425,9 +373,7 @@ public class SettingsUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(8, 8, 8))
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -437,15 +383,13 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(44, 44, 44)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnSave))
-                .addGap(21, 21, 21))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -479,7 +423,6 @@ public class SettingsUI extends javax.swing.JFrame {
             System.out.println("saving Simulation=" + cbSimulation.isSelected());
             System.out.println("saving enableDebug=" + cbDebug.isSelected());
             System.out.println("configfilename=" + prefs.get("configfilename", "-keiner-"));
-            System.out.println("locofilename=" + prefs.get("locofilename", "-keiner-"));
 
         }
 
@@ -524,6 +467,8 @@ public class SettingsUI extends javax.swing.JFrame {
 
     private void btnChangeConfigFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeConfigFileActionPerformed
         JFileChooser chooser = new JFileChooser();
+        File curDir = new File (prefs.get("configdir", System.getProperty("user.home")));
+        chooser.setCurrentDirectory(curDir);
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "xml", "XML");
         chooser.setFileFilter(filter);
@@ -531,28 +476,14 @@ public class SettingsUI extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String fname = chooser.getSelectedFile().getAbsolutePath();
             prefs.put("configfilename", fname);
+            curDir = chooser.getCurrentDirectory();
+            prefs.put("configdir", curDir.getAbsolutePath());
             System.out.println("You chose to open this file: "
                     + chooser.getSelectedFile().getAbsolutePath());
             txtConfigFilename.setText(prefs.get("configfilename", "-keiner-"));
 
         }
     }//GEN-LAST:event_btnChangeConfigFileActionPerformed
-
-    private void btnChangeLocoConfigFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeLocoConfigFileActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "xml", "XML");
-        chooser.setFileFilter(filter);
-        int returnVal = chooser.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            String fname = chooser.getSelectedFile().getAbsolutePath();
-            prefs.put("locofilename", fname);
-            System.out.println("You chose to open this file: "
-                    + chooser.getSelectedFile().getAbsolutePath());
-            txtLocoConfigFilename.setText(prefs.get("locofilename", "-keiner-"));
-
-        }
-    }//GEN-LAST:event_btnChangeLocoConfigFileActionPerformed
 
     private void checkBusMode() {
         //if (DEBUG) { System.out.println("check bus control");}
@@ -664,7 +595,6 @@ public class SettingsUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangeConfigFile;
-    private javax.swing.JButton btnChangeLocoConfigFile;
     private javax.swing.JButton btnSave;
     private javax.swing.JButton btnSensorList;
     private javax.swing.JComboBox cbBaudrate;
@@ -680,15 +610,12 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JLabel lblConfigFilenameHelp;
     private javax.swing.JLabel lblControl;
     private javax.swing.JLabel lblLoco;
-    private javax.swing.JLabel lblLocoConfigFilenameHelp;
     private javax.swing.JLabel lblLocoSX0;
     private javax.swing.JLabel lblSerial;
     private javax.swing.JTextArea txtConfigFilename;
-    private javax.swing.JTextArea txtLocoConfigFilename;
     // End of variables declaration//GEN-END:variables
 
 }

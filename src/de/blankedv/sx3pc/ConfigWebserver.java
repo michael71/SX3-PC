@@ -16,7 +16,6 @@ import java.net.InetSocketAddress;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import static de.blankedv.sx3pc.MainUI.myip;
 import java.net.URI;
 
 import java.nio.file.Files;
@@ -28,9 +27,8 @@ public class ConfigWebserver {
     String locoFileName = "";
     HttpServer server;
 
-    public ConfigWebserver(String fName, String lName, int port) throws Exception {
+    public ConfigWebserver(String fName, int port) throws Exception {
         fileName = fName;
-        locoFileName = lName;
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new MyHandler());
         server.setExecutor(null); // creates a default executor
@@ -55,19 +53,16 @@ public class ConfigWebserver {
                 if (requestURI.getPath().contains("config")) {
                     fname = fileName;
                     response = new String(Files.readAllBytes(Paths.get(fname)));
-                } else if (requestURI.getPath().contains("loco")) {
-                    fname = locoFileName;
-                    response = new String(Files.readAllBytes(Paths.get(fname)));
                 } else {
-                    response = "ERROR:  only URLs :8000/config or:8000/loco are possible";
+                    response = "ERROR:  use URL :8000/config";
                 }
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
             } catch (IOException ex) {
-                System.out.println("Config/Loco File: " + fname + " not found - only :8000/config and :8000/loco allowed");
-                response = "ERROR FILE NOT FOUND OR WRONG URL: " + fname + " - only :8000/config and :8000/loco allowed";
+                System.out.println("Config File: " + fname + " not found - only :8000/config allowed");
+                response = "ERROR FILE NOT FOUND OR WRONG URL: " + fname + " - only :8000/config allowed";
                 try {
                     t.sendResponseHeaders(200, response.length());
                      OutputStream os = t.getResponseBody();
