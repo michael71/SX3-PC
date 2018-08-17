@@ -161,8 +161,8 @@ public class SXnetSession implements Runnable {
             case "READLOCO":    // returns byte
                 result = readLocoMessage(param);
                 break;
-            case "S":    // single bit set / unset
-                setSXBitMessage(param);
+            case "S":    // SX Byte set
+                setSXByteMessage(param);
                 break;
             case "R":    // read sx value
                 result = readSXByteMessage(param);
@@ -209,12 +209,12 @@ public class SXnetSession implements Runnable {
         return "XLOCO " + adr + " " + sxData[adr];
     }
 
-    /* private void setSXByteMessage(String[] par) {
+    private void setSXByteMessage(String[] par) {
         if (par.length < 3) {
             return;
         }
         if (DEBUG) {
-            System.out.println("setLocoMessage");
+            System.out.println("setSXByteMessage");
         }
         int adr = getSXAddrFromString(par[1]);
         int data = getByteFromString(par[2]);
@@ -222,11 +222,9 @@ public class SXnetSession implements Runnable {
         if ((adr == INVALID_INT) || (data == INVALID_INT)) {
             return;
         }
-        if (!locoAddresses.contains(adr)) {
-            locoAddresses.add(adr);
-        }
         SXUtils.setSxData(adr, data);  // synchronized
-    } */
+    } 
+    
     private void setLocoMessage(String[] par) {
         if (par.length < 3) {
             return;
@@ -275,7 +273,7 @@ public class SXnetSession implements Runnable {
 
     }
 
-    private void setSXBitMessage(String[] par) {
+    /* private void setSXBitMessage(String[] par) {
         if (par.length < 3) {
             return;
         }
@@ -297,7 +295,7 @@ public class SXnetSession implements Runnable {
             SXUtils.clearBitSxData(sxb.addr, sxb.bit);
         }
 
-    }
+    } */
 
     private String setLanbahnMessage(String[] par) {
         if (DEBUG) {
