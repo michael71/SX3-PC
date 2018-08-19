@@ -20,20 +20,22 @@ import java.net.URI;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.prefs.Preferences;
 
 public class ConfigWebserver {
 
     String fileName = "";
     String locoFileName = "";
     HttpServer server;
+    Preferences appPrefs;
 
-    public ConfigWebserver(String fName, int port) throws Exception {
-        fileName = fName;
+    public ConfigWebserver(Preferences p, int port) throws Exception {
+        appPrefs = p;
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new MyHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        
+
     }
 
     public void stop() {
@@ -47,12 +49,18 @@ public class ConfigWebserver {
         public void handle(HttpExchange t) {
             String response;
             URI requestURI = t.getRequestURI();
-            System.out.println("URI="+requestURI.getPath());
+            System.out.println("URI=" + requestURI.getPath());
             String fname = "";
             try {
+                String fileName = appPrefs.get("configfilename", "-keiner-");
                 if (requestURI.getPath().contains("config")) {
-                    fname = fileName;
-                    response = new String(Files.readAllBytes(Paths.get(fname)));
+                    if (fileName.equals("-keiner-")) {
+                        response = " ERROR - no config file selected";
+                        fname = "?";
+                    } else {
+                        fname = fileName;
+                        response = new String(Files.readAllBytes(Paths.get(fname)));
+                    }
                 } else {
                     response = "ERROR:  use URL :8000/config";
                 }
@@ -65,13 +73,13 @@ public class ConfigWebserver {
                 response = "ERROR FILE NOT FOUND OR WRONG URL: " + fname + " - only :8000/config allowed";
                 try {
                     t.sendResponseHeaders(200, response.length());
-                     OutputStream os = t.getResponseBody();
+                    OutputStream os = t.getResponseBody();
                     os.write(response.getBytes());
                     os.close();
                 } catch (IOException ex1) {
                     // ERROR msg printed already.
                 }
-               
+
             }
 
         }

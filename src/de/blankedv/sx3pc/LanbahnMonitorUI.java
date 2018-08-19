@@ -185,7 +185,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
             }
         }
     }
-
+    
     /**
      * saves window position
      */

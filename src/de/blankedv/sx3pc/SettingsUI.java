@@ -128,7 +128,6 @@ public class SettingsUI extends javax.swing.JFrame {
         lblLocoSX0 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         cbDebug = new javax.swing.JCheckBox();
-        btnSensorList = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         txtConfigFilename = new javax.swing.JTextArea();
         lblConfigFilenameHelp = new javax.swing.JLabel();
@@ -154,7 +153,7 @@ public class SettingsUI extends javax.swing.JFrame {
             }
         });
 
-        btnSave.setText("Speichern");
+        btnSave.setText("Speichern + Neu Laden");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveActionPerformed(evt);
@@ -289,14 +288,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
         cbDebug.setText("Debug Mode");
 
-        btnSensorList.setText("Belegtm.Liste");
-        btnSensorList.setEnabled(false);
-        btnSensorList.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSensorListActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -304,18 +295,14 @@ public class SettingsUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cbDebug)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(69, 69, 69))
+                .addContainerGap(483, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbDebug)
-                    .addComponent(btnSensorList))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(cbDebug)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Anlagen-XML-ConfigFile", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 14))); // NOI18N
@@ -426,7 +413,9 @@ public class SettingsUI extends javax.swing.JFrame {
 
         }
 
-        JOptionPane.showMessageDialog(this, "Needs Restart");
+        //JOptionPane.showMessageDialog(this, "Needs Restart");
+        sx.reloadSettings();
+        
         settingsWindow = null;
         dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -443,10 +432,6 @@ public class SettingsUI extends javax.swing.JFrame {
 
     private void cbSimulationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSimulationActionPerformed
     }//GEN-LAST:event_cbSimulationActionPerformed
-
-    private void btnSensorListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSensorListActionPerformed
-        new EditSensorListUI(this, true);
-    }//GEN-LAST:event_btnSensorListActionPerformed
 
     private void cbBaudrateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbBaudrateActionPerformed
         // TODO add your handling code here:
@@ -510,13 +495,7 @@ public class SettingsUI extends javax.swing.JFrame {
             lblLocoSX0.setEnabled(true);
             lblControl.setEnabled(true);
         }
-        // check if sensor list must be enabled 
-        if (comboSelectType.getSelectedItem().toString().contains("66824")) {
-            // the sensor list is necessary only for polling
-            btnSensorList.setEnabled(true);
-        } else {
-            btnSensorList.setEnabled(false);
-        }
+        
         // check baudrate for FCC, must be 230400 
         if (comboSelectType.getSelectedItem().toString().contains("FCC")) {
             // force 230400 
@@ -565,6 +544,10 @@ public class SettingsUI extends javax.swing.JFrame {
         CommPortIdentifier serialPortId;
         Enumeration enumComm;
         comboSelectSerialPort.removeAllItems();
+        
+        if (sxi.isConnected() && (!sxi.getPortName().isEmpty())) {
+            comboSelectSerialPort.addItem(sxi.getPortName());
+        }
 
         enumComm = CommPortIdentifier.getPortIdentifiers();
         while (enumComm.hasMoreElements()) {
@@ -583,8 +566,11 @@ public class SettingsUI extends javax.swing.JFrame {
 
         String commPortPref = prefs.get("commPort", "");
         for (int i = 0; i < comboSelectSerialPort.getItemCount(); i++) {
-            if (comboSelectSerialPort.getItemAt(i).toString().equalsIgnoreCase(commPortPref)) {
+            if (comboSelectSerialPort.getItemAt(i).equalsIgnoreCase(commPortPref)) {
                 comboSelectSerialPort.setSelectedIndex(i);
+                if (DEBUG) {
+                    System.out.println("Port from Settings Found: index= "+ i + " portPref="+commPortPref);
+                }
                 break;
             }
         }
@@ -596,7 +582,6 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangeConfigFile;
     private javax.swing.JButton btnSave;
-    private javax.swing.JButton btnSensorList;
     private javax.swing.JComboBox cbBaudrate;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbSimulation;

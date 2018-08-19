@@ -227,21 +227,17 @@ public class SensorUI extends javax.swing.JFrame {
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         int new_adr = Integer.parseInt(jComboBox1.getSelectedItem().toString());
-        if (new_adr != s_adr) {
-            // only if changed
-            sx.removeFromPlist(s_adr);
-        }
+
         s_adr = new_adr;
         if (DEBUG) System.out.println("s adr="+s_adr);
-        sx.addToPlist(s_adr);  // add address to polling list to get status updated
+
         update();
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         savePrefs();
         sensorUIInstances--;
-        sx.removeFromPlist(s_adr);
-        sl.remove(this);
+         sl.remove(this);
     }//GEN-LAST:event_formWindowClosing
 
    

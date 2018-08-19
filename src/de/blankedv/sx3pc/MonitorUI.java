@@ -168,6 +168,7 @@ public class MonitorUI extends javax.swing.JFrame {
         }
     }
 
+   
     private String SXBinaryString(int data, boolean redColorFlag) {
         StringBuffer s;
         int pos = 0;

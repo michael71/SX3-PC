@@ -50,6 +50,10 @@ public class SXFCCInterface extends GenericSXInterface {
         portName = port;
     }
 
+    public String getPortName() {
+        return portName;
+    }
+    
     @Override
     public boolean open() {
         Boolean foundPort = false;

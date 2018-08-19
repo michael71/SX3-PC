@@ -23,6 +23,10 @@ public class SXSimulationInterface extends GenericSXInterface {
 
     public void setPort(String port) {
     }
+
+    public String getPortName() {
+        return "";
+    }
     
     @Override
     public boolean open() {

@@ -434,10 +434,6 @@ public class SXnetSession implements Runnable {
         try {
             int channel = Integer.parseInt(s);
             if (SXUtils.isValidSXAddress(channel)) {
-                // SX channel polling einschalten, wenn nicht schon passiert
-                if (!sx.getpList().contains(channel)) {
-                    sx.addToPlist(channel);
-                }
                 return channel;
             } else {
                 return INVALID_INT;
@@ -470,10 +466,6 @@ public class SXnetSession implements Runnable {
         try {
             int channel = Integer.parseInt(sxab[0]);
             if (SXUtils.isValidSXAddress(channel)) {
-                // SX channel polling einschalten, wenn nicht schon passiert
-                if (!sx.getpList().contains(channel)) {
-                    sx.addToPlist(channel);
-                }
                 int bit = Integer.parseInt(sxab[1]);
                 if (SXUtils.isValidSXBit(bit)) {
                     if (DEBUG) {

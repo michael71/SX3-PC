@@ -39,8 +39,8 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.34 - 17 Aug 2018";
-    public static final String S_XNET_SERVER_REV = "SXnet-Server 3.2 - SX3PC - 17 Aug 2018";
+    public static final String VERSION = "2.35 - 19 Aug 2018";
+    public static final String S_XNET_SERVER_REV = "SXnet-Server 3.2 - SX3PC - 19 Aug 2018";
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -55,7 +55,7 @@ public class MainUI extends javax.swing.JFrame {
      * Weiche, Signal) higher addresses reserved for command stations/loco
      * programming
      */
-    public static final int SXMAX_USED = 104;
+    public static final int SXMAX_USED = 106;
     /**
      * {@value #SX_POWER} = virtual addr to transmit power state
      */
@@ -109,14 +109,14 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * contains the complete state of command station
      */
-    public static final int[] sxData = new int[N_SX];
+    public static int[] sxData = new int[N_SX];
     /**
      * locoAddresses ArrayList contains addresses of all locos to be able to
      * generate loco specific feedback messages
      */
-    public static final ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
-    public static final ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
-    public static final ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
+    public static ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
+    public static ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
+    public static ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
     public static MonitorUI sxmon = null;
     public static LanbahnMonitorUI lbmon = null;
 
@@ -143,9 +143,12 @@ public class MainUI extends javax.swing.JFrame {
     private ConfigWebserver configWebserver;
 
     private final ImageIcon green, red;
-    private List<Integer> pList = new LinkedList<>();
+
     Timer timer;  // user for updating UI every second
     private String downloadFrom;
+
+    private String configFile = "";
+    private String resultReadConfigFile = "";
 
     /**
      * Creates new form InterfaceUI
@@ -155,20 +158,8 @@ public class MainUI extends javax.swing.JFrame {
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
-        
-        String configFile = prefs.get("configfilename", "-keiner-");
-        String resultReadConfigFile = ReadSignalMapping.readXML(configFile);
-        
-        if (myip.isEmpty()) {
-            System.out.println("ERROR: not network !!! cannot do anything");
-            downloadFrom = "no network - no download of config file ";
-        } else {
-            if (resultReadConfigFile.equalsIgnoreCase("OK")) {
-                downloadFrom = "download von http:/" + myip.get(0).toString() + ":8000/config";
-            } else {
-                downloadFrom = "corrupt config file - no download";
-            }
-        }
+
+        initConfigFile();
 
         loadWindowPrefs();
 
@@ -185,59 +176,62 @@ public class MainUI extends javax.swing.JFrame {
         }
 
         loadOtherPrefs();
-        if (simulation) {
-            sxi = new SXSimulationInterface();
-        } else if (ifType.contains("FCC")) { // fcc has different interface handling ! 
-            sxi = new SXFCCInterface(portName);
-        } else {
-            //portName = "/dev/ttyUSB825";
-            sxi = new SXInterface(portName, baudrate);
-        }
+
+        initSXI();
 
         // init status icon
         green = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/greendot.png"));
         red = new javax.swing.ImageIcon(getClass().getResource("/de/blankedv/sx3pc/icons/reddot.png"));
         statusIcon.setIcon(red);
 
-        // set status text
-        if (simulation) {
-            labelStatus.setText("Simulation SX0");
-            sxi.open();
-            btnConnectDisconnect.setEnabled(false);
-            btnConnectDisconnect.setText(" ");
-            btnPowerOnOff.setEnabled(true);  // works always in simulation
-            statusIcon.setEnabled(true);  // always works in simulation
-        } else {
-            labelStatus.setText("SX-Interface " + ifType + " - Port " + portName);
-            btnPowerOnOff.setEnabled(false);  // works only after connection
-            statusIcon.setEnabled(false);  // works only after connection
-        }
-
-        btnSxMonitor.setEnabled(true); // disable for standard trix interface
-        addToPlist((Integer) 127);  // Power Status wird immer abgefragt.
-        setVisible(true);
-
-        // get network info
-        myip = NIC.getmyip();   // only the first one will be used
-        System.out.println("Number of usable Network Interfaces=" + myip.size());
-
-        
+        initStatusText();
 
         initTimer();
-
-        this.setTitle("SX3-PC"); // + panelName);
 
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
+        }
+
+        loadConfigFile();
+
+        try {
+            configWebserver = new ConfigWebserver(prefs, CONFIG_PORT);
+        } catch (Exception ex) {
+            System.out.println("ERROR: could not init configServer");
+        }
+
+        this.setTitle("SX3-PC"); // + panelName);
+        setVisible(true);
+
+    }
+
+    private void initConfigFile() {
+        configFile = prefs.get("configfilename", "-keiner-");
+        resultReadConfigFile = ReadSignalMapping.readXML(configFile);
+
+        if (myip.isEmpty()) {
+            System.out.println("ERROR: not network !!! cannot do anything");
+            downloadFrom = "no network - no download of config file ";
+        } else {
+            if (resultReadConfigFile.equalsIgnoreCase("OK")) {
+                downloadFrom = "download von http:/" + myip.get(0).toString() + ":8000/config";
+            } else {
+                downloadFrom = "corrupt config file - no download";
+            }
+        }
+    }
+
+    private void loadConfigFile() {
+        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
 
             if (!configFile.equalsIgnoreCase("-keiner-")) {
-                
+
                 if (resultReadConfigFile.equalsIgnoreCase("OK")) {
                     lblMainConfigFilename.setText(configFile);
-                    configWebserver = new ConfigWebserver(configFile, CONFIG_PORT);
-                } else {                   
-                    lblMainConfigFilename.setText(resultReadConfigFile.substring(0, Math.min(60, resultReadConfigFile.length()-1))+" ...");
+
+                } else {
+                    lblMainConfigFilename.setText(resultReadConfigFile.substring(0, Math.min(60, resultReadConfigFile.length() - 1)) + " ...");
                     JOptionPane.showMessageDialog(this, "ERROR in reading XML File, cannot start ConfigFile-Webserver");
                 }
 
@@ -250,7 +244,66 @@ public class MainUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
 
         }
+    }
 
+    private void initSXI() {
+        if (sxi != null) {
+            sxi.close();
+        }
+
+        if (simulation) {
+            sxi = new SXSimulationInterface();
+        } else if (ifType.contains("FCC")) { // fcc has different interface handling ! 
+            sxi = new SXFCCInterface(portName);
+        } else {
+            //portName = "/dev/ttyUSB825";
+            sxi = new SXInterface(portName, baudrate);
+        }
+    }
+
+    private void initStatusText() {
+        // set status text
+        if (simulation) {
+            labelStatus.setText("Simulation SX0");
+            sxi.open();
+            btnConnectDisconnect.setEnabled(false);
+            btnConnectDisconnect.setText(" ");
+            btnPowerOnOff.setEnabled(true);  // works always in simulation
+            statusIcon.setEnabled(true);  // always works in simulation
+        } else {
+            btnConnectDisconnect.setEnabled(true);
+            btnConnectDisconnect.setText("Connect");
+            labelStatus.setText("SX-Interface " + ifType + " - Port " + portName);
+            btnPowerOnOff.setEnabled(false);  // works only after connection
+            statusIcon.setEnabled(false);  // works only after connection
+        }
+
+        btnSxMonitor.setEnabled(true);
+    }
+
+    public void reloadSettings() {
+        System.out.println("Reloading all settings and re-connecting serial port");
+
+        if (sxi != null) {
+            sxi.close();
+        }
+       
+        // clear all data
+        sxData = new int[N_SX];
+        locoAddresses = new ArrayList<>();
+        lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
+        allSignalMappings = new ArrayList<>();
+
+        initConfigFile();
+        loadWindowPrefs();
+        loadOtherPrefs();
+        initSXI();
+
+        statusIcon.setIcon(red);
+
+        initStatusText();
+
+        loadConfigFile();
     }
 
     private void closeAll() {
@@ -678,25 +731,6 @@ public class MainUI extends javax.swing.JFrame {
         timer.start();
     }
 
-    public void addToPlist(Integer a) {  // a vom Typ Integer, nicht int !!!
-        pList.add(a);
-        if (DEBUG) {
-            System.out.println("List " + pList.toString());
-        }
-    }
-
-    public void removeFromPlist(Integer a) {
-        pList.remove(a);  // wichtig: a muss ein Integer-OBJECT sein, kein Integer, sonst wird
-        //  nicht das "Object a", sondern das Object an der Position "a" gelöscht.
-        if (DEBUG) {
-            System.out.println("List " + pList.toString());
-        }
-    }
-
-    public List<Integer> getpList() {
-        return pList;
-    }
-
     public static int toUnsignedInt(byte value) {
         return (value & 0x7F) + (value < 0 ? 128 : 0);
     }
@@ -832,28 +866,14 @@ public class MainUI extends javax.swing.JFrame {
         portName = prefs.get("commPort", "/dev/ttyUSS0");
         simulation = prefs.getBoolean("simulation", false);
         System.out.println("simulation=" + simulation);
-
-        ifType = prefs.get("type", "");
-
         String baudStr = prefs.get("baudrate", "9600");
         baudrate = Integer.parseInt(baudStr);
-        if (DEBUG) {
+        ifType = prefs.get("type", "");
+
+        if (!simulation && DEBUG) {
             System.out.println("IF=" + ifType + " serial port=" + portName + " at " + baudrate + " baud");
         }
 
-        // all sensors need polling (for srcp and/or Standard interface)
-        String sel = prefs.get("SensorList", "");
-        if (DEBUG) {
-            System.out.println("reading sensors:" + sel);
-        }
-
-        // TODO : is redundant for Rautenhaus and FCC interface -> remove ??
-        String[] slist = sel.split(";");
-        if (slist.length > 0 && !slist[0].isEmpty()) {
-            for (int i = 0; i < slist.length; i++) {
-                addToPlist(Integer.parseInt(slist[i]));
-            }
-        }
     }
 
 

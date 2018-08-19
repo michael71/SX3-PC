@@ -24,6 +24,8 @@ abstract public class GenericSXInterface {
 
     abstract public void close();
     
+    abstract public String getPortName();
+   
  
     public boolean isConnected() {
         return connected;

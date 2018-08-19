@@ -23,11 +23,10 @@ import java.util.TooManyListenersException;
  *
  * @author mblank
  */
-
 public class SXInterface extends GenericSXInterface {
 
     private String portName;
-   
+
     private final int baudrate;
     private final int dataBits = SerialPort.DATABITS_8;
     private final int stopBits = SerialPort.STOPBITS_1;
@@ -46,7 +45,7 @@ public class SXInterface extends GenericSXInterface {
     Boolean regFeedback = false;
     int regFeedbackAdr = 0;
 
-    public SXInterface( String portName, int baud) {
+    public SXInterface(String portName, int baud) {
 
         this.portName = portName;
         this.baudrate = baud;
@@ -55,6 +54,11 @@ public class SXInterface extends GenericSXInterface {
     @Override
     public void setPort(String port) {
         portName = port;
+    }
+    
+    @Override
+    public String getPortName() {
+        return portName;
     }
     
     @Override
@@ -148,12 +152,13 @@ public class SXInterface extends GenericSXInterface {
             return false;
         }
 
-
         lastAdrSent = toUnsignedInt(data[0]) & 0x7f;  // wird nur fuer NICHT slx825 format gebraucht
-        if ((data[0] & 0x80) != 0) {
-            System.out.println("wr-Cmd: adr " + (toUnsignedInt(data[0]) & 0x7f) + " / data " + toUnsignedInt(data[1]));
-        } else {
-            System.out.println("rd-Cmd: adr " + (toUnsignedInt(data[0]) & 0x7f));
+        if (DEBUG && ((lastAdrSent < SXMAX_USED) || (lastAdrSent == 127))) {
+            if ((data[0] & 0x80) != 0) {
+                System.out.println("wr-Cmd: adr " + lastAdrSent + " / data " + toUnsignedInt(data[1]));
+            } else {
+                System.out.println("rd-Cmd: adr " + lastAdrSent);
+            }
         }
 
         try {
@@ -169,8 +174,6 @@ public class SXInterface extends GenericSXInterface {
         return true;
 
     }
-
-   
 
     private void setInterfaceMode() {
 
@@ -205,9 +208,8 @@ public class SXInterface extends GenericSXInterface {
         * Falls ZS1/ZS" ebenfalls 128+32 setzen
          * */
 
-            b[0] = (byte) 0xFE; // Rautenhaus ein
-            b[1] = (byte) 0xA0; // Feedback ein
-        
+        b[0] = (byte) 0xFE; // Rautenhaus ein
+        b[1] = (byte) 0xA0; // Feedback ein
 
         try {
             outputStream.write(b[0]);
@@ -219,11 +221,8 @@ public class SXInterface extends GenericSXInterface {
         try {
             Thread.sleep(10);
         } catch (InterruptedException ex) {
-            Logger.getLogger(SXInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-   
 
     @Override
     public synchronized void switchPowerOff() {
@@ -238,8 +237,8 @@ public class SXInterface extends GenericSXInterface {
         }
 
     }
-    
-@Override
+
+    @Override
     public synchronized void switchPowerOn() {
         // 127 (ZE ein/aus) +128(schreiben) = 0xFF   
         Byte[] b = {(byte) 0xFF, (byte) 0x80};
@@ -252,13 +251,11 @@ public class SXInterface extends GenericSXInterface {
         }
     }
 
-@Override
+    @Override
     public void readPower() {
         Byte[] b = {(byte) 127, (byte) 0x00};   // read power state
         send(b);
     }
-
-
 
     @Override
     public void registerFeedback(int sensorAdr) {
@@ -277,12 +274,13 @@ public class SXInterface extends GenericSXInterface {
     }
 
     class serialPortEventListener implements SerialPortEventListener {
+
         @Override
         public void serialEvent(SerialPortEvent event) {
             switch (event.getEventType()) {
                 case SerialPortEvent.DATA_AVAILABLE:
                     connectionOK = true;
-                        readSerialPortWriteToSX();
+                    readSerialPortWriteToSX();
                     break;
                 case SerialPortEvent.BI:
                 case SerialPortEvent.CD:
@@ -335,7 +333,7 @@ public class SXInterface extends GenericSXInterface {
                 }
 
             }
-   
+
         } catch (IOException e) {
             System.out.println("Fehler beim Lesen empfangener Daten");
         }
@@ -345,13 +343,13 @@ public class SXInterface extends GenericSXInterface {
     // address range 0 ..127 / 128 ... 255 
     private synchronized void setSX(int adr, int data) {
         if (adr >= 0 && adr < N_SX) {
-                sxData[adr] = data;
-           
-            if ( (adr <= SXMAX_USED) && DEBUG) {
+            sxData[adr] = data;
+
+            if (((adr <= SXMAX_USED) || (adr == 127)) && DEBUG) {
                 System.out.println("set: SX[" + adr + "]=" + data + " ");
             }
         } else {
-                System.out.println("set: ERROR adr="+adr+" to high");
+            System.out.println("set: ERROR adr=" + adr + " to high");
         }
     }
 
@@ -387,8 +385,7 @@ public class SXInterface extends GenericSXInterface {
         }
 
     }
-*/
-
+     */
     public static int toUnsignedInt(byte value) {
         return (value & 0x7F) + (value < 0 ? 128 : 0);
     }

@@ -234,20 +234,15 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         savePrefs();
-        sx.removeFromPlist(lok_adr);
         ThrottleUIInstance--;
         tl.remove(this);
     }//GEN-LAST:event_formWindowClosing
 
     private void comboSelAddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboSelAddressActionPerformed
         int new_adr = Integer.parseInt(comboSelAddress.getSelectedItem().toString());
-        if (new_adr != lok_adr) {
-            // only if changed
-            sx.removeFromPlist(lok_adr);
-        }
+
         lok_adr = new_adr;
         System.out.println("lok adr=" + lok_adr);
-        sx.addToPlist(lok_adr);
         update();  // re-init nach neuer Adresse
     }//GEN-LAST:event_comboSelAddressActionPerformed
 

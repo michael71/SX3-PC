@@ -47,6 +47,7 @@ public class SXnetServerUI extends javax.swing.JFrame {
             } catch (IOException ex) {
                 System.out.println("could not open server socket on port=" + SXNET_PORT + " - closing SXnet window.");
                 JOptionPane.showMessageDialog(null, "Läuft bereits eine Instanz des Programms? (could not open SXnet server socket!)\n[" + ex.toString()+"]", "Error", JOptionPane.OK_CANCEL_OPTION);
+                System.exit(0);
                 return;
             }
             startSXnetServer();
