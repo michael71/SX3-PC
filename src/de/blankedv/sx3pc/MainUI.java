@@ -40,7 +40,7 @@ public class MainUI extends javax.swing.JFrame {
      * {@value #VERSION} = program version, displayed in HELP window
      */
     public static final String VERSION = "2.35 - 19 Aug 2018";
-    public static final String S_XNET_SERVER_REV = "SXnet-Server 3.2 - SX3PC - 19 Aug 2018";
+    public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-"+VERSION;
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
