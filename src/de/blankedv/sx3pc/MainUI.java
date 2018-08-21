@@ -39,8 +39,8 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.35 - 19 Aug 2018";
-    public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-"+VERSION;
+    public static final String VERSION = "2.36 - 21 Aug 2018";
+    public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-" + VERSION;
 
     /**
      * {@value #SX_MIN} = minimale SX adresse angezeigt im Monitor
@@ -94,7 +94,7 @@ public class MainUI extends javax.swing.JFrame {
     public static final int STATUS_CONNECTED = 1;
     public static final int STATUS_NOT_CONNECTED = 0;
     public static boolean DEBUG = true;
-    public static final boolean doUpdateFlag = false;
+
     public static boolean running = true;
     public static boolean simulation;
     /**
@@ -145,10 +145,6 @@ public class MainUI extends javax.swing.JFrame {
     private final ImageIcon green, red;
 
     Timer timer;  // user for updating UI every second
-    private String downloadFrom;
-
-    private String configFile = "";
-    private String resultReadConfigFile = "";
 
     /**
      * Creates new form InterfaceUI
@@ -158,8 +154,6 @@ public class MainUI extends javax.swing.JFrame {
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
         System.out.println("Number of usable Network Interfaces=" + myip.size());
-
-        initConfigFile();
 
         loadWindowPrefs();
 
@@ -186,63 +180,47 @@ public class MainUI extends javax.swing.JFrame {
 
         initStatusText();
 
-        initTimer();
+        loadConfigFile();
 
         if (myip.size() >= 1) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
-        }
 
-        loadConfigFile();
-
-        try {
-            configWebserver = new ConfigWebserver(prefs, CONFIG_PORT);
-        } catch (Exception ex) {
-            System.out.println("ERROR: could not init configServer");
-        }
-
-        this.setTitle("SX3-PC"); // + panelName);
-        setVisible(true);
-
-    }
-
-    private void initConfigFile() {
-        configFile = prefs.get("configfilename", "-keiner-");
-        resultReadConfigFile = ReadSignalMapping.readXML(configFile);
-
-        if (myip.isEmpty()) {
-            System.out.println("ERROR: not network !!! cannot do anything");
-            downloadFrom = "no network - no download of config file ";
-        } else {
-            if (resultReadConfigFile.equalsIgnoreCase("OK")) {
-                downloadFrom = "download von http:/" + myip.get(0).toString() + ":8000/config";
-            } else {
-                downloadFrom = "corrupt config file - no download";
+            try {
+                configWebserver = new ConfigWebserver(prefs, CONFIG_PORT);
+            } catch (Exception ex) {
+                System.out.println("ERROR: could not init configServer");
             }
+
         }
+
+        initTimer();
+
     }
 
     private void loadConfigFile() {
-        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
+        String configFile = prefs.get("configfilename", "-keiner-");
 
-            if (!configFile.equalsIgnoreCase("-keiner-")) {
-
-                if (resultReadConfigFile.equalsIgnoreCase("OK")) {
-                    lblMainConfigFilename.setText(configFile);
-
-                } else {
-                    lblMainConfigFilename.setText(resultReadConfigFile.substring(0, Math.min(60, resultReadConfigFile.length() - 1)) + " ...");
-                    JOptionPane.showMessageDialog(this, "ERROR in reading XML File, cannot start ConfigFile-Webserver");
-                }
+        if (!configFile.equalsIgnoreCase("-keiner-")) {
+            String resultReadConfigFile = ReadSignalMapping.readXML(configFile);
+            if (resultReadConfigFile.equalsIgnoreCase("OK")) {
+                lblDownloadFrom.setText("download von http:/" + myip.get(0).toString() + ":8000/config");
+                lblConfigFilename.setText(configFile);
 
             } else {
-                lblMainConfigFilename.setText("bisher nicht ausgewählt");
+                lblDownloadFrom.setText("corrupt config file - no download");
+                lblConfigFilename.setText(resultReadConfigFile.substring(0, Math.min(60, resultReadConfigFile.length() - 1)) + " ...");
+                JOptionPane.showMessageDialog(this, "ERROR in reading XML File, cannot start ConfigFile-Webserver");
             }
-
         } else {
-            lblMainConfigFilename.setText("kein Netzwerk!!");
-            JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
+            lblConfigFilename.setText("bisher kein Config File ausgewählt");
+        }
 
+        if (myip.isEmpty()) {  // makes only sense when we have network connectivity
+            System.out.println("ERROR: not network !!! cannot do anything");
+            lblDownloadFrom.setText("kein Netzwerk - kein Download des Config File, kein SXnet");
+            lblConfigFilename.setText("kein Netzwerk!!");
+            JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
         }
     }
 
@@ -287,14 +265,15 @@ public class MainUI extends javax.swing.JFrame {
         if (sxi != null) {
             sxi.close();
         }
-       
+
         // clear all data
         sxData = new int[N_SX];
         locoAddresses = new ArrayList<>();
         lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
         allSignalMappings = new ArrayList<>();
 
-        initConfigFile();
+        loadConfigFile();
+
         loadWindowPrefs();
         loadOtherPrefs();
         initSXI();
@@ -303,7 +282,6 @@ public class MainUI extends javax.swing.JFrame {
 
         initStatusText();
 
-        loadConfigFile();
     }
 
     private void closeAll() {
@@ -353,7 +331,8 @@ public class MainUI extends javax.swing.JFrame {
         labelStatus = new javax.swing.JLabel();
         statusIcon = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        lblMainConfigFilename = new javax.swing.JLabel();
+        lblConfigFilename = new javax.swing.JLabel();
+        lblDownloadFrom = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         menuExit = new javax.swing.JMenuItem();
@@ -494,24 +473,33 @@ public class MainUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), downloadFrom));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Config File"));
 
-        lblMainConfigFilename.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
-        lblMainConfigFilename.setText("jLabel1");
+        lblConfigFilename.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
+        lblConfigFilename.setText("?");
+
+        lblDownloadFrom.setFont(new java.awt.Font("Ubuntu", 0, 12)); // NOI18N
+        lblDownloadFrom.setText("load from");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(lblMainConfigFilename)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblConfigFilename)
+                    .addComponent(lblDownloadFrom))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(lblMainConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblDownloadFrom)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         jMenu1.setText("File");
@@ -588,7 +576,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addComponent(panelWindows, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         pack();
@@ -894,7 +882,8 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JLabel labelStatus;
-    private javax.swing.JLabel lblMainConfigFilename;
+    private javax.swing.JLabel lblConfigFilename;
+    private javax.swing.JLabel lblDownloadFrom;
     private javax.swing.JMenuItem menuExit;
     private javax.swing.JMenuItem menuSettings;
     private javax.swing.JPanel panelInterface;
