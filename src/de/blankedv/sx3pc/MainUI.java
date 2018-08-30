@@ -39,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.36 - 21 Aug 2018";
+    public static final String VERSION = "2.37 - 30 Aug 2018";
     public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-" + VERSION;
 
     /**
