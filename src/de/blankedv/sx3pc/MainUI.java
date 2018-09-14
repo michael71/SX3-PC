@@ -153,7 +153,11 @@ public class MainUI extends javax.swing.JFrame {
 
         // get network info
         myip = NIC.getmyip();   // only the first one will be used
-        System.out.println("Number of usable Network Interfaces=" + myip.size());
+        if (myip != null) {
+            System.out.println("Number of usable Network Interfaces=" + myip.size());
+        } else {
+            System.out.println("no network interfaces");
+        }
 
         loadWindowPrefs();
 
@@ -182,7 +186,7 @@ public class MainUI extends javax.swing.JFrame {
 
         loadConfigFile();
 
-        if (myip.size() >= 1) {  // makes only sense when we have network connectivity
+        if ((myip != null) && (myip.size() >= 1)) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
 
@@ -200,11 +204,12 @@ public class MainUI extends javax.swing.JFrame {
 
     private void loadConfigFile() {
         String configFile = prefs.get("configfilename", "-keiner-");
-
         if (!configFile.equalsIgnoreCase("-keiner-")) {
             String resultReadConfigFile = ReadSignalMapping.readXML(configFile);
             if (resultReadConfigFile.equalsIgnoreCase("OK")) {
-                lblDownloadFrom.setText("download von http:/" + myip.get(0).toString() + ":8000/config");
+                if ((myip != null) && (myip.size() > 0)) {
+                    lblDownloadFrom.setText("download von http:/" + myip.get(0).toString() + ":8000/config");
+                }
                 lblConfigFilename.setText(configFile);
 
             } else {
@@ -219,9 +224,9 @@ public class MainUI extends javax.swing.JFrame {
         if (myip.isEmpty()) {  // makes only sense when we have network connectivity
             System.out.println("ERROR: not network !!! cannot do anything");
             lblDownloadFrom.setText("kein Netzwerk - kein Download des Config File, kein SXnet");
-            lblConfigFilename.setText("kein Netzwerk!!");
             JOptionPane.showMessageDialog(this, "ERROR no network, cannot start SXnet");
         }
+
     }
 
     private void initSXI() {
