@@ -6,8 +6,19 @@ nbbuild/
 nbdist/
 nbactions.xml
 nb-configuration.xml
+manifest.mf
+paneldesc.xml
+build.xml
+.project
+manifest.mf
+paneldesc.xml
+build.xml
+.project
+.classpath
+SX3-PC.iml
 
 archiv/
+*.backup
 
 # Class Files #
 *.class
