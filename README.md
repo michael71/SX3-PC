@@ -13,8 +13,8 @@ Hierbei wird die übliche SX-Darstellung gewählt mit Bit 1 bis Bit 8, wobei das
 
 **Download** der (alten, bewährten) Version 0.97:
 
-https://github.com/michael71/SX3-PC/blob/master/sx3-dist-0.97.zip
+https://github.com/michael71/SX3-PC/raw/master/sx3-dist-0.97.zip
 
 **Anleitung**
 
-https://github.com/michael71/SX3-PC/blob/master/sx3-anleitung.pdf
+https://github.com/michael71/SX3-PC/raw/master/sx3-anleitung.pdf
