@@ -9,7 +9,7 @@ Das Programm entstand aus dem Wunsch heraus, einen Selectrix-"Monitor" auch unte
 
 Hierbei wird die übliche SX-Darstellung gewählt mit Bit 1 bis Bit 8, wobei das niederwertige zuerst gezeigt wird.
 
-![SX3 Monitor] (/sx3-monitor.png)
+![SX3 Monitor] (https://raw.githubusercontent.com/michael71/SX3-PC/master/sx3-monitor.png)
 
 **Download** der (alten, bewährten) Version 0.97:
 
