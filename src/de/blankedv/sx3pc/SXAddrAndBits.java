@@ -10,10 +10,10 @@ import static de.blankedv.sx3pc.MainUI.INVALID_INT;
  *
  * @author mblank
  */
-class SXAddrAndBits {
-    int sxAddr;
-    int bit;
-    int nbit;
+public class SXAddrAndBits {
+    public int sxAddr;
+    public int bit;
+    public int nbit;
     
     SXAddrAndBits(int a, int b) {
         sxAddr = a;

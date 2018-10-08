@@ -1,6 +1,7 @@
 package de.blankedv.sx3pc;
 
 //import java.io.InputStream;
+import de.blankedv.timetable.FahrplanUI;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -105,6 +106,8 @@ public class MainUI extends javax.swing.JFrame {
     public static MainUI sx;
     public static GenericSXInterface sxi;
     public static SettingsUI settingsWindow;
+    public static FahrplanUI fahrplanWindow;
+    public static boolean timetableRunning = false;
 
     /**
      * contains the complete state of command station
@@ -115,7 +118,7 @@ public class MainUI extends javax.swing.JFrame {
      * generate loco specific feedback messages
      */
     public static ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
-    public static ConcurrentHashMap<Integer, Integer> lanbahnData = new ConcurrentHashMap<Integer, Integer>(N_LANBAHN);
+    public static ConcurrentHashMap<Integer,  LbData> lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
     public static ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
     public static MonitorUI sxmon = null;
     public static LanbahnMonitorUI lbmon = null;
@@ -330,6 +333,7 @@ public class MainUI extends javax.swing.JFrame {
         btnSensor = new javax.swing.JButton();
         btnSxMonitor = new javax.swing.JButton();
         btnReset = new javax.swing.JButton();
+        btnFahrplan = new javax.swing.JButton();
         panelInterface = new javax.swing.JPanel();
         btnConnectDisconnect = new javax.swing.JButton();
         btnPowerOnOff = new javax.swing.JButton();
@@ -395,13 +399,23 @@ public class MainUI extends javax.swing.JFrame {
             }
         });
 
+        btnFahrplan.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+        btnFahrplan.setText("Fahrplan");
+        btnFahrplan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFahrplanActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelWindowsLayout = new javax.swing.GroupLayout(panelWindows);
         panelWindows.setLayout(panelWindowsLayout);
         panelWindowsLayout.setHorizontalGroup(
             panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelWindowsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnThrottle, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnThrottle, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnFahrplan, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(35, 35, 35)
                 .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelWindowsLayout.createSequentialGroup()
@@ -426,7 +440,8 @@ public class MainUI extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(panelWindowsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnReset)
-                    .addComponent(btnSxMonitor))
+                    .addComponent(btnSxMonitor)
+                    .addComponent(btnFahrplan))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -674,6 +689,13 @@ public class MainUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnResetActionPerformed
 
+    private void btnFahrplanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFahrplanActionPerformed
+        if (fahrplanWindow == null) {
+            fahrplanWindow = new FahrplanUI();
+        }
+        fahrplanWindow.setVisible(true);
+    }//GEN-LAST:event_btnFahrplanActionPerformed
+
     private void toggleConnectStatus() {
         if (sxi.isConnected()) {
             closeConnection();
@@ -872,6 +894,7 @@ public class MainUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConnectDisconnect;
+    private javax.swing.JButton btnFahrplan;
     private javax.swing.JButton btnPowerOnOff;
     private javax.swing.JButton btnReset;
     private javax.swing.JButton btnSensor;

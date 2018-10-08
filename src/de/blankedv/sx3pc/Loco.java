@@ -19,6 +19,23 @@ public class Loco {
     public Loco() {
     }
 
+    public Loco(int locoAddr, int locoDir, int locoSpeed) {
+        if (SXUtils.isValidSXAddress(locoAddr)) {
+            lok_adr = locoAddr;
+        } 
+        if (locoDir == 0) {
+            forward = true;
+        } else {
+            forward = false;
+        }
+        if (locoSpeed > 31) {
+            speed = 31;
+        } else {
+            if (locoSpeed >= 0) {
+                speed = locoSpeed;
+            }
+        }
+    }
     public boolean isForward() {
         return forward;
     }

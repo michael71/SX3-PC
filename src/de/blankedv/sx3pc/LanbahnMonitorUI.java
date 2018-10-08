@@ -27,7 +27,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
     static final int ROWS = 16;
     static final int COLS = 10; // *2
 
-    private Map<Integer, Integer> lbCopy, oldLbCopy;
+    private Map<Integer, LbData> lbCopy, oldLbCopy;
 
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
@@ -141,7 +141,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
 
     public void update() {
 
-        lbCopy = new HashMap<>(lanbahnData);  // make a copy of the current data
+        lbCopy = new HashMap<Integer,LbData>(lanbahnData);  // make a copy of the current data
         // the lanbahnData hashmap only can grow, no values will be deleted
         // initTable() => not necessary
 
@@ -157,7 +157,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
                     // it.remove(); // avoids a ConcurrentModificationException
                     jTable1.setValueAt(key, j, i);
                     StringBuffer s;
-                    int value = lbCopy.get(key);
+                    int value = lbCopy.get(key).getData();
                     
                     // display in different color (Red) when value has changed
                     // after the last call of update()

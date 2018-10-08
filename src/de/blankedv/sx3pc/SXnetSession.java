@@ -1,6 +1,7 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.*;
+import de.blankedv.timetable.LbUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,7 @@ public class SXnetSession implements Runnable {
     // list of channels which are of interest for this device
     private final int[] sxDataCopy;
     private int lastConnected = INVALID_INT;
-    private final ConcurrentHashMap<Integer, Integer> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
+    private final ConcurrentHashMap<Integer, LbData> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread worker;
@@ -360,7 +361,7 @@ public class SXnetSession implements Runnable {
                 return "";   //feedback sent in SXUtils.set/clear...
             } else {
                 // put in lanbahn array only if not in SX address range
-                lanbahnData.put(lbadr, lbdata);  // update (or create) data    
+                LbUtils.updateLanbahnData(lbadr, lbdata);  // update (or create) data    
                 // send lanbahnData
                 return "XL " + lbadr + " " + lanbahnData.get(lbadr);
             }
@@ -383,7 +384,7 @@ public class SXnetSession implements Runnable {
             if (!lanbahnData.containsKey(lbAddr)) {
                 // initialize to "0" (=start simulation and init to "0")
                 // if not already exists
-                lanbahnData.put(lbAddr, 0);
+                LbUtils.createLanbahnData(lbAddr, 0, "T");
             }
             // send lanbahnData, when already set
             return "XL " + lbAddr + " " + lanbahnData.get(lbAddr);
@@ -610,13 +611,13 @@ public class SXnetSession implements Runnable {
     private void checkForLanbahnChangesAndSendUpdates() {
         StringBuilder msg = new StringBuilder();
         boolean first = true;
-        for (Map.Entry<Integer, Integer> e : lanbahnData.entrySet()) {
+        for (Map.Entry<Integer, LbData> e : lanbahnData.entrySet()) {
             Integer key = e.getKey();
-            Integer value = e.getValue();
+            Integer value = e.getValue().getData();
             if (lanbahnDataCopy.containsKey(key)) {
                 if (lanbahnDataCopy.get(key) != lanbahnData.get(key)) {
                     // value has changed
-                    lanbahnDataCopy.put(key, value);
+                    LbUtils.updateLanbahnData(key, value);
                     if (!first) {
                         msg.append(";");
                     }
@@ -629,7 +630,7 @@ public class SXnetSession implements Runnable {
                     }
                 }
             } else {
-                lanbahnDataCopy.put(key, value);
+                lanbahnDataCopy.put(key, new LbData(key, value, "T-"));
                 if (!first) {
                     msg.append(";");
                 }

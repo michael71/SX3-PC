@@ -69,7 +69,7 @@ public class SettingsUI extends javax.swing.JFrame {
         cbSimulation.setSelected(prefs.getBoolean("simulation", false));
 
         cbDebug.setSelected(prefs.getBoolean("enableDebug", false));
-
+ cbCentralRouting.setSelected(prefs.getBoolean("centralRouting", false));
         comboSXBusControl.setSelectedIndex(prefs.getInt("sxbusControl", 0));
         String fname = prefs.get("configfilename", "-keiner-");
         if (fname.length() > 60) {
@@ -132,6 +132,9 @@ public class SettingsUI extends javax.swing.JFrame {
         txtConfigFilename = new javax.swing.JTextArea();
         lblConfigFilenameHelp = new javax.swing.JLabel();
         btnChangeConfigFile = new javax.swing.JButton();
+        cbCentralRouting = new javax.swing.JCheckBox();
+        jLabel3 = new javax.swing.JLabel();
+        cbClearRoutesDelay = new javax.swing.JComboBox();
 
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
         jFrame1.getContentPane().setLayout(jFrame1Layout);
@@ -302,7 +305,7 @@ public class SettingsUI extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cbDebug)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Anlagen-XML-ConfigFile", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 14))); // NOI18N
@@ -321,6 +324,23 @@ public class SettingsUI extends javax.swing.JFrame {
             }
         });
 
+        cbCentralRouting.setText("Fahrstraßenmodus");
+        cbCentralRouting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbCentralRoutingActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("FaStr. löschen nach");
+
+        cbClearRoutesDelay.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "10 sec", "20 sec", "30 sec", "nur über End-Sensor" }));
+        cbClearRoutesDelay.setSelectedIndex(1);
+        cbClearRoutesDelay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbClearRoutesDelayActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -332,19 +352,31 @@ public class SettingsUI extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 528, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnChangeConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnChangeConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(cbCentralRouting)
+                                .addGap(56, 56, 56)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbClearRoutesDelay, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(txtConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(24, 24, 24)
                 .addComponent(lblConfigFilenameHelp)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnChangeConfigFile))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
+                .addComponent(btnChangeConfigFile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtConfigFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbCentralRouting)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbClearRoutesDelay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -372,11 +404,11 @@ public class SettingsUI extends javax.swing.JFrame {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCancel)
-                    .addComponent(btnSave))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnSave)
+                    .addComponent(btnCancel))
+                .addGap(0, 12, Short.MAX_VALUE))
         );
 
         pack();
@@ -469,6 +501,18 @@ public class SettingsUI extends javax.swing.JFrame {
 
         }
     }//GEN-LAST:event_btnChangeConfigFileActionPerformed
+
+    private void cbCentralRoutingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCentralRoutingActionPerformed
+        if (cbCentralRouting.isSelected()) {
+            prefs.putBoolean("centralRouting", true);
+        } else {
+            prefs.putBoolean("centralRouting", false);
+        }
+    }//GEN-LAST:event_cbCentralRoutingActionPerformed
+
+    private void cbClearRoutesDelayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbClearRoutesDelayActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbClearRoutesDelayActionPerformed
 
     private void checkBusMode() {
         //if (DEBUG) { System.out.println("check bus control");}
@@ -583,6 +627,8 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JButton btnChangeConfigFile;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox cbBaudrate;
+    private javax.swing.JCheckBox cbCentralRouting;
+    private javax.swing.JComboBox cbClearRoutesDelay;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbSimulation;
     private javax.swing.JComboBox comboBusmode;
@@ -592,6 +638,7 @@ public class SettingsUI extends javax.swing.JFrame {
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

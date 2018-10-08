@@ -5,6 +5,7 @@
  */
 package de.blankedv.sx3pc;
 
+import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
 import static de.blankedv.sx3pc.MainUI.SXMIN;
 import static de.blankedv.sx3pc.MainUI.SXPOWER;
@@ -114,4 +115,14 @@ public class SXUtils {
         return false;
     }
 
+    public static SXAddrAndBits lbAddr2SX(int addr) {
+        if (addr == INVALID_INT) return null;
+        int a = addr / 10;
+        int b = addr % 10;
+        if (isValidSXAddress(a) && isValidSXBit(b)) {
+            return new SXAddrAndBits(a,b,1);  // TODO generalize for multibit addresses
+        } else  {
+            return null;
+        }
+    }
 }
