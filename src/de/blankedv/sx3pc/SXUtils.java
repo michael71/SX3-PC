@@ -9,8 +9,10 @@ import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
 import static de.blankedv.sx3pc.MainUI.SXMIN;
 import static de.blankedv.sx3pc.MainUI.SXPOWER;
+import static de.blankedv.sx3pc.MainUI.lanbahnData;
 import static de.blankedv.sx3pc.MainUI.sxData;
 import static de.blankedv.sx3pc.MainUI.sxi;
+import de.blankedv.timetable.LbUtils;
 
 /**
  *
@@ -115,14 +117,31 @@ public class SXUtils {
         return false;
     }
 
-    public static SXAddrAndBits lbAddr2SX(int addr) {
-        if (addr == INVALID_INT) return null;
-        int a = addr / 10;
-        int b = addr % 10;
+    public static SXAddrAndBits lbAddr2SX(int lbAddr) {
+        if (lbAddr == INVALID_INT) return null;
+        int a = lbAddr / 10;
+        int b = lbAddr % 10;
         if (isValidSXAddress(a) && isValidSXBit(b)) {
             return new SXAddrAndBits(a,b,1);  // TODO generalize for multibit addresses
         } else  {
             return null;
         }
+    }
+    
+    public static void setLanbahnFromSX(int sxAddr, int data) {
+        for (int bit = 1; bit <=8; bit++) {
+            // check if we have a lanbahn entry
+            int lbAddr = sxAddr * 10 + bit;
+            if (lanbahnData.containsKey(lbAddr)) {
+                int dataBit =  isSet(data, bit);
+                int lbData = lanbahnData.get(lbAddr).getData();
+                if (dataBit == 0) {
+                    lbData = lbData & (~1);  // clear last bit
+                } else {
+                    lbData = lbData | 1;  // set last bit
+                }
+                LbUtils.updateLanbahnData(lbAddr, lbData);
+            }
+        }       
     }
 }

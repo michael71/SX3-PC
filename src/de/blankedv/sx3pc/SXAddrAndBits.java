@@ -11,21 +11,25 @@ import static de.blankedv.sx3pc.MainUI.INVALID_INT;
  * @author mblank
  */
 public class SXAddrAndBits {
-    public int sxAddr;
-    public int bit;
-    public int nbit;
+    public int sxAddr = INVALID_INT;
+    public int sxBit = INVALID_INT;
+    public int nBit = 1;
+    
+   public SXAddrAndBits() {
+        nBit = 1;
+   }
     
     SXAddrAndBits(int a, int b) {
         sxAddr = a;
-        bit = b;
-        nbit = 1;
+        sxBit = b;
+        nBit = 1;
         
     }
     
     SXAddrAndBits(int a, int b, int n) {
         sxAddr = a;
-        bit = b;
-        nbit = n;
+        sxBit = b;
+        nBit = n;
         
     }
     
@@ -38,8 +42,8 @@ public class SXAddrAndBits {
             sb.append(" sxAddr=");
             sb.append(sxAddr);
             sb.append(" bits=");
-            for (int i=nbit; i>=1; i--) {
-               sb.append((bit+i-1));           
+            for (int i=nBit; i>=1; i--) {
+               sb.append((sxBit+i-1));           
             }
             return sb.toString();
         }

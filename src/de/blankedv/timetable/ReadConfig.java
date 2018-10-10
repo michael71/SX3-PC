@@ -12,6 +12,10 @@ package de.blankedv.timetable;
  * and open the template in the editor.
  */
 import de.blankedv.sx3pc.LbData;
+import static de.blankedv.sx3pc.MainUI.INVALID_INT;
+import static de.blankedv.sx3pc.MainUI.SXMAX;
+import de.blankedv.sx3pc.SXAddrAndBits;
+import de.blankedv.sx3pc.SXUtils;
 
 import static de.blankedv.timetable.Vars.*;
 
@@ -35,7 +39,7 @@ import org.w3c.dom.NodeList;
  *
  * @author mblank
  */
-public class ReadDCCConfig {
+public class ReadConfig {
 
     private static final boolean CFG_DEBUG = true;
 
@@ -167,31 +171,58 @@ public class ReadDCCConfig {
     } */
     private static ArrayList<Integer> parseAddressArray(Node a) {
         NamedNodeMap attributes = a.getAttributes();
+
+        // determine type - OLD (sxadr/sxbit/nbit) or NEW (lanbahn addresses, sep. by comma)
+        boolean newFormat = false;
         for (int i = 0; i < attributes.getLength(); i++) {
             Node theAttribute = attributes.item(i);
             if (theAttribute.getNodeName().equals("adr")) {
-                String s = theAttribute.getNodeValue();
-                s = s.replace(".", "");
-                //s = s.replace("\\s+", "");
-                String[] sArr = s.split(",");
-                ArrayList<Integer> iArr = new ArrayList<>();
+                newFormat = true;
+                break;
+            }
+        }
+        if (newFormat) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node theAttribute = attributes.item(i);
+                if (theAttribute.getNodeName().equals("adr")) {
+                    String s = theAttribute.getNodeValue();
+                    s = s.replace(".", "");
+                    //s = s.replace("\\s+", "");
+                    String[] sArr = s.split(",");
+                    ArrayList<Integer> iArr = new ArrayList<>();
 
-                for (String s2 : sArr) {
-                    int addr = INVALID_INT;
-                    try {
-                        addr = Integer.parseInt(s2);
-                    } catch (NumberFormatException ex) {
+                    for (String s2 : sArr) {
+                        int addr = INVALID_INT;
+                        try {
+                            addr = Integer.parseInt(s2);
+                        } catch (NumberFormatException ex) {
+                        }
+                        iArr.add(addr);
                     }
-                    iArr.add(addr);
+                    return iArr;
+                } else {
+                    // check, if the XML file uses the old "sxadr"/"sxbit" combination
+                }
+            }
+        } else {
+            SXAddrAndBits sx = parseSXMapping(a);
+            if (sx == null) {
+                return null;
+            }
+            // calculate lbaddress from sxaddr, sxbit, nbit
+            if ((SXUtils.isValidSXAddress(sx.sxAddr) && SXUtils.isValidSXBit(sx.sxBit))) {
+                ArrayList<Integer> iArr = new ArrayList<>();
+                iArr.add(sx.sxAddr * 10 + sx.sxBit);
+                if (sx.nBit == 2) {
+                    iArr.add(sx.sxAddr * 10 + sx.sxBit + 1);
                 }
                 return iArr;
-
             }
         }
         return null;
     }
-    // code from lanbahnPanel
 
+    // code from lanbahnPanel
     private static String parsePanelAttribute(Node item, String att) {
         NamedNodeMap attributes = item.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
@@ -204,6 +235,44 @@ public class ReadDCCConfig {
             }
         }
         return "";
+    }
+
+    private static SXAddrAndBits parseSXMapping(Node item) {
+
+        SXAddrAndBits sxmap = new SXAddrAndBits();
+
+        NamedNodeMap attributes = item.getAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node theAttribute = attributes.item(i);
+            // if (CFG_DEBUG_PARSING) Log.d(TAG,theAttribute.getNodeName() + "=" +
+            // theAttribute.getNodeValue());
+            if (theAttribute.getNodeName().equals("sxadr")) {
+                sxmap.sxAddr = getPositionNode(theAttribute);
+            } else if (theAttribute.getNodeName().equals("sxbit")) {
+                sxmap.sxBit = getPositionNode(theAttribute);
+            } else if (theAttribute.getNodeName().equals("nbit")) {
+                sxmap.nBit = getPositionNode(theAttribute);
+            }
+        }
+
+        if (sxmap.nBit == 2) {
+            // currently implemented only for 4 aspect signals
+            // either the sxadr/sxbit are defined or the (lanbahn-)adr
+            if ((sxmap.sxAddr != INVALID_INT) && (sxmap.sxAddr <= SXMAX)
+                    && (sxmap.sxBit != INVALID_INT)
+                    && (sxmap.sxBit >= 1) && (sxmap.sxBit <= 7)) {
+                // we have a valid sx address
+                return sxmap;
+            } else {
+                System.out.println("invalid config data, sxAddr=" + sxmap.sxAddr + " sxBit=" + sxmap.sxBit + " nBit=" + sxmap.nBit);
+            }
+        }
+        return null;
+    }
+
+    // code from lanbahnPanel
+    private static int getPositionNode(Node a) {
+        return Integer.parseInt(a.getNodeValue());
     }
 
     private static Trip parseTrip(Node item) {
@@ -394,21 +463,29 @@ public class ReadDCCConfig {
     private static void addPanelElement(String type, Node a) {
         ArrayList<Integer> addressArr = parseAddressArray(a);
         if (addressArr != null) {
-            if ((addressArr.size() >= 1) && (addressArr.get(0) != INVALID_INT)) {
-
-                if ((addressArr.size() >= 2) && (addressArr.get(1) != INVALID_INT)) {
-                    // check if we have 2 doubleslip addresses
-                    System.out.println(type + " adr=" + addressArr.get(0) + " sec-adr=" + addressArr.get(1));
-                    LbUtils.createLanbahnData(addressArr.get(0), 2, "DS");
-                    panelElements.add(new PanelElement(type, addressArr.get(0), addressArr.get(1)));  // 
-                } else {
-                    System.out.println(type + " adr=" + addressArr.get(0) + " no sec-adr.");
-                    LbUtils.createLanbahnData(addressArr.get(0), 1, "DS");
-                    panelElements.add(new PanelElement(type, addressArr.get(0)));
-                }
-
+            int lba = addressArr.get(0);
+            switch (addressArr.size()) {
+                case 1:
+                    panelElements.add(new PanelElement(type, lba));
+                    if (!SXUtils.isValidSXAddress(lba/10)) { // is a virtual address
+                        LbUtils.createLanbahnData(addressArr.get(0), 1, type);
+                    }
+                    break;
+                case 2:
+                    int secLba = addressArr.get(1);
+                    panelElements.add(new PanelElement(type, lba, secLba));
+                    if (!SXUtils.isValidSXAddress(lba/10) || !SXUtils.isValidSXAddress(secLba/10)) {
+                        // one of the addresses is a virtual address, must create lanbahn data,
+                        // even if the first address is in SXadr range
+                        LbUtils.createLanbahnData(lba, 2, type);
+                    }
+                    break;
+                default:
+                    System.out.println("ERROR in XML definition, more than 2 adresses");
             }
+        } else {
+            System.out.println("ERROR in XML definition, no address found");
         }
-    }
 
+    }
 }

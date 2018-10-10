@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
+import de.blankedv.timetable.LbUtils;
 import java.util.TooManyListenersException;
 
 /**
@@ -342,9 +343,12 @@ public class SXInterface extends GenericSXInterface {
 
     // address range 0 ..127 / 128 ... 255 
     private synchronized void setSX(int adr, int data) {
-        if (adr >= 0 && adr < N_SX) {
+        if (SXUtils.isValidSXAddress(adr)) {
             sxData[adr] = data;
-
+            // if we have a matching lanbahn address (for example a sensor with
+            // one bit for free/occ and one bit for inRoute/notInRoute
+            // set occupation bit
+            SXUtils.setLanbahnFromSX(adr,data);
             if (((adr <= SXMAX_USED) || (adr == 127)) && DEBUG) {
                 System.out.println("set: SX[" + adr + "]=" + data + " ");
             }

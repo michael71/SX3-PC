@@ -236,6 +236,21 @@ public class PanelElement {
         return INVALID_INT;
     }
     
+    /** check whether a given a lanbahn address (or sx addr) is a multi-bit
+     * address
+     * @param address
+     * @return 
+     */
+    public static boolean isMultiBit(int address) {
+        PanelElement pe = getByAddress(address);
+        if ((pe == null) || (pe.getSecondaryAdr() == INVALID_INT)) {
+            return false;
+        } else {
+            return true;
+        }
+        
+    }
+    
     /*
     public static ArrayList<Route> getRoutes() {
         ArrayList<Route> routes = new ArrayList<>();

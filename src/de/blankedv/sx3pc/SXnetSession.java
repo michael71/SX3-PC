@@ -1,7 +1,10 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.*;
+import de.blankedv.timetable.CompRoute;
 import de.blankedv.timetable.LbUtils;
+import de.blankedv.timetable.PanelElement;
+import de.blankedv.timetable.Route;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +12,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 
 /**
  * hanles one session (=1 mobile device)
@@ -32,6 +37,9 @@ public class SXnetSession implements Runnable {
     private final int[] sxDataCopy;
     private int lastConnected = INVALID_INT;
     private final ConcurrentHashMap<Integer, LbData> lanbahnDataCopy = new ConcurrentHashMap<>(N_LANBAHN);
+
+    private int globalPowerCopy = INVALID_INT;
+    private int centralRoutingCopy = INVALID_INT;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread worker;
@@ -168,6 +176,9 @@ public class SXnetSession implements Runnable {
             case "R":    // read sx value
                 result = readSXByteMessage(param);
                 break;
+            case "REQ":
+                result = requestRouteMessage(param);
+                break;
             case "SET": //TODO, for addresses > 1000 (lanbahn sim./routes)
                 setLanbahnMessage(param);
                 break;
@@ -210,6 +221,63 @@ public class SXnetSession implements Runnable {
         return "XLOCO " + adr + " " + sxData[adr];
     }
 
+    private String requestRouteMessage(String[] par) {
+        if (DEBUG) {
+            System.out.println("requestRouteMessage");
+        }
+        if (par.length <= 2) {
+            if (DEBUG) {
+                System.out.println("par.length <=2");
+            }
+            return "ERROR";
+        }
+
+        // parse string
+        int lbAddr = getLanbahnAddrFromString(par[1]);
+        int lbdata = getLanbahnDataFromString(par[2]);   // can only be 1= set and 0=clear
+        if ((lbAddr == INVALID_INT) || ((lbdata != 0) && (lbdata != 1))) {
+            if (DEBUG) {
+                System.out.println("LB-addr or -data invalid");
+            }
+            return "ERROR";
+        }
+
+        // check whether there is a route with this address(=adr)
+        Route r = Route.getFromAddress(lbAddr);
+        if (r != null) {
+            boolean res = r.set();
+            if (res) {
+                LbUtils.updateLanbahnData(lbAddr, 1);  // do only after route is checked for validity
+                return "XL " + lbAddr + " " + lanbahnData.get(lbAddr).getData();  // success
+            } else {
+                if (DEBUG) {
+                    System.out.println("route invalid");
+                }
+                return "ROUTE_INVALID";
+            }
+        }
+
+        // check whether there is a compound route with this address(=adr)
+        CompRoute cr = CompRoute.getFromAddress(lbAddr);
+        if (cr != null) {
+            LbUtils.updateLanbahnData(lbAddr, 1);
+            boolean res = cr.set();
+            if (res) {
+                return "XL " + lbAddr + " " + lanbahnData.get(lbAddr).getData();  // success
+            } else {
+                if (DEBUG) {
+                    System.out.println("comp route invalid");
+                }
+                return "ROUTE_INVALID";
+            }
+        }
+        if (DEBUG) {
+            System.out.println("no route or compound found");
+        }
+        return "ERROR";
+
+    }
+
     private void setSXByteMessage(String[] par) {
         if (par.length < 3) {
             return;
@@ -224,8 +292,8 @@ public class SXnetSession implements Runnable {
             return;
         }
         SXUtils.setSxData(adr, data);  // synchronized
-    } 
-    
+    }
+
     private void setLocoMessage(String[] par) {
         if (par.length < 3) {
             return;
@@ -297,7 +365,17 @@ public class SXnetSession implements Runnable {
         }
 
     } */
-
+    /**
+     * when setting the data for a lanbahn address, there are 3 possible
+     * scenarios: A) it is within the SX address range and only has a single bit
+     * of data B) it is within the SX address range, but has 2 bits. The first
+     * bit will be a pure SX-bit, the second bit can either be an SX-bit or a
+     * virtual lanbahn address C) it is outside the SX address range => it is a
+     * virtual lanbahn address
+     *
+     * @param par
+     * @return
+     */
     private String setLanbahnMessage(String[] par) {
         if (DEBUG) {
             // System.out.println("setLanbahnMessage");
@@ -312,35 +390,68 @@ public class SXnetSession implements Runnable {
             return "ERROR";
         } else {
             // convert the lanbahn "SET" message to an SX-S Message if in SX address range
-            if (lbadr <= (SXMAX * 10 + 8)) { // max possible address (1118)
+            if (SXUtils.isValidSXAddress(lbadr / 10)) { // max possible address (1118)
+                // scenario A or B
                 int sxadr = lbadr / 10;
                 int sxbit = lbadr % 10;
-                if (SignalMapping.exists(lbadr)) {
-                    // 4 aspect signal
-                    switch (lbdata) {
-                        case 0:
-                            SXUtils.clearBitSxData(sxadr, sxbit);
-                            SXUtils.clearBitSxData(sxadr, sxbit + 1);
-                            break;
-                        case 1:
-                            SXUtils.setBitSxData(sxadr, sxbit);
-                            SXUtils.clearBitSxData(sxadr, sxbit + 1);
-                            break;
-                        case 2:
-                            SXUtils.clearBitSxData(sxadr, sxbit);
-                            SXUtils.setBitSxData(sxadr, sxbit + 1);
-                            break;
-                        case 3:
-                            SXUtils.setBitSxData(sxadr, sxbit);
-                            SXUtils.setBitSxData(sxadr, sxbit + 1);
-                            break;
-                        default:
-                            if (DEBUG) {
-                                System.out.println("invalid lbdata in sx (4-aspect) addr a=" + lbadr + " d=" + lbdata);
-                            }
-                            return "ERROR";
+
+                // check, if we have a secondary address which is also in the SX-Address range
+                // (i.e. 4 aspect signal or doubleslip with 2 bit data)
+                int secLbadr = PanelElement.getSecondaryAddressByAddress(lbadr);
+                if (secLbadr != INVALID_INT) {
+                    // there is a second address 
+                    if (SXUtils.isValidSXAddress(secLbadr)) {
+                        // scenario B, second address is also an SX address
+                        int secSxadr = secLbadr / 10;
+                        int secSxbit = secLbadr % 10;
+                        switch (lbdata) {
+                            case 0:
+                                SXUtils.clearBitSxData(sxadr, sxbit);
+                                SXUtils.clearBitSxData(secSxadr, secSxbit);
+                                break;
+                            case 1:
+                                SXUtils.setBitSxData(sxadr, sxbit);
+                                SXUtils.clearBitSxData(secSxadr, secSxbit);
+                                break;
+                            case 2:
+                                SXUtils.clearBitSxData(sxadr, sxbit);
+                                SXUtils.clearBitSxData(secSxadr, secSxbit);
+                                break;
+                            case 3:
+                                SXUtils.setBitSxData(sxadr, sxbit);
+                                SXUtils.clearBitSxData(secSxadr, secSxbit);
+                                break;
+                            default:
+                                if (DEBUG) {
+                                    System.out.println("invalid lbdata in sx (4-aspect) addr a=" + lbadr + " d=" + lbdata);
+                                }
+                                return "ERROR";
+                        }
+                    } else {
+                        // only the primary address is a valid SX address, the 
+                        // secondary address is virtual
+                        switch (lbdata) {
+                            case 0:
+                            case 2:
+                                SXUtils.clearBitSxData(sxadr, sxbit);
+                                break;
+                            case 1:
+                            case 3:
+                                SXUtils.setBitSxData(sxadr, sxbit);
+                                 break;
+                            default:
+                                if (DEBUG) {
+                                    System.out.println("invalid lbdata in sx (4-aspect) addr a=" + lbadr + " d=" + lbdata);
+                                }
+                                return "ERROR";
+                        }
+                        // update lanbahndata as well
+                        LbUtils.updateLanbahnData(lbadr, lbdata);  // update (or create) data    
+                        
                     }
+                    
                 } else {
+                    // scenario A
                     // set single sx bit
                     switch (lbdata) {
                         case 1:
@@ -360,6 +471,7 @@ public class SXnetSession implements Runnable {
                 }
                 return "";   //feedback sent in SXUtils.set/clear...
             } else {
+                // scenario C
                 // put in lanbahn array only if not in SX address range
                 LbUtils.updateLanbahnData(lbadr, lbdata);  // update (or create) data    
                 // send lanbahnData
@@ -377,14 +489,23 @@ public class SXnetSession implements Runnable {
             return "ERROR";
         }
 
-        if (lbAddr <= (SXMAX * 10 + 8)) { // we are in sx range, create SX Feedback Msg
-            sendSXUpdates(lbAddr / 10);  //includes sending the message
+        if (SXUtils.isValidSXAddress(lbAddr)) { // we are in sx range, create SX Feedback Msg
+            sendSXUpdates(lbAddr);  //includes sending the message
+            int secLbAddr = PanelElement.getSecondaryAddressByAddress(lbAddr);
+            if ((secLbAddr != INVALID_INT)
+                    && // there is a secondary address
+                    ((secLbAddr / 10) != (lbAddr / 10))
+                    && // it does not map to the same SX address as the primary lb-address
+                    SXUtils.isValidSXAddress(secLbAddr / 10)) {  // it is a valid sx message
+                sendSXUpdates(secLbAddr);  //includes sending the message 
+            }
             return "";
         } else {
             if (!lanbahnData.containsKey(lbAddr)) {
                 // initialize to "0" (=start simulation and init to "0")
                 // if not already exists
-                LbUtils.createLanbahnData(lbAddr, 0, "T");
+                System.out.println("ERROR: unknown lanbahn address: " + lbAddr);
+                LbUtils.createLanbahnData(lbAddr, 1, "T");
             }
             // send lanbahnData, when already set
             return "XL " + lbAddr + " " + lanbahnData.get(lbAddr);
@@ -407,7 +528,7 @@ public class SXnetSession implements Runnable {
     }
 
     private int getLanbahnDataFromString(String s) {
-        // converts String to integer between 0 and 15
+        // converts String to integer between 0 and 3
         //    (= range Lanbahn data values)
         Integer data;
         try {
@@ -530,10 +651,11 @@ public class SXnetSession implements Runnable {
     /**
      * if channel data changed, send update to clients
      *
-     * @param bus (0 or 1)
-     * @param sxaddr (valid sxaddr)
+     * @param lbaddr
      */
-    private void sendSXUpdates(int sxAddr) {
+    private void sendSXUpdates(int lbAddr) {
+
+        int sxAddr = lbAddr / 10;
 
         sxDataCopy[sxAddr] = sxData[sxAddr];
 
@@ -568,8 +690,8 @@ public class SXnetSession implements Runnable {
         if ((lastConnected == INVALID_INT) || (sxi.connState() != lastConnected)) {
             lastConnected = sxi.connState();
             if (!first) {
-                    msg.append(";");
-                }
+                msg.append(";");
+            }
             msg.append("XCONN ");
             msg.append(lastConnected); // 1 or 0
             first = false;
@@ -610,36 +732,43 @@ public class SXnetSession implements Runnable {
      */
     private void checkForLanbahnChangesAndSendUpdates() {
         StringBuilder msg = new StringBuilder();
-        boolean first = true;
+        int globalPower = sxData[127] & 0x80;
+        if ((globalPowerCopy != globalPower) && (globalPower != INVALID_INT)) {
+            // power state has changed
+            globalPowerCopy = globalPower;
+            msg.append("XPOWER ");
+            msg.append(globalPower);
+        }
+
+        Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+        int centralR = 0;
+        if (prefs.getBoolean("centralRouting", false)) {
+            centralR = 1;
+        }
+        if (centralRoutingCopy != centralR) {
+            // power state has changed
+            centralRoutingCopy = centralR;
+            if (msg.length() != 0) {
+                msg.append(";");
+            }
+            msg.append("ROUTING ");
+            msg.append(centralRoutingCopy);
+        }
+
         for (Map.Entry<Integer, LbData> e : lanbahnData.entrySet()) {
             Integer key = e.getKey();
-            Integer value = e.getValue().getData();
-            if (lanbahnDataCopy.containsKey(key)) {
-                if (lanbahnDataCopy.get(key) != lanbahnData.get(key)) {
-                    // value has changed
-                    LbUtils.updateLanbahnData(key, value);
-                    if (!first) {
-                        msg.append(";");
-                    }
-                    msg.append("XL ").append(key).append(" ").append(value);
-                    first = false;
-                    if (msg.length() > 60) {
-                        sendMessage(msg.toString());
-                        msg.setLength(0);  // =delete content
-                        first = true;
-                    }
-                }
-            } else {
-                lanbahnDataCopy.put(key, new LbData(key, value, "T-"));
-                if (!first) {
+            LbData lbd = e.getValue();
+            Integer value = lbd.getData();
+            if (!lanbahnDataCopy.containsKey(key) || (!Objects.equals(lanbahnDataCopy.get(key), lanbahnData.get(key)))) {  // null-safe '=='
+                // value is new or has changed
+                lanbahnDataCopy.put(key, lbd);
+                if (msg.length() != 0) {
                     msg.append(";");
                 }
                 msg.append("XL ").append(key).append(" ").append(value);
-                first = false;
                 if (msg.length() > 60) {
                     sendMessage(msg.toString());
                     msg.setLength(0);  // =delete content
-                    first = true;
                 }
             }
         }

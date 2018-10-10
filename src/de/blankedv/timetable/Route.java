@@ -238,9 +238,9 @@ public class Route extends PanelElement {
             int d = rs.dynamicValueToSetForRoute();
             SXAddrAndBits sxab = SXUtils.lbAddr2SX(rs.signal.adr);
             if (d == 0) {   // TODO multi-aspect - only red and green are used at the moment
-                SXUtils.clearBitSxData(sxab.sxAddr, sxab.bit);
+                SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
-                SXUtils.clearBitSxData(sxab.sxAddr, sxab.bit);
+                SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             }
             LbUtils.updateLanbahnData(rs.signal.adr, d);
         }
@@ -249,9 +249,9 @@ public class Route extends PanelElement {
             int d = rtt.valueToSetForRoute;   // can be only 1 or 0
             SXAddrAndBits sxab = SXUtils.lbAddr2SX(rtt.turnout.adr);
              if (d == 0) {  
-                SXUtils.clearBitSxData(sxab.sxAddr, sxab.bit);
+                SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
-                SXUtils.clearBitSxData(sxab.sxAddr, sxab.bit);
+                SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             }
             LbUtils.updateLanbahnData(rtt.turnout.adr, rtt.valueToSetForRoute);
         }   

@@ -2,17 +2,16 @@ package de.blankedv.sx3pc;
 
 //import java.io.InputStream;
 import de.blankedv.timetable.FahrplanUI;
+import de.blankedv.timetable.ReadConfig;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -40,7 +39,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.37 - 30 Aug 2018";
+    public static final String VERSION = "2.38 - 10 Oct 2018";
     public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-" + VERSION;
 
     /**
@@ -85,9 +84,9 @@ public class MainUI extends javax.swing.JFrame {
      */
     public static final int LBDATAMIN = 0;
     /**
-     * {@value #LBDATAMAX} =maximum lanbahn data value (== 4 bits in SX world)
+     * {@value #LBDATAMAX} =maximum lanbahn data value (== 2 bits in SX world)
      */
-    public static final int LBDATAMAX = 15;  // 
+    public static final int LBDATAMAX = 3;  // 
     /**
      * {@value #INVALID_INT} = denotes a value as invalid (not usable)
      */
@@ -119,7 +118,6 @@ public class MainUI extends javax.swing.JFrame {
      */
     public static ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
     public static ConcurrentHashMap<Integer,  LbData> lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
-    public static ArrayList<SignalMapping> allSignalMappings = new ArrayList<SignalMapping>();
     public static MonitorUI sxmon = null;
     public static LanbahnMonitorUI lbmon = null;
 
@@ -208,7 +206,7 @@ public class MainUI extends javax.swing.JFrame {
     private void loadConfigFile() {
         String configFile = prefs.get("configfilename", "-keiner-");
         if (!configFile.equalsIgnoreCase("-keiner-")) {
-            String resultReadConfigFile = ReadSignalMapping.readXML(configFile);
+            String resultReadConfigFile = ReadConfig.readXML(configFile);
             if (resultReadConfigFile.equalsIgnoreCase("OK")) {
                 if ((myip != null) && (myip.size() > 0)) {
                     lblDownloadFrom.setText("download von http:/" + myip.get(0).toString() + ":8000/config");
@@ -278,7 +276,6 @@ public class MainUI extends javax.swing.JFrame {
         sxData = new int[N_SX];
         locoAddresses = new ArrayList<>();
         lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
-        allSignalMappings = new ArrayList<>();
 
         loadConfigFile();
 
