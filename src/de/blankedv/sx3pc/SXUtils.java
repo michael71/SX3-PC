@@ -9,10 +9,11 @@ import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
 import static de.blankedv.sx3pc.MainUI.SXMIN;
 import static de.blankedv.sx3pc.MainUI.SXPOWER;
-import static de.blankedv.sx3pc.MainUI.lanbahnData;
+import static de.blankedv.sx3pc.MainUI.panelElements;
 import static de.blankedv.sx3pc.MainUI.sxData;
 import static de.blankedv.sx3pc.MainUI.sxi;
-import de.blankedv.timetable.LbUtils;
+
+import de.blankedv.timetable.PanelElement;
 
 /**
  *
@@ -39,22 +40,22 @@ public class SXUtils {
     static private int clearBit(int d, int bit) {
         return d & ~(1 << (bit - 1));  // selectrix bit !!! 1 ..8
     }
-    
+
     synchronized static public void setBitSxData(int addr, int bit) {
         sxData[addr] = setBit(sxData[addr], bit);
         sxi.send2SX(addr, sxData[addr]);
     }
-    
+
     synchronized static public void clearBitSxData(int addr, int bit) {
         sxData[addr] = clearBit(sxData[addr], bit);
         sxi.send2SX(addr, sxData[addr]);
     }
-    
+
     synchronized static public void setSxData(int addr, int data) {
         sxData[addr] = data;
         sxi.send2SX(addr, data);
     }
-    
+
     /**
      * set or clear a bit depending on "value" variable
      *
@@ -84,7 +85,7 @@ public class SXUtils {
             return true;
         }
     }
-    
+
     /**
      * is the address a valid SX0 or SX1 address
      *
@@ -100,16 +101,16 @@ public class SXUtils {
         //if (DEBUG) System.out.println("isValidSXAddress? "+a + " false");
         return false;
     }
-    
+
     /**
-     * is the bit a valid SX bit? (1...8) 
+     * is the bit a valid SX bit? (1...8)
      *
      * @param bit
      * @return true or false
      */
     public static boolean isValidSXBit(int bit) {
 
-        if ((bit >= 1) && (bit <=8)) {
+        if ((bit >= 1) && (bit <= 8)) {
             return true;  // 1..8
         }
 
@@ -118,30 +119,44 @@ public class SXUtils {
     }
 
     public static SXAddrAndBits lbAddr2SX(int lbAddr) {
-        if (lbAddr == INVALID_INT) return null;
+        if (lbAddr == INVALID_INT) {
+            return null;
+        }
         int a = lbAddr / 10;
         int b = lbAddr % 10;
         if (isValidSXAddress(a) && isValidSXBit(b)) {
-            return new SXAddrAndBits(a,b,1);  // TODO generalize for multibit addresses
-        } else  {
+            return new SXAddrAndBits(a, b, 1);  // TODO generalize for multibit addresses
+        } else {
             return null;
         }
     }
-    
-    public static void setLanbahnFromSX(int sxAddr, int data) {
-        for (int bit = 1; bit <=8; bit++) {
+
+    public static void setPanelElementStateFromSX(int sxAddr, int data) {
+        for (int bit = 1; bit <= 8; bit++) {
             // check if we have a lanbahn entry
             int lbAddr = sxAddr * 10 + bit;
-            if (lanbahnData.containsKey(lbAddr)) {
-                int dataBit =  isSet(data, bit);
-                int lbData = lanbahnData.get(lbAddr).getData();
-                if (dataBit == 0) {
-                    lbData = lbData & (~1);  // clear last bit
-                } else {
-                    lbData = lbData | 1;  // set last bit
+            for (PanelElement pe : panelElements) {
+                if (pe.getAdr() == lbAddr) {
+                    int dataBit = isSet(data, bit);
+                    int state = pe.getState();
+                    if (dataBit == 0) {
+                        state = state & (~1);  // clear last bit
+                    } else {
+                        state = state | 1;     // set last bit
+                    }
+                    pe.setState(state);
                 }
-                LbUtils.updateLanbahnData(lbAddr, lbData);
+                if (pe.getSecondaryAdr() == lbAddr) {
+                    int dataBit = isSet(data, bit);
+                    int state = pe.getState();
+                    if (dataBit == 0) {
+                        state = state & (~2);  // clear bit1
+                    } else {
+                        state = state | 2;     // set bit1
+                    }
+                    pe.setState(state);
+                }
             }
-        }       
+        }
     }
 }

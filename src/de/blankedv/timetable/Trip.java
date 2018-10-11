@@ -89,12 +89,12 @@ public class Trip implements Comparable<Trip> {
         for (String sRouteId : routeIds) {
             Integer rid = Integer.parseInt(sRouteId);
             for (Route r : allRoutes) {
-                if (r.adr == rid) {
+                if (r.getAdr() == rid) {
                     r.set();
                 }
             }
             for (CompRoute cr : allCompRoutes) {
-                if (cr.adr == rid) {
+                if (cr.getAdr() == rid) {
                     cr.set();
                 }
             }

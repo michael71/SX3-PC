@@ -7,8 +7,9 @@ package de.blankedv.timetable;
 
 
 import de.blankedv.sx3pc.LbData;
-import static de.blankedv.sx3pc.MainUI.lanbahnData;
+import static de.blankedv.sx3pc.MainUI.panelElements;
 import static de.blankedv.timetable.Vars.*;
+import java.util.HashMap;
 
 /**
  *
@@ -32,7 +33,7 @@ public class LbUtils {
      * @param addr
      * @param value 
      */
-    static public void updateLanbahnData(int addr, int value) {
+  /* static public void updateLanbahnData(int addr, int value) {
          LbData lb = lanbahnData.get(addr);
          if (lb == null) {
              // should not happen
@@ -52,6 +53,7 @@ public class LbUtils {
     
     static public void createLanbahnData(int addr, int nbit, String type) {
         lanbahnData.put(addr, new LbData(0, nbit, type));
-    }
+    } */
 
+    
 }

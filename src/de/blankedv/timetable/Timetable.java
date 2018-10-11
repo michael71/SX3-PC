@@ -7,7 +7,7 @@ package de.blankedv.timetable;
 
 import de.blankedv.sx3pc.LbData;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
-import static de.blankedv.sx3pc.MainUI.lanbahnData;
+import static de.blankedv.sx3pc.MainUI.panelElements;
 import java.util.ArrayList;
 
 /**
@@ -79,18 +79,9 @@ public class Timetable {
         // TODO check if complete route is free and set route
         
         // set route(s)
-        LbData dStart = lanbahnData.get(t.sens1);
-        LbData dEnd = lanbahnData.get(t.sens2);
-        if (dStart == null) {
-            System.out.println("dStart not defined");
-            return false;
-        }
-        if (dEnd == null) {
-            System.out.println("dEnd not defined");
-            return false;
-        }
-        int start =  dStart.getData() & 0x01;   // get "occupied" bit
-        int end = dEnd.getData() & 0x01;   // get "occupied" bit
+        
+        int start =  PanelElement.getByAddress(t.sens1).getState() & 0x01;   // get "occupied" bit
+        int end = PanelElement.getByAddress(t.sens2).getState() & 0x01;   // get "occupied" bit
 
         if ( (start != 0) && (end == 0) ) {
             System.out.println("start sensor occ and end sensor free, we can start the trip");

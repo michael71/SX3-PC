@@ -27,7 +27,7 @@ public class CompRoute extends PanelElement {
      */
     public CompRoute(int routeAddr, String sRoutes) {
         super("CR",routeAddr);
-        state = RT_INACTIVE;
+        setState(RT_INACTIVE);
         // this string written back to config file.
         this.routesString = sRoutes;
         lastUpdateTime = System.currentTimeMillis(); // store for resetting 
@@ -42,7 +42,7 @@ public class CompRoute extends PanelElement {
             int routeID = Integer.parseInt(iID[i]);
             for (Route rt : allRoutes) {
                 try {
-                    if (rt.adr == routeID) {
+                    if (rt.getAdr() == routeID) {
                         myroutes.add(rt);
                     }
                 } catch (NumberFormatException e) {
@@ -68,17 +68,17 @@ public class CompRoute extends PanelElement {
     public boolean set() {
 
         if (DEBUG) {
-            System.out.println(" setting comproute id=" + adr);
+            System.out.println(" setting comproute id=" + getAdr());
         }
         lastUpdateTime = System.currentTimeMillis();
-        LbUtils.updateLanbahnData(adr, 1);   // state = active
+        setState(RT_ACTIVE);
         // check if all routes can be set successfully
         boolean res = true;
         for (Route rt : myroutes) {
             res = rt.set();
             if (res == false) {
                 if (DEBUG) {
-                    System.out.println("ERROR cannot set comproute id=" + adr + " because route=" + rt.adr + " cannot be set.");
+                    System.out.println("ERROR cannot set comproute id=" + getAdr() + " because route=" + rt.getAdr() + " cannot be set.");
                 }
                 return false;  // cannot set comproute.
             }
@@ -93,9 +93,9 @@ public class CompRoute extends PanelElement {
         // which are set by a compound route, are autocleared by the "Route.auto()" function
         for (CompRoute rt : allCompRoutes) {
             if (((System.currentTimeMillis() - rt.lastUpdateTime) > AUTO_CLEAR_ROUTE_TIME_SEC * 1000L)
-                    && (rt.state == RT_ACTIVE)) {
-                LbUtils.updateLanbahnData(rt.adr, RT_INACTIVE);  // reset lanbahn value and set state to 0
-            }
+                    && (rt.getState() == RT_ACTIVE)) {
+                rt.setState(RT_INACTIVE);
+             }
 
         }
 
@@ -103,7 +103,7 @@ public class CompRoute extends PanelElement {
      
      public static CompRoute getFromAddress(int a) {
         for (CompRoute cr : allCompRoutes) {
-            if (cr.adr == a) return cr;
+            if (cr.getAdr() == a) return cr;
         }
         return null;
     }

@@ -2,6 +2,7 @@ package de.blankedv.sx3pc;
 
 //import java.io.InputStream;
 import de.blankedv.timetable.FahrplanUI;
+import de.blankedv.timetable.PanelElement;
 import de.blankedv.timetable.ReadConfig;
 import java.awt.Cursor;
 import java.awt.Image;
@@ -66,11 +67,6 @@ public class MainUI extends javax.swing.JFrame {
     public static final int N_SX = 128; // maximal möglich (pro SX Kanal)
 
     /**
-     * {@value #N_LANBAHN} number of entries in lanbahn array (i.e. maximum
-     * number of usable lanbahn addresses)
-     */
-    public static final int N_LANBAHN = 500;
-    /**
      * {@value #LBMIN} minimum lanbahn channel number
      */
     public static final int LBMIN = 1; // 
@@ -117,7 +113,8 @@ public class MainUI extends javax.swing.JFrame {
      * generate loco specific feedback messages
      */
     public static ArrayList<Integer> locoAddresses = new ArrayList<Integer>();
-    public static ConcurrentHashMap<Integer,  LbData> lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
+    public static ArrayList<PanelElement> panelElements = new ArrayList<>();
+    
     public static MonitorUI sxmon = null;
     public static LanbahnMonitorUI lbmon = null;
 
@@ -275,7 +272,7 @@ public class MainUI extends javax.swing.JFrame {
         // clear all data
         sxData = new int[N_SX];
         locoAddresses = new ArrayList<>();
-        lanbahnData = new ConcurrentHashMap<>(N_LANBAHN);
+        panelElements.clear();
 
         loadConfigFile();
 

@@ -6,6 +6,8 @@
 package de.blankedv.sx3pc;
 
 import static de.blankedv.sx3pc.MainUI.*;
+import de.blankedv.timetable.LbUtils;
+import de.blankedv.timetable.PanelElement;
 import java.awt.Color;
 import java.awt.Container;
 import java.util.ArrayList;
@@ -15,9 +17,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
-/**
+/** display current (numerical) state of all PanelElements
  *
  * @author mblank
  */
@@ -27,7 +31,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
     static final int ROWS = 16;
     static final int COLS = 10; // *2
 
-    private Map<Integer, LbData> lbCopy, oldLbCopy;
+    private Map<Integer,Integer> stateCopy, oldStateCopy;
 
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
@@ -37,15 +41,15 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
     public LanbahnMonitorUI() {
         initComponents();
 
-        this.setTitle("Virtual Channels Monitor");
+        this.setTitle("PanelElement State Monitor");
         Color c1 = new Color(140, 140, 255);
         Container con1 = this.getContentPane();
         con1.setBackground(c1);
 
         loadPrefs();
         initTable1();  // mit leer strings initialisieren
-        lbCopy = new HashMap<>();
-        oldLbCopy = new HashMap<>();
+        stateCopy = new HashMap<>();
+        oldStateCopy = new HashMap<>();
         update(); // from Lanbahn data
         this.setVisible(true);
     }
@@ -141,27 +145,28 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
 
     public void update() {
 
-        lbCopy = new HashMap<Integer,LbData>(lanbahnData);  // make a copy of the current data
+        stateCopy = peStateCopy();  // make a copy of the current data
         // the lanbahnData hashmap only can grow, no values will be deleted
         // initTable() => not necessary
+    Set eSet = stateCopy.entrySet();
+    Iterator it = eSet.iterator();
 
-        ArrayList<Integer> keys = new ArrayList<>(lbCopy.keySet());
-        Collections.sort(keys);
-        Iterator it = keys.iterator();
+
 
         for (int i = 0; i < COLS - 1; i = i + 2) {
             for (int j = 0; j < ROWS; j++) {
                 if (it.hasNext()) {
-                    Integer key = (Integer) it.next();
-                    //System.out.println("LBMon: "+key + " "+lbCopy.get(key));
-                    // it.remove(); // avoids a ConcurrentModificationException
+                    Map.Entry entry = (Map.Entry) it.next();
+       Integer key = (Integer) entry.getKey();
+       Integer  value = (Integer ) entry.getValue();
+                    //System.out.println("LBMon: "+key + " "+stateCopy.get(key));
+                    // ROWSit.remove(); // avoids a ConcurrentModificationException
                     jTable1.setValueAt(key, j, i);
                     StringBuffer s;
-                    int value = lbCopy.get(key).getData();
-                    
+                      
                     // display in different color (Red) when value has changed
                     // after the last call of update()
-                    if (!Objects.equals(lbCopy.get(key), oldLbCopy.get(key))) {
+                    if (!Objects.equals(stateCopy.get(key), oldStateCopy.get(key))) {
                         s = new StringBuffer("<html><p bgcolor='#FF8800'>" + value + "</p></html>");
                     } else {
                         s = new StringBuffer("<html><p bgcolor='#FFFF00'>" + value + "</p></html>");
@@ -171,7 +176,7 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
             }
         }
 
-        oldLbCopy = lbCopy;  // save the data for later "hasChanged" detection
+        oldStateCopy = stateCopy;  // save the data for later "hasChanged" detection
     }
 
     private void initTable1() {
@@ -202,7 +207,14 @@ public class LanbahnMonitorUI extends javax.swing.JFrame {
         setLocation(prefs.getInt("lbmonitorwindowX", 200), prefs.getInt("lbmonitorwindowY", 200));
 
     }
-
+    
+    private TreeMap<Integer,Integer> peStateCopy() {
+        TreeMap<Integer,Integer> hm = new TreeMap<>();
+        panelElements.forEach((pe) -> hm.put(pe.getAdr(),pe.getState()));
+        // todo add routes and comproutes
+        return hm;
+    }
+  
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;

@@ -348,7 +348,7 @@ public class SXInterface extends GenericSXInterface {
             // if we have a matching lanbahn address (for example a sensor with
             // one bit for free/occ and one bit for inRoute/notInRoute
             // set occupation bit
-            SXUtils.setLanbahnFromSX(adr,data);
+            SXUtils.setPanelElementStateFromSX(adr,data);
             if (((adr <= SXMAX_USED) || (adr == 127)) && DEBUG) {
                 System.out.println("set: SX[" + adr + "]=" + data + " ");
             }

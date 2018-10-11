@@ -11,9 +11,9 @@ package de.blankedv.timetable;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import de.blankedv.sx3pc.LbData;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
+import static de.blankedv.sx3pc.MainUI.panelElements;
 import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
 
@@ -401,7 +401,7 @@ public class ReadConfig {
         } else {
             // everything is o.k.
             Route rt = new Route(id, route, sensors, offending);
-            LbUtils.createLanbahnData(id, 1, "RT");   // 1 bit , route
+           
             panelElements.add(rt);
             allRoutes.add(rt);
         }
@@ -453,7 +453,6 @@ public class ReadConfig {
         } else {
             // everything is o.k.
             CompRoute cr = new CompRoute(id, routes);
-            LbUtils.createLanbahnData(id, 1, "CR");
             panelElements.add(cr);
             allCompRoutes.add(cr);
         }
@@ -467,18 +466,10 @@ public class ReadConfig {
             switch (addressArr.size()) {
                 case 1:
                     panelElements.add(new PanelElement(type, lba));
-                    if (!SXUtils.isValidSXAddress(lba/10)) { // is a virtual address
-                        LbUtils.createLanbahnData(addressArr.get(0), 1, type);
-                    }
                     break;
                 case 2:
                     int secLba = addressArr.get(1);
                     panelElements.add(new PanelElement(type, lba, secLba));
-                    if (!SXUtils.isValidSXAddress(lba/10) || !SXUtils.isValidSXAddress(secLba/10)) {
-                        // one of the addresses is a virtual address, must create lanbahn data,
-                        // even if the first address is in SXadr range
-                        LbUtils.createLanbahnData(lba, 2, type);
-                    }
                     break;
                 default:
                     System.out.println("ERROR in XML definition, more than 2 adresses");

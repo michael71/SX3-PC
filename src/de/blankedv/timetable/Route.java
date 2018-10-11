@@ -1,5 +1,6 @@
 package de.blankedv.timetable;
 
+import static de.blankedv.sx3pc.MainUI.panelElements;
 import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
 import static de.blankedv.timetable.Vars.*;
@@ -48,7 +49,7 @@ public class Route extends PanelElement {
             String offending) {
  
         super("RT", routeAddr);
-        state = RT_INACTIVE;
+        this.setState(RT_INACTIVE);
         // these strings are written back to config file.
         this.routeString = route;
         this.sensorsString = allSensors;
@@ -57,7 +58,7 @@ public class Route extends PanelElement {
         lastUpdateTime = System.currentTimeMillis(); // store for resetting
         
         if (DEBUG) {
-            System.out.println(" creating route id/adr=" + adr);
+            System.out.println(" creating route id/adr=" + this.getAdr());
         }
 
         // route = "750,1;751,2" => set 750 turnout 1 and 751 turnout value 2
@@ -113,7 +114,7 @@ public class Route extends PanelElement {
             for (Route rt : allRoutes) {
                 try {
                     int offID = Integer.parseInt(offRoutes[i]);
-                    if ((rt.adr == offID) && (rt.state == RT_ACTIVE)) {
+                    if ((rt.getAdr() == offID) && (rt.getState() == RT_ACTIVE)) {
                         rtOffending.add(rt);
                     }
                 } catch (NumberFormatException e) {
@@ -128,7 +129,7 @@ public class Route extends PanelElement {
         lastUpdateTime = System.currentTimeMillis(); // store for resetting
         // automatically
         if (DEBUG) {
-            System.out.println(" clearing route id=" + adr);
+            System.out.println(" clearing route id=" + this.getAdr());
         }
 
         // deactivate sensors
@@ -139,7 +140,7 @@ public class Route extends PanelElement {
                 // for track-control "route lighting"
                // TODO currently not shown on SXBUS !!! serialIF.send(LNUtil.makeOPC_SW_REQ(se.secondaryAdr - 1, 1, 1));
             } */
-           LbUtils.updateLanbahnData(se.adr, st);
+           //LbUtils.updateLanbahnData(se.adr, st);
         }
 
         // set signals turnout red
@@ -148,7 +149,7 @@ public class Route extends PanelElement {
             
             // TODO set on SXBUS
             //serialIF.send(LNUtil.makeOPC_SW_REQ(rs.signal.adr - 1, 0, 1));
-            LbUtils.updateLanbahnData(rs.signal.adr, rs.signal.getState());
+            //LbUtils.updateLanbahnData(rs.signal.adr, rs.signal.getState());
         }
 
         // TODO unlock turnouts
@@ -160,7 +161,8 @@ public class Route extends PanelElement {
          */
 
         // notify that route was cleared
-        LbUtils.updateLanbahnData(adr, RT_INACTIVE);
+        //LbUtils.updateLanbahnData(adr, RT_INACTIVE);
+        this.setState(RT_INACTIVE);
 
     }
 
@@ -173,7 +175,7 @@ public class Route extends PanelElement {
             for (Route rt : allRoutes) {
                 try {
                     int offID = Integer.parseInt(offRoutes[i]);
-                    if ((rt.adr == offID) && (rt.state == RT_ACTIVE)) {
+                    if ((rt.getAdr() == offID) && (rt.getState() == RT_ACTIVE)) {
                         rt.clear();
                     }
                 } catch (NumberFormatException e) {
@@ -191,7 +193,7 @@ public class Route extends PanelElement {
             for (Route rt : allRoutes) {
                 try {
                     int offID = Integer.parseInt(offRoutes[i]);
-                    if ((rt.adr == offID) && (rt.state == RT_ACTIVE)) {
+                    if ((rt.getAdr() == offID) && (rt.getState() == RT_ACTIVE)) {
                         return true;
                     }
                 } catch (NumberFormatException e) {
@@ -203,9 +205,8 @@ public class Route extends PanelElement {
 
     public boolean set() {
 
-
         if (DEBUG) {
-            System.out.println(" setting route id=" + adr);
+            System.out.println(" setting route id=" + this.getAdr());
         }
 
         if (offendingRouteActive()) {
@@ -221,46 +222,49 @@ public class Route extends PanelElement {
         clearOffendingRoutes();
         
         // notify that route is set
-        LbUtils.updateLanbahnData(adr, RT_ACTIVE);
+        //LbUtils.updateLanbahnData(adr, RT_ACTIVE);
 
         // activate sensors
         for (PanelElement se : rtSensors) {
             int st = se.setBit1(true);
-            if (se.secondaryAdr != INVALID_INT) {
+            if (se.getSecondaryAdr() != INVALID_INT) {
                 // for track-control "route lighting"
                // TODO for SXBUS serialIF.send(LNUtil.makeOPC_SW_REQ(se.secondaryAdr - 1, 0, 1));
             }
-            LbUtils.updateLanbahnData(se.adr, st);
+            // LbUtils.updateLanbahnData(se.adr, st);
+            
         }
 
         // set signals
         for (RouteSignal rs : rtSignals) {
             int d = rs.dynamicValueToSetForRoute();
-            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rs.signal.adr);
+            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rs.signal.getAdr());
             if (d == 0) {   // TODO multi-aspect - only red and green are used at the moment
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             }
-            LbUtils.updateLanbahnData(rs.signal.adr, d);
+            //LbUtils.updateLanbahnData(rs.signal.adr, d);
+            rs.signal.setState(d);
         }
         // set and // TODO lock turnouts
         for (RouteTurnout rtt : rtTurnouts) {
             int d = rtt.valueToSetForRoute;   // can be only 1 or 0
-            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rtt.turnout.adr);
+            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rtt.turnout.getAdr());
              if (d == 0) {  
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             }
-            LbUtils.updateLanbahnData(rtt.turnout.adr, rtt.valueToSetForRoute);
+            //LbUtils.updateLanbahnData(rtt.turnout.adr, rtt.valueToSetForRoute);
+            rtt.turnout.setState(d);
         }   
-         
+        this.setState(RT_ACTIVE); 
         return true;
     }
 
     public boolean isActive() {
-        return (state == RT_ACTIVE);
+        return (this.getState() == RT_ACTIVE);
     }
 
     protected class RouteSignal {
@@ -306,8 +310,8 @@ public class Route extends PanelElement {
         for (RouteSignal rs : rtSignals) {
             if (rs.depFrom != INVALID_INT) {
                 if (rs.signal.getState() != rs.dynamicValueToSetForRoute()) {
-                    rs.signal.state = rs.dynamicValueToSetForRoute();
-                    LbUtils.updateLanbahnData(rs.signal.adr, rs.signal.state);
+                    rs.signal.setState(rs.dynamicValueToSetForRoute());
+                    //LbUtils.updateLanbahnData(rs.signal.adr, rs.signal.state);
                 }
             }
         }
@@ -329,11 +333,11 @@ public class Route extends PanelElement {
         // check for auto reset of allRoutes
         for (Route rt : allRoutes) {
             if (((System.currentTimeMillis() - rt.lastUpdateTime) > AUTO_CLEAR_ROUTE_TIME_SEC * 1000L)
-                    && (rt.state == RT_ACTIVE)) {
+                    && (rt.getState() == RT_ACTIVE)) {
                 rt.clear();
             }
             // update dependencies
-            if (rt.state == RT_ACTIVE) {
+            if (rt.getState() == RT_ACTIVE) {
                 rt.updateDependencies();
             }
         }
@@ -354,10 +358,10 @@ public class Route extends PanelElement {
         StringBuilder sb = new StringBuilder("");
         for (Route r : rtOffending) {
             if (sb.length() == 0) {
-                sb.append(r.adr);
+                sb.append(r.getAdr());
             } else {
                 sb.append(",");
-                sb.append(r.adr);
+                sb.append(r.getAdr());
             }
         }
         /*		if (sb.length() == 0)
@@ -375,9 +379,9 @@ public class Route extends PanelElement {
                 // iterate over all turnouts of rt and check, if another route
                 // activates the same turnout to a different position 
                 for (Route rt2 : allRoutes) {
-                    if (rt.adr != rt2.adr) {
+                    if (rt.getAdr() != rt2.getAdr()) {
                         for (RouteTurnout t2 : rt2.rtTurnouts) {
-                            if ((t.turnout.adr == t2.turnout.adr)
+                            if ((t.turnout.getAdr() == t2.turnout.getAdr())
                                     && (t.valueToSetForRoute != t2.valueToSetForRoute)) {
                                 rt.addOffending(rt2);
                                 break;
@@ -394,7 +398,7 @@ public class Route extends PanelElement {
     
     public static Route getFromAddress(int a) {
         for (Route r : allRoutes) {
-            if (r.adr == a) return r;
+            if (r.getAdr() == a) return r;
         }
         return null;
     }

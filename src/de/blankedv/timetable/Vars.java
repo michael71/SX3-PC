@@ -26,7 +26,7 @@ public class Vars {
 
     public static ArrayList<Trip> allTrips = new ArrayList<>();   // all Locos we have heard of (via sxnet)
     public static ArrayList<Timetable> allTimetables = new ArrayList<>();
-    public static ArrayList<PanelElement> panelElements = new ArrayList<>();
+    
     public static ArrayList<Route> allRoutes = new ArrayList<>();   // TODO eleminate
     public static ArrayList<CompRoute> allCompRoutes = new ArrayList<>();  // TODO eleminate
 

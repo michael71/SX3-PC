@@ -5,8 +5,11 @@
  */
 package de.blankedv.timetable;
 
+import static de.blankedv.sx3pc.MainUI.DEBUG;
+import static de.blankedv.sx3pc.MainUI.INVALID_INT;
+import static de.blankedv.sx3pc.MainUI.panelElements;
+import de.blankedv.sx3pc.SXUtils;
 import static de.blankedv.timetable.Vars.*;
-
 
 /**
  * all active panel elements, like turnouts, signals, trackindicators (=sensors)
@@ -21,11 +24,11 @@ import static de.blankedv.timetable.Vars.*;
  */
 public class PanelElement {
 
-    public int state = 0;
-    public int adr = INVALID_INT;
-    public int secondaryAdr = INVALID_INT;  // needed for DCC sensors/signals 
-    public int nbit = 1;  // number of significant bits
-    public String typeString = "AC";
+    private int state = 0;
+    private int adr = INVALID_INT;
+    private int secondaryAdr = INVALID_INT;  // needed for DCC sensors/signals 
+    private int nbit = 1;  // number of significant bits
+    private String typeString = "AC";
     // with 2 addresses (adr1=occ/free, 2=in-route)
     protected String route = "";
 
@@ -105,6 +108,7 @@ public class PanelElement {
 
     public int setState(int val) {
         state = val;
+        updateSXData();
         return state;
     }
 
@@ -137,6 +141,7 @@ public class PanelElement {
         } else {
             state &= ~(0x01);
         }
+        updateSXData();
         return state;
     }
 
@@ -148,7 +153,7 @@ public class PanelElement {
         } else {
             state &= ~(0x02);
         }
-        
+        updateSXData();
         return state;
     }
 
@@ -212,6 +217,61 @@ public class PanelElement {
         return sb.toString();
     }
 
+    // TODO move sx address calculations to constructor
+    private void updateSXData() {
+        if (adr == INVALID_INT) return;  
+        
+        int sxadr = adr / 10;   
+        int sxbit = adr % 10;
+        if (!SXUtils.isValidSXAddress(sxadr) || !SXUtils.isValidSXBit(sxbit)) {
+            return;  // no SX Element, must be virtual
+        }
+        
+        // set low bit
+        switch (state) {
+            case 0:
+            case 2:
+                SXUtils.clearBitSxData(sxadr, sxbit);
+                break;
+            case 1:
+            case 3:
+                SXUtils.setBitSxData(sxadr, sxbit);
+                break;
+            default:
+                System.out.println("invalid state in sx addr a=" + adr + " d=" + state);
+        }
+        
+        // set high bit (if there is any)
+        if (secondaryAdr != INVALID_INT) {
+            int secSxadr = secondaryAdr / 10;
+            int secSxbit = secondaryAdr % 10;
+
+            // there is a second address 
+            if (SXUtils.isValidSXAddress(secSxadr)) {
+
+                switch (state) {
+                    case 0:
+                        SXUtils.clearBitSxData(secSxadr, secSxbit);
+                        break;
+                    case 1:
+                        SXUtils.clearBitSxData(secSxadr, secSxbit);
+                        break;
+                    case 2:
+                        SXUtils.clearBitSxData(secSxadr, secSxbit);
+                        break;
+                    case 3:
+                        SXUtils.clearBitSxData(secSxadr, secSxbit);
+                        break;
+                    default:
+                        if (DEBUG) {
+                            System.out.println("invalid state in sx (4-aspect) addr a=" + adr + " d=" + state);
+                        }
+
+                }
+            }
+        }
+    }
+
     // STATIC METHODS
     /**
      * search for a panel element when only the address is known
@@ -236,11 +296,13 @@ public class PanelElement {
         }
         return INVALID_INT;
     }
-    
-    /** check whether a given a lanbahn address (or sx addr) is a multi-bit
+
+    /**
+     * check whether a given a lanbahn address (or sx addr) is a multi-bit
      * address
+     *
      * @param address
-     * @return 
+     * @return
      */
     public static boolean isMultiBit(int address) {
         PanelElement pe = getByAddress(address);
@@ -249,9 +311,9 @@ public class PanelElement {
         } else {
             return true;
         }
-        
+
     }
-    
+
     /*
     public static ArrayList<Route> getRoutes() {
         ArrayList<Route> routes = new ArrayList<>();
