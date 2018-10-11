@@ -156,9 +156,9 @@ public class SXInterface extends GenericSXInterface {
         lastAdrSent = toUnsignedInt(data[0]) & 0x7f;  // wird nur fuer NICHT slx825 format gebraucht
         if (DEBUG && ((lastAdrSent < SXMAX_USED) || (lastAdrSent == 127))) {
             if ((data[0] & 0x80) != 0) {
-                System.out.println("wr-Cmd: adr " + lastAdrSent + " / data " + toUnsignedInt(data[1]));
+                System.out.println("wr-Cmd: adr=" + lastAdrSent + ", data=" + toUnsignedInt(data[1]));
             } else {
-                System.out.println("rd-Cmd: adr " + lastAdrSent);
+                System.out.println("rd-Cmd: adr=" + lastAdrSent);
             }
         }
 
@@ -348,10 +348,11 @@ public class SXInterface extends GenericSXInterface {
             // if we have a matching lanbahn address (for example a sensor with
             // one bit for free/occ and one bit for inRoute/notInRoute
             // set occupation bit
-            SXUtils.setPanelElementStateFromSX(adr,data);
-            if (((adr <= SXMAX_USED) || (adr == 127)) && DEBUG) {
+            if (DEBUG) {
                 System.out.println("set: SX[" + adr + "]=" + data + " ");
             }
+            SXUtils.updatePanelElementsStateFromSX(adr,data);
+            
         } else {
             System.out.println("set: ERROR adr=" + adr + " to high");
         }

@@ -22,8 +22,8 @@ import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
  */
 public class WeichenUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 534251256456411L;
-    private int w_adr;      // weichen adresse
-    private int data;       // daten (8 bit) dieser adresse
+    private int sxadr;      // weichen adresse
+    private int sxdata;       // daten (8 bit) dieser adresse
 
     // Bilden einer Liste, damit wir später an alle Fenster dieses Typs die
     // Updates verschicken können
@@ -50,12 +50,12 @@ public class WeichenUI extends javax.swing.JFrame {
         initComponents();
         myInstance = WeichenUIInstance++;
         loadPrefs(); //myInstance is used here.
-        if (DEBUG) System.out.println("constr. w adr="+w_adr);
-        jComboBox1.setSelectedIndex(w_adr);  // index starts from 0, addresses start also at 0
+        if (DEBUG) System.out.println("constr. w adr="+sxadr);
+        jComboBox1.setSelectedIndex(sxadr);  // index starts from 0, addresses start also at 0
         wl.add(this);
         this.setTitle("Turnouts/Signals");
         
-        update(); // from SX Bus data
+        update(); // from SX Bus sxdata
         this.setVisible(true);
     }
 
@@ -257,83 +257,83 @@ public class WeichenUI extends javax.swing.JFrame {
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         int new_adr = Integer.parseInt(jComboBox1.getSelectedItem().toString());
 
-        w_adr = new_adr;
-        if (DEBUG) System.out.println("w adr="+w_adr);
+        sxadr = new_adr;
+        if (DEBUG) System.out.println("w adr="+sxadr);
 
         update();
 }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jCheckBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox3ActionPerformed
        if (jCheckBox3.getModel().isSelected()) {
-            data =  data | 0x04;
+            sxdata =  sxdata | 0x04;
         } else {
-            data = (data & 0xFB);
+            sxdata = (sxdata & 0xFB);
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox3ActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         if (jCheckBox1.getModel().isSelected()) {
-            data = data | 0x01;
+            sxdata = sxdata | 0x01;
         } else {
-            data = (data & 0xFE);
+            sxdata = (sxdata & 0xFE);
         }
-        sendeWeiche();
+        updateSXData();
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
         if (jCheckBox2.getModel().isSelected()) 
         { 
-            data =  data | 0x02;
+            sxdata =  sxdata | 0x02;
         } else {
-            data = (data & 0xFD);
+            sxdata = (sxdata & 0xFD);
         }
-        sendeWeiche();
+        updateSXData();
     }//GEN-LAST:event_jCheckBox2ActionPerformed
 
     private void jCheckBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox4ActionPerformed
         if (jCheckBox4.getModel().isSelected()) {
-            data =  data | 0x08;
+            sxdata =  sxdata | 0x08;
         } else {
-            data = (data & 0xF7);
+            sxdata = (sxdata & 0xF7);
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox4ActionPerformed
 
     private void jCheckBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox5ActionPerformed
         if (jCheckBox5.getModel().isSelected()) {
-            data =  data | 0x10;
+            sxdata =  sxdata | 0x10;
         } else {
-            data = (data & 0xEF);
+            sxdata = (sxdata & 0xEF);
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox5ActionPerformed
 
     private void jCheckBox6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox6ActionPerformed
         if (jCheckBox6.getModel().isSelected()) {
-            data =  data | 0x20;
+            sxdata =  sxdata | 0x20;
         } else {
-            data = (data & 0xDF);
+            sxdata = (sxdata & 0xDF);
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox6ActionPerformed
 
     private void jCheckBox7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox7ActionPerformed
         if (jCheckBox7.getModel().isSelected()) {
-            data = data | 0x40;
+            sxdata = sxdata | 0x40;
         } else {
-            data = data & 0xBF;
+            sxdata = sxdata & 0xBF;
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox7ActionPerformed
 
     private void jCheckBox8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox8ActionPerformed
         if (jCheckBox8.getModel().isSelected()) {
-            data = data | 0x80;
+            sxdata = sxdata | 0x80;
         } else {
-            data = (data & 0x7F);
+            sxdata = (sxdata & 0x7F);
         }
-       sendeWeiche();
+       updateSXData();
     }//GEN-LAST:event_jCheckBox8ActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
@@ -342,8 +342,8 @@ public class WeichenUI extends javax.swing.JFrame {
         wl.remove(this);
     }//GEN-LAST:event_formWindowClosing
 
-    private void sendeWeiche() {
-         sxi.sendAccessory(w_adr, data);
+    private void updateSXData() {
+         SXUtils.setSxData(sxadr, sxdata);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -369,17 +369,17 @@ public class WeichenUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void update() {
-        data = sxData[w_adr];
+        sxdata = sxData[sxadr];
 
-        if ((data & 0x01) == 0x01) { jCheckBox1.setSelected(true);  } else { jCheckBox1.setSelected(false); }
-        if ((data & 0x02) == 0x02) { jCheckBox2.setSelected(true);  } else { jCheckBox2.setSelected(false); }
-        if ((data & 0x04) == 0x04) { jCheckBox3.setSelected(true);  } else { jCheckBox3.setSelected(false); }
-        if ((data & 0x08) == 0x08) { jCheckBox4.setSelected(true);  } else { jCheckBox4.setSelected(false); }
-        if ((data & 0x10) == 0x10) { jCheckBox5.setSelected(true);  } else { jCheckBox5.setSelected(false); }
-        if ((data & 0x20) == 0x20) { jCheckBox6.setSelected(true);  } else { jCheckBox6.setSelected(false); }
-        if ((data & 0x40) == 0x40) { jCheckBox7.setSelected(true);  } else { jCheckBox7.setSelected(false); }
-        if ((data & 0x80) == 0x80) { jCheckBox8.setSelected(true);  } else { jCheckBox8.setSelected(false); }
-        lblSum.setText("Val="+data);
+        if ((sxdata & 0x01) == 0x01) { jCheckBox1.setSelected(true);  } else { jCheckBox1.setSelected(false); }
+        if ((sxdata & 0x02) == 0x02) { jCheckBox2.setSelected(true);  } else { jCheckBox2.setSelected(false); }
+        if ((sxdata & 0x04) == 0x04) { jCheckBox3.setSelected(true);  } else { jCheckBox3.setSelected(false); }
+        if ((sxdata & 0x08) == 0x08) { jCheckBox4.setSelected(true);  } else { jCheckBox4.setSelected(false); }
+        if ((sxdata & 0x10) == 0x10) { jCheckBox5.setSelected(true);  } else { jCheckBox5.setSelected(false); }
+        if ((sxdata & 0x20) == 0x20) { jCheckBox6.setSelected(true);  } else { jCheckBox6.setSelected(false); }
+        if ((sxdata & 0x40) == 0x40) { jCheckBox7.setSelected(true);  } else { jCheckBox7.setSelected(false); }
+        if ((sxdata & 0x80) == 0x80) { jCheckBox8.setSelected(true);  } else { jCheckBox8.setSelected(false); }
+        lblSum.setText("Val="+sxdata);
     }
 
     private void savePrefs() {
@@ -389,7 +389,7 @@ public class WeichenUI extends javax.swing.JFrame {
         String myInst = "WS"+myInstance;
         prefs.putInt(myInst+"windowX", getX());
         prefs.putInt(myInst+"windowY", getY());
-        prefs.putInt(myInst+"adr",w_adr);
+        prefs.putInt(myInst+"adr",sxadr);
 
     }
 
@@ -399,7 +399,7 @@ public class WeichenUI extends javax.swing.JFrame {
         if (DEBUG) System.out.println("loading Prefs for:"+myInst);
 
         setLocation(prefs.getInt(myInst+"windowX", 200), prefs.getInt(myInst+"windowY", 200));
-        w_adr=prefs.getInt(myInst+"adr",80);
+        sxadr=prefs.getInt(myInst+"adr",80);
 
     }
 }

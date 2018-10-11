@@ -19,7 +19,7 @@ public class Vars {
     static final int STATE_YELLOW_FEATHER = 3;
     static final int STATE_SWITCHING = 4;
 
-    static final int AUTO_CLEAR_ROUTE_TIME_SEC = 30;    // clear allRoutes automatically after 30secs
+    
 
     static final int RT_INACTIVE = 0;
     static final int RT_ACTIVE = 1;

@@ -1,9 +1,11 @@
 package de.blankedv.sx3pc;
 
 //import java.io.InputStream;
+import de.blankedv.timetable.CompRoute;
 import de.blankedv.timetable.FahrplanUI;
 import de.blankedv.timetable.PanelElement;
 import de.blankedv.timetable.ReadConfig;
+import de.blankedv.timetable.Route;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -122,6 +124,8 @@ public class MainUI extends javax.swing.JFrame {
     public static List<InetAddress> myip;
     public static int timeoutCounter = 0;
     public static final int TIMEOUT_SECONDS = 10;  // check for connection every 30secs
+    
+   
     public static boolean connectionOK = false;  // watchdog for connection
     public static String panelName = "";
     public static String panelControl = "";  // command station type
@@ -143,6 +147,8 @@ public class MainUI extends javax.swing.JFrame {
     private final ImageIcon green, red;
 
     Timer timer;  // user for updating UI every second
+    
+    public static int autoClearRouteTimeSec;    // clear allRoutes automatically after 30secs
 
     /**
      * Creates new form InterfaceUI
@@ -796,6 +802,9 @@ public class MainUI extends javax.swing.JFrame {
         FunkreglerUI.updateAll();
 
         FunkreglerUI.checkAlive();
+        
+        Route.auto();
+        CompRoute.auto();
 
     }
 
@@ -878,7 +887,7 @@ public class MainUI extends javax.swing.JFrame {
         String baudStr = prefs.get("baudrate", "9600");
         baudrate = Integer.parseInt(baudStr);
         ifType = prefs.get("type", "");
-
+        autoClearRouteTimeSec = prefs.getInt("autoclearRoutes", 20);
         if (!simulation && DEBUG) {
             System.out.println("IF=" + ifType + " serial port=" + portName + " at " + baudrate + " baud");
         }

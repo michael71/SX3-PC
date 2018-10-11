@@ -511,7 +511,15 @@ public class SettingsUI extends javax.swing.JFrame {
     }//GEN-LAST:event_cbCentralRoutingActionPerformed
 
     private void cbClearRoutesDelayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbClearRoutesDelayActionPerformed
-        // TODO add your handling code here:
+        String s = cbClearRoutesDelay.getSelectedItem().toString();
+        if (DEBUG) System.out.println("Selected AutoClear Route="+s);
+        if (s.contains("10")) {
+            prefs.putInt("autoclearRoutes", 10);
+        } else if (s.contains("20")) {
+            prefs.putInt("autoclearRoutes", 20);
+        } else if (s.contains("30")) {
+            prefs.putInt("autoclearRoutes", 30);
+        }
     }//GEN-LAST:event_cbClearRoutesDelayActionPerformed
 
     private void checkBusMode() {

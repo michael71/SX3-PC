@@ -1,5 +1,6 @@
 package de.blankedv.timetable;
 
+import static de.blankedv.sx3pc.MainUI.autoClearRouteTimeSec;
 import static de.blankedv.sx3pc.MainUI.panelElements;
 import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
@@ -134,22 +135,12 @@ public class Route extends PanelElement {
 
         // deactivate sensors
         for (PanelElement se : rtSensors) {
-           int st= se.setBit1(false);
-           /*
-           if (se.secondaryAdr != INVALID_INT) {
-                // for track-control "route lighting"
-               // TODO currently not shown on SXBUS !!! serialIF.send(LNUtil.makeOPC_SW_REQ(se.secondaryAdr - 1, 1, 1));
-            } */
-           //LbUtils.updateLanbahnData(se.adr, st);
+           se.setBit1(false);
         }
 
         // set signals turnout red
         for (RouteSignal rs : rtSignals) {
             rs.signal.setState(STATE_RED);
-            
-            // TODO set on SXBUS
-            //serialIF.send(LNUtil.makeOPC_SW_REQ(rs.signal.adr - 1, 0, 1));
-            //LbUtils.updateLanbahnData(rs.signal.adr, rs.signal.getState());
         }
 
         // TODO unlock turnouts
@@ -161,7 +152,6 @@ public class Route extends PanelElement {
          */
 
         // notify that route was cleared
-        //LbUtils.updateLanbahnData(adr, RT_INACTIVE);
         this.setState(RT_INACTIVE);
 
     }
@@ -221,42 +211,31 @@ public class Route extends PanelElement {
 
         clearOffendingRoutes();
         
-        // notify that route is set
-        //LbUtils.updateLanbahnData(adr, RT_ACTIVE);
-
-        // activate sensors
+        // activate sensors, set "IN_ROUTE" not
         for (PanelElement se : rtSensors) {
-            int st = se.setBit1(true);
-            if (se.getSecondaryAdr() != INVALID_INT) {
-                // for track-control "route lighting"
-               // TODO for SXBUS serialIF.send(LNUtil.makeOPC_SW_REQ(se.secondaryAdr - 1, 0, 1));
-            }
-            // LbUtils.updateLanbahnData(se.adr, st);
-            
+            se.setBit1(true);          
         }
 
         // set signals
         for (RouteSignal rs : rtSignals) {
             int d = rs.dynamicValueToSetForRoute();
-            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rs.signal.getAdr());
+            /* UNNECESSARY ??? SXAddrAndBits sxab = SXUtils.lbAddr2SX(rs.signal.getAdr());
             if (d == 0) {   // TODO multi-aspect - only red and green are used at the moment
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
-            }
-            //LbUtils.updateLanbahnData(rs.signal.adr, d);
+            } */
             rs.signal.setState(d);
         }
         // set and // TODO lock turnouts
         for (RouteTurnout rtt : rtTurnouts) {
             int d = rtt.valueToSetForRoute;   // can be only 1 or 0
-            SXAddrAndBits sxab = SXUtils.lbAddr2SX(rtt.turnout.getAdr());
+            /* UNNECESSARY ??? SXAddrAndBits sxab = SXUtils.lbAddr2SX(rtt.turnout.getAdr());
              if (d == 0) {  
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
-            }
-            //LbUtils.updateLanbahnData(rtt.turnout.adr, rtt.valueToSetForRoute);
+            } */
             rtt.turnout.setState(d);
         }   
         this.setState(RT_ACTIVE); 
@@ -331,8 +310,9 @@ public class Route extends PanelElement {
 
     public static void auto() {
         // check for auto reset of allRoutes
+        //if (DEBUG) System.out.println("checking route auto clear");
         for (Route rt : allRoutes) {
-            if (((System.currentTimeMillis() - rt.lastUpdateTime) > AUTO_CLEAR_ROUTE_TIME_SEC * 1000L)
+            if (((System.currentTimeMillis() - rt.lastUpdateTime) > autoClearRouteTimeSec * 1000L)
                     && (rt.getState() == RT_ACTIVE)) {
                 rt.clear();
             }

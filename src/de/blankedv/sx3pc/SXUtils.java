@@ -22,23 +22,23 @@ import de.blankedv.timetable.PanelElement;
 public class SXUtils {
 
     /**
-     * returns 1, when bit is set in data d returns 0, when bit is not set in
-     * data d
+     * returns 1, when sxbit is set in data d returns 0, when sxbit is not set in
+ data d
      *
      * @param d
      * @param bit
      * @return
      */
-    static public int isSet(int d, int bit) {
-        return (d >> (bit - 1)) & 1;
+    static private boolean isSet(int d, int bit) {
+        return ((d >> (bit - 1)) & 1) == 1;
     }
 
     static private int setBit(int d, int bit) {
-        return d | (1 << (bit - 1));  // selectrix bit !!! 1 ..8
+        return d | (1 << (bit - 1));  // selectrix sxbit !!! 1 ..8
     }
 
     static private int clearBit(int d, int bit) {
-        return d & ~(1 << (bit - 1));  // selectrix bit !!! 1 ..8
+        return d & ~(1 << (bit - 1));  // selectrix sxbit !!! 1 ..8
     }
 
     synchronized static public void setBitSxData(int addr, int bit) {
@@ -54,36 +54,6 @@ public class SXUtils {
     synchronized static public void setSxData(int addr, int data) {
         sxData[addr] = data;
         sxi.send2SX(addr, data);
-    }
-
-    /**
-     * set or clear a bit depending on "value" variable
-     *
-     * @param d data value
-     * @param bit bit (selectrix bit, 1...8 )
-     * @param value (0 or 1)
-     * @return new data value
-     */
-    static public int bitOperation(int d, int bit, int value) {
-        if (value == 0) {
-            return clearBit(d, bit);
-        } else {
-            return setBit(d, bit);
-        }
-    }
-
-    /**
-     * is bit (1...8) different in d1 and d2
-     *
-     */
-    static public boolean isSXBitChanged(int b, int d1, int d2) {
-        int d1_bit = (d1 >> (b - 1)) & 1;
-        int d2_bit = (d2 >> (b - 1)) & 1;
-        if (d1_bit == d2_bit) {
-            return false;
-        } else {
-            return true;
-        }
     }
 
     /**
@@ -103,7 +73,7 @@ public class SXUtils {
     }
 
     /**
-     * is the bit a valid SX bit? (1...8)
+     * is the sxbit a valid SX sxbit? (1...8)
      *
      * @param bit
      * @return true or false
@@ -131,30 +101,20 @@ public class SXUtils {
         }
     }
 
-    public static void setPanelElementStateFromSX(int sxAddr, int data) {
-        for (int bit = 1; bit <= 8; bit++) {
-            // check if we have a lanbahn entry
-            int lbAddr = sxAddr * 10 + bit;
+    /** update the internal state if there is a (or several) matching panel 
+     * elements for this sxAddr
+     * !!! DO NOT SEND AN UPDATE TO THE SX INTERFACE (-> LOOP !!)
+     * */
+    public static void updatePanelElementsStateFromSX(int sxAddr, int sxdata) {
+        for (int sxbit = 1; sxbit <= 8; sxbit++) {
+            // check if we have a matching panel element
+            int lbAddr = sxAddr * 10 + sxbit;
             for (PanelElement pe : panelElements) {
                 if (pe.getAdr() == lbAddr) {
-                    int dataBit = isSet(data, bit);
-                    int state = pe.getState();
-                    if (dataBit == 0) {
-                        state = state & (~1);  // clear last bit
-                    } else {
-                        state = state | 1;     // set last bit
-                    }
-                    pe.setState(state);
+                    pe.setBit0(isSet(sxdata, sxbit));
                 }
                 if (pe.getSecondaryAdr() == lbAddr) {
-                    int dataBit = isSet(data, bit);
-                    int state = pe.getState();
-                    if (dataBit == 0) {
-                        state = state & (~2);  // clear bit1
-                    } else {
-                        state = state | 2;     // set bit1
-                    }
-                    pe.setState(state);
+                    pe.setBit1(isSet(sxdata, sxbit));
                 }
             }
         }

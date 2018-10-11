@@ -57,8 +57,6 @@ public class PanelElement {
     protected static final int STATE_INROUTE = 2;
     protected static final int N_STATES_SENSORS = 3;
 
-    protected static final int STATE_UNKNOWN = INVALID_INT;
-
     protected long lastToggle = 0L;
     protected long lastUpdateTime = 0L;
 
@@ -74,7 +72,7 @@ public class PanelElement {
         this.adr = adr;
         this.secondaryAdr = INVALID_INT;
         typeString = "AC";
-        this.state = STATE_UNKNOWN;
+        this.state = 0;  // initialized to CLOSED / RED / FREE
         lastUpdateTime = System.currentTimeMillis();
     }
 
@@ -83,7 +81,7 @@ public class PanelElement {
         this.adr = adr;
         this.secondaryAdr = INVALID_INT;
         typeString = t;
-        this.state = STATE_UNKNOWN;
+        this.state = 0;  // initialized to CLOSED / RED / FREE
         lastUpdateTime = System.currentTimeMillis();
     }
 
@@ -91,7 +89,7 @@ public class PanelElement {
         typeString = t;
         this.adr = adr;
         this.secondaryAdr = adr2;
-        state = 0;
+        this.state = 0;  // initialized to CLOSED / RED / FREE
     }
 
     public int getAdr() {
@@ -108,7 +106,6 @@ public class PanelElement {
 
     public int setState(int val) {
         state = val;
-        updateSXData();
         return state;
     }
 
@@ -122,7 +119,7 @@ public class PanelElement {
 
     public void setAdr(int adr) {
         this.adr = adr;
-        this.state = STATE_UNKNOWN;
+        this.state = this.state = 0;  // initialized to CLOSED / RED / FREE
         this.lastUpdateTime = System.currentTimeMillis();
         if (adr != INVALID_INT) {
             //TODO sendQ.add("READ " + adr); // request update for this element
@@ -141,7 +138,6 @@ public class PanelElement {
         } else {
             state &= ~(0x01);
         }
-        updateSXData();
         return state;
     }
 
@@ -153,7 +149,6 @@ public class PanelElement {
         } else {
             state &= ~(0x02);
         }
-        updateSXData();
         return state;
     }
 
@@ -238,7 +233,7 @@ public class PanelElement {
                 SXUtils.setBitSxData(sxadr, sxbit);
                 break;
             default:
-                System.out.println("invalid state in sx addr a=" + adr + " d=" + state);
+                System.out.println("invalid state in sx addr a=" + sxadr+ "."+sxbit + " d=" + state);
         }
         
         // set high bit (if there is any)
