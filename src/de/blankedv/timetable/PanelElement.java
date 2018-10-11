@@ -148,6 +148,7 @@ public class PanelElement {
         } else {
             state &= ~(0x02);
         }
+        
         return state;
     }
 
