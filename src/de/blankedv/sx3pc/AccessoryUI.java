@@ -4,7 +4,7 @@
  */
 
 /*
- * WeichenUI.java
+ * AccessoryUI.java
  *
  * Created on 08.04.2011, 14:24:32
  */
@@ -20,42 +20,42 @@ import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
  *
  * @author mblank
  */
-public class WeichenUI extends javax.swing.JFrame {
+public class AccessoryUI extends javax.swing.JFrame {
     private static final long serialVersionUID = 534251256456411L;
     private int sxadr;      // weichen adresse
     private int sxdata;       // daten (8 bit) dieser adresse
 
     // Bilden einer Liste, damit wir später an alle Fenster dieses Typs die
     // Updates verschicken können
-    static List<WeichenUI> wl = new ArrayList<WeichenUI>();  
+    static List<AccessoryUI> wl = new ArrayList<AccessoryUI>();  
 
     private int myInstance;
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
-    static int WeichenUIInstance = 0;
+    static int AccessoryUIInstance = 0;
 
     public static void updateAll() {
-       for ( WeichenUI w: wl) {
-           w.update();
+       for ( AccessoryUI w: wl) {
+           w.updateFromSX();
        }
     }
 
     public static void saveAllPrefs() {
-       for ( WeichenUI w: wl) {
+       for ( AccessoryUI w: wl) {
            w.savePrefs();
        }
     }
 
     /** Creates new form WeichenUI */
-    public WeichenUI() {
+    public AccessoryUI() {
         initComponents();
-        myInstance = WeichenUIInstance++;
+        myInstance = AccessoryUIInstance++;
         loadPrefs(); //myInstance is used here.
         if (DEBUG) System.out.println("constr. w adr="+sxadr);
         jComboBox1.setSelectedIndex(sxadr);  // index starts from 0, addresses start also at 0
         wl.add(this);
         this.setTitle("Turnouts/Signals");
         
-        update(); // from SX Bus sxdata
+        updateFromSX(); // from SX Bus sxdata
         this.setVisible(true);
     }
 
@@ -260,7 +260,7 @@ public class WeichenUI extends javax.swing.JFrame {
         sxadr = new_adr;
         if (DEBUG) System.out.println("w adr="+sxadr);
 
-        update();
+        updateFromSX();
 }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jCheckBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox3ActionPerformed
@@ -338,7 +338,7 @@ public class WeichenUI extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         savePrefs();
-        WeichenUIInstance--;
+        AccessoryUIInstance--;
         wl.remove(this);
     }//GEN-LAST:event_formWindowClosing
 
@@ -371,7 +371,7 @@ public class WeichenUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblSum;
     // End of variables declaration//GEN-END:variables
 
-    private void update() {
+    private void updateFromSX() {
         sxdata = sxData[sxadr];
 
         if ((sxdata & 0x01) == 0x01) { jCheckBox1.setSelected(true);  } else { jCheckBox1.setSelected(false); }

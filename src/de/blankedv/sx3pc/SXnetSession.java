@@ -396,6 +396,7 @@ public class SXnetSession implements Runnable {
             } else {
                 for (PanelElement pe : peList) {
                     pe.setState(lbdata);
+                    pe.updateSXData();
                 }
                 // update on sx-bus
                 peList.get(0).sendUpdateToSXBus();

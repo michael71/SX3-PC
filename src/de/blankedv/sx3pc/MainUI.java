@@ -652,7 +652,7 @@ public class MainUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSensorActionPerformed
 
     private void btnTurnoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTurnoutActionPerformed
-        new WeichenUI();  // TODO select bus
+        new AccessoryUI();  // TODO select bus
     }//GEN-LAST:event_btnTurnoutActionPerformed
 
     private void menuExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuExitActionPerformed
@@ -795,7 +795,7 @@ public class MainUI extends javax.swing.JFrame {
 
         SensorUI.updateAll();
 
-        WeichenUI.updateAll();
+        AccessoryUI.updateAll();
 
         ThrottleUI.updateAll();
 
@@ -857,7 +857,7 @@ public class MainUI extends javax.swing.JFrame {
         }
 
         SensorUI.saveAllPrefs();
-        WeichenUI.saveAllPrefs();
+        AccessoryUI.saveAllPrefs();
         ThrottleUI.saveAllPrefs();
         FunkreglerUI.saveAllPrefs();
 

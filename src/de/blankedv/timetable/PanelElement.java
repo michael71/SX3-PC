@@ -110,7 +110,6 @@ public class PanelElement {
 
     public int setState(int val) {
         state = val;
-        updateSXData();
         return state;
     }
 
@@ -143,7 +142,6 @@ public class PanelElement {
         } else {
             state &= ~(0x01);
         }
-        updateSXData();
         return state;
     }
 
@@ -155,7 +153,6 @@ public class PanelElement {
         } else {
             state &= ~(0x02);
         }
-        updateSXData();
         return state;
     }
 
@@ -220,7 +217,7 @@ public class PanelElement {
     }
 
     // TODO move sx address calculations to constructor
-    private void updateSXData() {
+    public void updateSXData() {
         if (adr == INVALID_INT) return;  
         
         int sxadr = adr / 10;   

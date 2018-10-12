@@ -11,7 +11,6 @@ import static de.blankedv.sx3pc.MainUI.SXMIN;
 import static de.blankedv.sx3pc.MainUI.SXPOWER;
 import static de.blankedv.sx3pc.MainUI.panelElements;
 import static de.blankedv.sx3pc.MainUI.sxData;
-import static de.blankedv.sx3pc.MainUI.sxi;
 
 import de.blankedv.timetable.PanelElement;
 
@@ -101,7 +100,10 @@ public class SXUtils {
     /** update the internal state if there is a (or several) matching panel 
      * elements for this sxAddr
      * !!! DO NOT SEND AN UPDATE TO THE SX INTERFACE (-> LOOP !!)
-     * */
+     *
+     * @param sxAddr
+     * @param sxdata 
+     */
     public static void updatePanelElementsStateFromSX(int sxAddr, int sxdata) {
         for (int sxbit = 1; sxbit <= 8; sxbit++) {
             // check if we have a matching panel element

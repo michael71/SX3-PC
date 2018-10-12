@@ -17,7 +17,6 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static de.blankedv.sx3pc.MainUI.*;   // DAS SX interface.
-import de.blankedv.timetable.LbUtils;
 import java.util.TooManyListenersException;
 
 /**
@@ -315,7 +314,7 @@ public class SXInterface extends GenericSXInterface {
                 if (leftoverFlag) {
                     offset = 1;
                     data = (int) (readBuffer[0] & 0xFF);
-                    setSX(leftover, data);
+                    setSXandUpdatePE(leftover, data);
                 } else {
                     offset = 0;
                 }
@@ -323,7 +322,7 @@ public class SXInterface extends GenericSXInterface {
                     adr = (int) (readBuffer[0 + i] & 0xFF);
                     if ((i + 1) < numBytes) {
                         data = (int) (readBuffer[1 + i] & 0xFF);
-                        setSX(adr, data);
+                        setSXandUpdatePE(adr, data);
                         leftoverFlag = false;
                     } else {
                         // leftover data, no even number of data sent
@@ -342,7 +341,7 @@ public class SXInterface extends GenericSXInterface {
     }
 
     // address range 0 ..127 / 128 ... 255 
-    private synchronized void setSX(int adr, int data) {
+    private synchronized void setSXandUpdatePE(int adr, int data) {
         if (SXUtils.isValidSXAddress(adr)) {
             sxData[adr] = data;
             // if we have a matching lanbahn address (for example a sensor with
