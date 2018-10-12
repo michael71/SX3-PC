@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
@@ -247,7 +248,7 @@ public class SXnetSession implements Runnable {
         Route r = Route.getFromAddress(lbAddr);
         if (r != null) {
             boolean res = r.set();
-            if (res) {              
+            if (res) {
                 return "XL " + lbAddr + " " + r.getState();  // success
             } else {
                 if (DEBUG) {
@@ -389,13 +390,18 @@ public class SXnetSession implements Runnable {
             return "ERROR";
         } else {
             // check if we have a matching PanelElement
-            PanelElement pe = PanelElement.getByAddress(lbadr);
-            if (pe != null) {
-                pe.setState(lbdata);
+            ArrayList<PanelElement> peList = PanelElement.getByAddress(lbadr);
+            if (peList.isEmpty()) {
+                return "ERROR";
+            } else {
+                for (PanelElement pe : peList) {
+                    pe.setState(lbdata);
+                }
+                // update on sx-bus
+                peList.get(0).sendUpdateToSXBus();
                 // send lanbahnData
-                return "XL " + lbadr + " " + pe.getState();
+                return "XL " + lbadr + " " + peList.get(0).getState();
             }
-            return "ERROR";
         }
     }
 
@@ -407,9 +413,9 @@ public class SXnetSession implements Runnable {
         if (lbAddr == ERROR) {
             return "ERROR";
         } else {
-            PanelElement pe = PanelElement.getByAddress(lbAddr);
+            PanelElement pe = PanelElement.getSingleByAddress(lbAddr);  // all elements with identical address should have the same state
             if (pe != null) {
-                    // send lanbahnData
+                // send lanbahnData
                 return "XL " + lbAddr + " " + pe.getState();
             }
             return "ERROR";
@@ -657,8 +663,8 @@ public class SXnetSession implements Runnable {
             msg.append("ROUTING ");
             msg.append(centralRoutingCopy);
         }
-        
-        TreeMap<Integer,Integer> actData = peStateCopy();
+
+        TreeMap<Integer, Integer> actData = peStateCopy();
         for (Map.Entry<Integer, Integer> e : actData.entrySet()) {
             Integer key = e.getKey();
             Integer value = e.getValue();
@@ -679,10 +685,10 @@ public class SXnetSession implements Runnable {
             sendMessage(msg.toString());
         }
     }
-    
-     private TreeMap<Integer,Integer> peStateCopy() {
-        TreeMap<Integer,Integer> hm = new TreeMap<>();
-        panelElements.forEach((pe) -> hm.put(pe.getAdr(),pe.getState()));
+
+    private TreeMap<Integer, Integer> peStateCopy() {
+        TreeMap<Integer, Integer> hm = new TreeMap<>();
+        panelElements.forEach((pe) -> hm.put(pe.getAdr(), pe.getState()));
         return hm;
     }
 }

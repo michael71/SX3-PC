@@ -344,6 +344,9 @@ public class WeichenUI extends javax.swing.JFrame {
 
     private void updateSXData() {
          SXUtils.setSxData(sxadr, sxdata);
+         SXUtils.updatePanelElementsStateFromSX(sxadr,sxdata);
+         sxi.send2SX(sxadr, sxdata);
+       
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

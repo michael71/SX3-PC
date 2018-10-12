@@ -80,8 +80,8 @@ public class Timetable {
         
         // set route(s)
         
-        int start =  PanelElement.getByAddress(t.sens1).getState() & 0x01;   // get "occupied" bit
-        int end = PanelElement.getByAddress(t.sens2).getState() & 0x01;   // get "occupied" bit
+        int start =  PanelElement.getSingleByAddress(t.sens1).getState() & 0x01;   // get "occupied" bit
+        int end = PanelElement.getSingleByAddress(t.sens2).getState() & 0x01;   // get "occupied" bit
 
         if ( (start != 0) && (end == 0) ) {
             System.out.println("start sensor occ and end sensor free, we can start the trip");

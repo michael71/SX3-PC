@@ -8,8 +8,11 @@ package de.blankedv.timetable;
 import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.panelElements;
+import static de.blankedv.sx3pc.MainUI.sxi;
+import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
 import static de.blankedv.timetable.Vars.*;
+import java.util.ArrayList;
 
 /**
  * all active panel elements, like turnouts, signals, trackindicators (=sensors)
@@ -24,6 +27,7 @@ import static de.blankedv.timetable.Vars.*;
  */
 public class PanelElement {
 
+   
     private int state = 0;
     private int adr = INVALID_INT;
     private int secondaryAdr = INVALID_INT;  // needed for DCC sensors/signals 
@@ -106,6 +110,7 @@ public class PanelElement {
 
     public int setState(int val) {
         state = val;
+        updateSXData();
         return state;
     }
 
@@ -138,6 +143,7 @@ public class PanelElement {
         } else {
             state &= ~(0x01);
         }
+        updateSXData();
         return state;
     }
 
@@ -149,6 +155,7 @@ public class PanelElement {
         } else {
             state &= ~(0x02);
         }
+        updateSXData();
         return state;
     }
 
@@ -265,7 +272,17 @@ public class PanelElement {
                 }
             }
         }
+        
+       
     }
+    
+     public void sendUpdateToSXBus() {
+         SXAddrAndBits sx = SXUtils.lbAddr2SX(adr);
+         if (sx != null) {
+               sxi.sendChannel2SX(sx.sxAddr);
+         }
+     }
+     
 
     // STATIC METHODS
     /**
@@ -274,13 +291,14 @@ public class PanelElement {
      * @param address
      * @return
      */
-    public static PanelElement getByAddress(int address) {
+    public static ArrayList<PanelElement> getByAddress(int address) {
+        ArrayList<PanelElement> peList = new ArrayList<>();
         for (PanelElement pe : panelElements) {
             if (pe.getAdr() == address) {
-                return pe;
+                peList.add(pe);
             }
         }
-        return null;
+        return peList;
     }
 
     public static int getSecondaryAddressByAddress(int address) {
@@ -292,30 +310,14 @@ public class PanelElement {
         return INVALID_INT;
     }
 
-    /**
-     * check whether a given a lanbahn address (or sx addr) is a multi-bit
-     * address
-     *
-     * @param address
-     * @return
-     */
-    public static boolean isMultiBit(int address) {
-        PanelElement pe = getByAddress(address);
-        if ((pe == null) || (pe.getSecondaryAdr() == INVALID_INT)) {
-            return false;
-        } else {
-            return true;
-        }
-
-    }
-
-    /*
-    public static ArrayList<Route> getRoutes() {
-        ArrayList<Route> routes = new ArrayList<>();
+    public static PanelElement getSingleByAddress(int address) {
         for (PanelElement pe : panelElements) {
-            if (pe instanceof Route) {
-                routes.add((Route)pe);
+            if (pe.getAdr() == address) {
+                return pe;
             }
         }
-    } */
+        return null;
+    }
+
+    
 }

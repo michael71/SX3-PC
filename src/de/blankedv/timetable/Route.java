@@ -2,19 +2,23 @@ package de.blankedv.timetable;
 
 import static de.blankedv.sx3pc.MainUI.autoClearRouteTimeSec;
 import static de.blankedv.sx3pc.MainUI.panelElements;
+import static de.blankedv.sx3pc.MainUI.sxData;
+import static de.blankedv.sx3pc.MainUI.sxi;
 import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
 import static de.blankedv.timetable.Vars.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class Route stores a complete route, which contains sensors, signals and
  * turnouts. Offending allRoutes are calculated automatically (defined as all
- allRoutes which also set one of the turnouts). In addition offending allRoutes can
- also be defined in the config file (needed for crossing allRoutes, which cannot
- be found automatically)
-
- adapted from lanbahnpanel (android software)
+ * allRoutes which also set one of the turnouts). In addition offending
+ * allRoutes can also be defined in the config file (needed for crossing
+ * allRoutes, which cannot be found automatically)
+ *
+ * adapted from lanbahnpanel (android software)
  *
  * @author mblank
  *
@@ -48,7 +52,7 @@ public class Route extends PanelElement {
      */
     public Route(int routeAddr, String route, String allSensors,
             String offending) {
- 
+
         super("RT", routeAddr);
         this.setState(RT_INACTIVE);
         // these strings are written back to config file.
@@ -57,7 +61,7 @@ public class Route extends PanelElement {
         this.offendingString = offending;
 
         lastUpdateTime = System.currentTimeMillis(); // store for resetting
-        
+
         if (DEBUG) {
             System.out.println(" creating route id/adr=" + this.getAdr());
         }
@@ -67,7 +71,7 @@ public class Route extends PanelElement {
         for (int i = 0; i < routeElements.length; i++) {
             String reInfo[] = routeElements[i].split(",");
 
-            PanelElement pe = PanelElement.getByAddress(Integer.parseInt(reInfo[0]));
+            PanelElement pe = PanelElement.getSingleByAddress(Integer.parseInt(reInfo[0]));
 
             // if this is a signal, then add to my signal list "rtSignals"
             if (pe != null) {
@@ -77,7 +81,7 @@ public class Route extends PanelElement {
                                 Integer.parseInt(reInfo[1]),
                                 Integer.parseInt(reInfo[2])));
                     } else {
-                        rtSignals.add(new RouteSignal( pe, Integer
+                        rtSignals.add(new RouteSignal(pe, Integer
                                 .parseInt(reInfo[1])));
                     }
 
@@ -135,14 +139,20 @@ public class Route extends PanelElement {
 
         // deactivate sensors
         for (PanelElement se : rtSensors) {
-           se.setBit1(false);
+            se.setBit1(false);
         }
-
+        Set<Integer> sxAddressesToUpdate = new HashSet<>();
         // set signals turnout red
         for (RouteSignal rs : rtSignals) {
             rs.signal.setState(STATE_RED);
+            sxAddressesToUpdate.add(rs.signal.getAdr() / 10);
         }
 
+        for (int sxaddr : sxAddressesToUpdate) {
+            if (SXUtils.isValidSXAddress(sxaddr)) {
+                sxi.send2SX(sxaddr, sxData[sxaddr]);
+            }
+        }
         // TODO unlock turnouts
         /*
 		 * for (RouteTurnout to : rtTurnouts) { 
@@ -150,7 +160,6 @@ public class Route extends PanelElement {
 		 *     sendQ.add(cmd); 
 		 * }
          */
-
         // notify that route was cleared
         this.setState(RT_INACTIVE);
 
@@ -210,12 +219,14 @@ public class Route extends PanelElement {
         // automatically
 
         clearOffendingRoutes();
-        
+
         // activate sensors, set "IN_ROUTE" not
         for (PanelElement se : rtSensors) {
-            se.setBit1(true);          
+            se.setBit1(true);
+            // only virtual, no matching real SX address
         }
 
+        Set<Integer> sxAddressesToUpdate = new HashSet<>();
         // set signals
         for (RouteSignal rs : rtSignals) {
             int d = rs.dynamicValueToSetForRoute();
@@ -226,6 +237,7 @@ public class Route extends PanelElement {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } */
             rs.signal.setState(d);
+            sxAddressesToUpdate.add(rs.signal.getAdr()/10);
         }
         // set and // TODO lock turnouts
         for (RouteTurnout rtt : rtTurnouts) {
@@ -237,8 +249,14 @@ public class Route extends PanelElement {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } */
             rtt.turnout.setState(d);
-        }   
-        this.setState(RT_ACTIVE); 
+            sxAddressesToUpdate.add(rtt.turnout.getAdr()/10);
+        }
+        for (int sxaddr : sxAddressesToUpdate) {
+            if (SXUtils.isValidSXAddress(sxaddr)) {
+                sxi.send2SX(sxaddr, sxData[sxaddr]);
+            }
+        }
+        this.setState(RT_ACTIVE);
         return true;
     }
 
@@ -270,8 +288,8 @@ public class Route extends PanelElement {
                 return valueToSetForRoute;
             } else {
                 // if standard-value == GREEN then check the other signal, which
-                // this signal state depends on
-                PanelElement depPe = PanelElement.getByAddress(depFrom);
+                // this signal state depends on (can only be a ONE other signal)
+                PanelElement depPe = PanelElement.getSingleByAddress(depFrom);
                 if (depPe.getState() == STATE_RED) {
                     // if other signal red, then set to yellow
                     return STATE_YELLOW;
@@ -324,8 +342,6 @@ public class Route extends PanelElement {
 
     }
 
-    
-
     public void addOffending(Route rt2) {
         // check if not already contained in offending string
         if (!rtOffending.contains(rt2)) {
@@ -375,10 +391,12 @@ public class Route extends PanelElement {
         }
 
     }
-    
+
     public static Route getFromAddress(int a) {
         for (Route r : allRoutes) {
-            if (r.getAdr() == a) return r;
+            if (r.getAdr() == a) {
+                return r;
+            }
         }
         return null;
     }

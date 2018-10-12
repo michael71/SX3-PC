@@ -108,6 +108,13 @@ abstract public class GenericSXInterface {
 
     }
 
+    public synchronized boolean sendChannel2SX(int adr) {
+        if (!SXUtils.isValidSXAddress(adr)) {
+            System.out.println("ERROR in sendChannel2SX, adr="+adr+ " is invalid");
+            return false;
+        }
+        return send2SX(adr, sxData[adr]);
+    }
     /**
      * sends a loco control command (always SX0 !) to the SX interface
      * 

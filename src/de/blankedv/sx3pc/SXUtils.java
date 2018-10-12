@@ -42,18 +42,15 @@ public class SXUtils {
     }
 
     synchronized static public void setBitSxData(int addr, int bit) {
-        sxData[addr] = setBit(sxData[addr], bit);
-        sxi.send2SX(addr, sxData[addr]);
+        sxData[addr] = setBit(sxData[addr], bit);       
     }
 
     synchronized static public void clearBitSxData(int addr, int bit) {
         sxData[addr] = clearBit(sxData[addr], bit);
-        sxi.send2SX(addr, sxData[addr]);
     }
 
     synchronized static public void setSxData(int addr, int data) {
         sxData[addr] = data;
-        sxi.send2SX(addr, data);
     }
 
     /**
@@ -119,4 +116,6 @@ public class SXUtils {
             }
         }
     }
+    
+    
 }

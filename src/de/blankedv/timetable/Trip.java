@@ -102,7 +102,7 @@ public class Trip implements Comparable<Trip> {
     }
 
     public boolean checkEndSensor() {
-        PanelElement seEnd = PanelElement.getByAddress(sens2) ;
+        PanelElement seEnd = PanelElement.getSingleByAddress(sens2) ;
         if (seEnd == null) return false;
         if (seEnd.isBit0()) {
             // this trip ends
