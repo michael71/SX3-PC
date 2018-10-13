@@ -60,10 +60,15 @@ public class Route extends PanelElement {
         this.sensorsString = allSensors;
         this.offendingString = offending;
 
+        boolean DEBUG_RT = false;
+
         lastUpdateTime = System.currentTimeMillis(); // store for resetting
 
         if (DEBUG) {
             System.out.println(" creating route id/adr=" + this.getAdr());
+            if (this.getAdr() == 2201) {
+                DEBUG_RT = true;
+            }
         }
 
         // route = "750,1;751,2" => set 750 turnout 1 and 751 turnout value 2
@@ -80,14 +85,23 @@ public class Route extends PanelElement {
                         rtSignals.add(new RouteSignal(pe,
                                 Integer.parseInt(reInfo[1]),
                                 Integer.parseInt(reInfo[2])));
+                        if (DEBUG_RT) {
+                            System.out.println("RT, add sig(dep) " + pe.getAdr());
+                        }
                     } else {
                         rtSignals.add(new RouteSignal(pe, Integer
                                 .parseInt(reInfo[1])));
+                        if (DEBUG_RT) {
+                            System.out.println("RT, add sig  " + pe.getAdr());
+                        }
                     }
 
                 } else if (pe.isTurnout()) {
                     rtTurnouts.add(new RouteTurnout(pe,
                             Integer.parseInt(reInfo[1])));
+                    if (DEBUG_RT) {
+                        System.out.println("RT, add turnout " + pe.getAdr());
+                    }
                 }
             }
         }
@@ -106,6 +120,9 @@ public class Route extends PanelElement {
                 if (pe.isSensor()) {
                     if (pe.getAdr() == Integer.parseInt(sensorAddresses[i])) {
                         rtSensors.add(pe);
+                        if (DEBUG_RT) {
+                            System.out.println("RT, add sensor " + pe.getAdr());
+                        }
                     }
                 }
             }
@@ -121,10 +138,17 @@ public class Route extends PanelElement {
                     int offID = Integer.parseInt(offRoutes[i]);
                     if ((rt.getAdr() == offID) && (rt.getState() == RT_ACTIVE)) {
                         rtOffending.add(rt);
+                        if (DEBUG_RT) {
+                            System.out.println("RT, add off. rt " + rt.getAdr());
+                        }
                     }
                 } catch (NumberFormatException e) {
                 }
             }
+        }
+
+        if (DEBUG_RT) {
+            System.out.println("RT, end route constructor");
         }
         //	if (DEBUG)
         //		Log.d(TAG, rtOffending.size() + " offending allRoutes in config");
@@ -144,7 +168,7 @@ public class Route extends PanelElement {
         Set<Integer> sxAddressesToUpdate = new HashSet<>();
         // set signals turnout red
         for (RouteSignal rs : rtSignals) {
-            rs.signal.setState(STATE_RED);
+            rs.signal.setStateAndUpdateSXData(STATE_RED);
             sxAddressesToUpdate.add(rs.signal.getAdr() / 10);
         }
 
@@ -166,6 +190,7 @@ public class Route extends PanelElement {
     }
 
     public void clearOffendingRoutes() {
+        /* disabled
         if (DEBUG) {
             System.out.println(" clearing (active) offending Routes");
         }
@@ -181,6 +206,7 @@ public class Route extends PanelElement {
                 }
             }
         }
+         */
     }
 
     public boolean offendingRouteActive() {
@@ -204,15 +230,22 @@ public class Route extends PanelElement {
 
     public boolean set() {
 
-        if (DEBUG) {
-            System.out.println(" setting route id=" + this.getAdr());
-        }
+        boolean DEBUG_RT = false;
+
+        lastUpdateTime = System.currentTimeMillis(); // store for resetting
 
         if (offendingRouteActive()) {
             if (DEBUG) {
                 System.out.println(" offending route active");
             }
             return false;
+        }
+
+        if (DEBUG) {
+            System.out.println(" setting route id=" + this.getAdr());
+            if (this.getAdr() == 2201) {
+                DEBUG_RT = true;
+            }
         }
 
         lastUpdateTime = System.currentTimeMillis(); // store for resetting
@@ -226,6 +259,7 @@ public class Route extends PanelElement {
             // only virtual, no matching real SX address
         }
 
+        // add sxadr values to a set, then update all these via RS232 only once
         Set<Integer> sxAddressesToUpdate = new HashSet<>();
         // set signals
         for (RouteSignal rs : rtSignals) {
@@ -236,8 +270,8 @@ public class Route extends PanelElement {
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } */
-            rs.signal.setState(d);
-            sxAddressesToUpdate.add(rs.signal.getAdr()/10);
+            rs.signal.setStateAndUpdateSXData(d);
+            sxAddressesToUpdate.add(rs.signal.getAdr() / 10);
         }
         // set and // TODO lock turnouts
         for (RouteTurnout rtt : rtTurnouts) {
@@ -248,8 +282,12 @@ public class Route extends PanelElement {
             } else {
                 SXUtils.clearBitSxData(sxab.sxAddr, sxab.sxBit);
             } */
-            rtt.turnout.setState(d);
-            sxAddressesToUpdate.add(rtt.turnout.getAdr()/10);
+            rtt.turnout.setStateAndUpdateSXData(d);
+            if (DEBUG_RT) {
+                System.out.println("RT, set turn= " + rtt.turnout.getAdr() + " state=" + d);
+            }
+            sxAddressesToUpdate.add(rtt.turnout.getAdr() / 10);
+
         }
         for (int sxaddr : sxAddressesToUpdate) {
             if (SXUtils.isValidSXAddress(sxaddr)) {

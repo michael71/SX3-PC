@@ -172,10 +172,10 @@ public class SXnetSession implements Runnable {
             case "READLOCO":    // returns byte
                 result = readLocoMessage(param);
                 break;
-            case "S":    // SX Byte set
+            case "S":    // SX Byte set, used by SX-Loconet Bridge and Andropanel
                 setSXByteMessage(param);
                 break;
-            case "R":    // read sx value
+            case "R":    // read sx value, used by SX-Loconet Bridge and Andropanel
                 result = readSXByteMessage(param);
                 break;
             case "REQ":
@@ -196,6 +196,7 @@ public class SXnetSession implements Runnable {
 
     }
 
+    // used by SX-Loconet Bridge and Andropanel
     private String readSXByteMessage(String[] par) {
         if (DEBUG) {
             System.out.println("createSXFeedbackMessage");
@@ -278,6 +279,7 @@ public class SXnetSession implements Runnable {
 
     }
 
+    // used by SX-Loconet Bridge and Andropanel
     private void setSXByteMessage(String[] par) {
         if (par.length < 3) {
             return;

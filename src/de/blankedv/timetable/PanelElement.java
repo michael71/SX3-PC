@@ -112,6 +112,12 @@ public class PanelElement {
         state = val;
         return state;
     }
+    
+    public int setStateAndUpdateSXData(int val) {
+        state = val;
+        updateSXData();
+        return state;
+    }
 
     public boolean hasAdrX(int address) {
         if (adr == address) {
