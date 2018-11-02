@@ -30,16 +30,18 @@ public class FunkreglerUI extends javax.swing.JFrame {
     private static final int GREEN = 1;
     private static final int YELLOW = 0;
     private String ipaddress ="";
+    private boolean isLost = false;
 
     public static void checkAlive() {
         for (FunkreglerUI f : fu) {
-            if ((System.currentTimeMillis() - f.lastUpdate) > 30000) {
+            if (((System.currentTimeMillis() - f.lastUpdate) > 30000) && (!f.isLost ) ) {
                 if (DEBUG) {
                     System.out.println("lost Funkregler with name=" + f.name);
                 }
                 f.savePrefs();
                 funkreglerUIInstances--;
                 f.setVisible(false);
+                f.isLost = true;
             };
         }
     }

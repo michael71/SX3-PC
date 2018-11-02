@@ -143,6 +143,7 @@ public class MainUI extends javax.swing.JFrame {
     private String ifType;
 
     private ConfigWebserver configWebserver;
+    private WifiThrottleUI wifithrottle;
 
     private final ImageIcon green, red;
 
@@ -193,6 +194,8 @@ public class MainUI extends javax.swing.JFrame {
         if ((myip != null) && (myip.size() >= 1)) {  // makes only sense when we have network connectivity
             sxnetserver = new SXnetServerUI();
             sxnetserver.setVisible(true);
+            
+            wifithrottle = new WifiThrottleUI();
 
             try {
                 configWebserver = new ConfigWebserver(prefs, CONFIG_PORT);
