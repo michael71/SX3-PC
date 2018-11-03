@@ -127,6 +127,7 @@ public class SXFCCInterface extends GenericSXInterface {
 
     @Override
     public synchronized String  doUpdate() {
+
         if (fccErrorCount > 10) {
             System.out.println("ERROR: FCC does not respond");
             return ("ERROR: Keine Response von der FCC, SerialPort Settings überprüfen");
@@ -141,6 +142,7 @@ public class SXFCCInterface extends GenericSXInterface {
                 ;
             }
             try {
+                // request block of SX0 / SX1 bus data
                 Byte[] b = {0x78, 0x03};
                 outputStream.write(b[0]);
                 outputStream.write(b[1]);
@@ -149,7 +151,7 @@ public class SXFCCInterface extends GenericSXInterface {
                 System.out.println("ERROR: Serial-IO where trying to write");
                 fccErrorCount++;
             }
-            shortSleep();
+            shortSleep();  // must wait 40 milliseconds to have all 226 channels received
             try {
                 //int count = 0;  // byte numbering in FCC-manual starts with 1 !
                 // but for consistency with sxData array we start with 0 here
@@ -187,6 +189,7 @@ public class SXFCCInterface extends GenericSXInterface {
                 fccErrorCount++;
             }
         }
+
         return "";
     }
 
@@ -198,6 +201,30 @@ public class SXFCCInterface extends GenericSXInterface {
         }
     }
 
+    @Override
+    public String getMode() {
+        if (!connected) return "-";
+        // siehe FCC Interface Manual, Seite 7
+        switch (sxData.get(110) & 0x0f) {
+            case 0x00:
+                return "nur SX1";
+            case 0x02:
+                return "SX1+SX2";
+            case 0x04:
+                return "SX1,SX2,DCC";
+            case 0x05:     
+                return "SX1 + SX2 + MM";
+            case 0x06:
+                return "nur DCC";              
+            case 0x07:
+                return "nur MM";
+            case 0x0b:
+                return "SX1,SX2,DCC,MM";
+            default:
+                return "check FCC mode";           
+        }
+      }
+    
     @Override
     public void registerFeedback(int adr
     ) {

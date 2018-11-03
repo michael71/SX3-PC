@@ -39,6 +39,10 @@ abstract public class GenericSXInterface {
         }
     }
     
+    public String getMode() {
+        return "-";
+    }
+    
     public String doUpdate() {
         ;  // implemented in SXFCCInterface, where a full update can be
         // requested regularly

@@ -341,6 +341,7 @@ public class MainUI extends javax.swing.JFrame {
         btnPowerOnOff = new javax.swing.JButton();
         labelStatus = new javax.swing.JLabel();
         statusIcon = new javax.swing.JLabel();
+        lblFCCMode = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         lblConfigFilename = new javax.swing.JLabel();
         lblDownloadFrom = new javax.swing.JLabel();
@@ -465,6 +466,8 @@ public class MainUI extends javax.swing.JFrame {
 
         labelStatus.setText("??");
 
+        lblFCCMode.setText("-");
+
         javax.swing.GroupLayout panelInterfaceLayout = new javax.swing.GroupLayout(panelInterface);
         panelInterface.setLayout(panelInterfaceLayout);
         panelInterfaceLayout.setHorizontalGroup(
@@ -472,20 +475,25 @@ public class MainUI extends javax.swing.JFrame {
             .addGroup(panelInterfaceLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelInterfaceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelInterfaceLayout.createSequentialGroup()
+                    .addGroup(panelInterfaceLayout.createSequentialGroup()
                         .addComponent(btnConnectDisconnect, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(btnPowerOnOff, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(statusIcon))
-                    .addComponent(labelStatus))
+                    .addGroup(panelInterfaceLayout.createSequentialGroup()
+                        .addComponent(labelStatus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblFCCMode, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         panelInterfaceLayout.setVerticalGroup(
             panelInterfaceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelInterfaceLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(labelStatus)
+                .addGroup(panelInterfaceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelStatus)
+                    .addComponent(lblFCCMode))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(panelInterfaceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(statusIcon)
@@ -640,6 +648,8 @@ public class MainUI extends javax.swing.JFrame {
     private void btnSxMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSxMonitorActionPerformed
         if (sxmon == null) {
             sxmon = new MonitorUI();
+            sxmon.setTitle("SX0 Monitor");
+            sxmon.setVisible(true);
             sxmon.update();
 
             lbmon = new LanbahnMonitorUI();
@@ -786,6 +796,9 @@ public class MainUI extends javax.swing.JFrame {
 
         //System.out.println("do update called.");
         updatePowerBtnAndIcon();
+        if (sxi instanceof SXFCCInterface) {
+           lblFCCMode.setText(sxi.getMode());
+        }
         if (sxmon != null) {
             sxmon.update();
         }
@@ -917,6 +930,7 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JLabel labelStatus;
     private javax.swing.JLabel lblConfigFilename;
     private javax.swing.JLabel lblDownloadFrom;
+    private javax.swing.JLabel lblFCCMode;
     private javax.swing.JMenuItem menuExit;
     private javax.swing.JMenuItem menuSettings;
     private javax.swing.JPanel panelInterface;
