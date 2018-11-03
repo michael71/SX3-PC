@@ -265,7 +265,7 @@ public class SensorUI extends javax.swing.JFrame {
 
     private void update() {
         //
-        int data = sxData[s_adr];
+        int data = sxData.get(s_adr);
         if ((data & 0x01) != 0) jLabel2.setIcon(red) ;
         else jLabel2.setIcon(green) ;
         if ((data & 0x02) != 0) jLabel3.setIcon(red) ;

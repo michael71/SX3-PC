@@ -166,23 +166,18 @@ public class SXFCCInterface extends GenericSXInterface {
                     //System.out.println("226 bytes gelesen");
                 }  
                     
-     /*           while (inputStream.available() >= 1) {
-
-                    int b = inputStream.read();
-                    if (b == -1) {
-                        break;
-                    } */
                 for (int count =0; count < 226; count++) {
                     
                     if (count < SXMAX) {
-                        sxData[count] = buf[count] & 0xff;
+                        sxData.set(count,(buf[count] & 0xff));
                     } else if (count == 112) {
-                        //System.out.println("power="+b);
+                        //System.out.println("power="+buf[count]);
                         if (buf[count] == 0) {
-                            sxData[127] = 0;
+                            sxData.set(127,0);
                         } else {
-                            sxData[127] = 80;
+                            sxData.set(127,0x80);
                         }
+                        //System.out.println("sxData[127]="+sxData.get(127));
                     } // ignore SX1 data
       
                 }
@@ -211,9 +206,13 @@ public class SXFCCInterface extends GenericSXInterface {
 
     // für alle Schreibbefehle and die FCC muss zusätzlich zur Kanalnummer
     // das höchste Bit auf 1 gesetzt werden
+    //Gleisspannung ein (SX1/2-Bus 0):
+    //Vom PC: 0x00 0xFF Ungleich 0x00 Zum PC: 0x00
+    //Gleisspannung aus (SX1/2-Bus 0):
+    //Vom PC: 0x00 0xFF Gleich 0x00 Zum PC: 0x00
     @Override
     public synchronized void switchPowerOn() {
-
+        System.out.println("FCC: switchPowerOn");
         Byte[] b = {(byte) 0x00, (byte) 0xFF, (byte) 0x01};
 
         try {
@@ -234,7 +233,7 @@ public class SXFCCInterface extends GenericSXInterface {
 
     @Override
     public synchronized void switchPowerOff() {
-
+        System.out.println("FCC: switchPowerOff");
         Byte[] b = {(byte) 0x00, (byte) 0xFF, (byte) 0x00};
 
         try {

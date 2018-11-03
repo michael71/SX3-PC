@@ -206,7 +206,7 @@ public class SXnetSession implements Runnable {
             System.out.println("addr in msg invalid");
             return "";
         }
-        return "X " + adr + " " + sxData[adr];
+        return "X " + adr + " " + sxData.get(adr);
     }
 
     private String readLocoMessage(String[] par) {
@@ -221,7 +221,7 @@ public class SXnetSession implements Runnable {
         if (!locoAddresses.contains(adr)) {
             locoAddresses.add(adr);
         }
-        return "XLOCO " + adr + " " + sxData[adr];
+        return "XLOCO " + adr + " " + sxData.get(adr);
     }
 
     private String requestRouteMessage(String[] par) {
@@ -293,7 +293,7 @@ public class SXnetSession implements Runnable {
         if ((adr == INVALID_INT) || (data == INVALID_INT)) {
             return;
         }
-        SXUtils.setSxData(adr, data);  // synchronized
+        sxData.set(adr, data);  // synchronized
     }
 
     private void setLocoMessage(String[] par) {
@@ -310,7 +310,7 @@ public class SXnetSession implements Runnable {
             return;
         }
 
-        SXUtils.setSxData(adr, data);  // synchronized
+        sxData.set(adr, data);  
     }
 
     private String setPower(String[] par) {
@@ -320,10 +320,10 @@ public class SXnetSession implements Runnable {
         int value = getByteFromString(par[1]);
         switch (value) {
             case 1:
-                SXUtils.setSxData(127, 128);  // synchronized
+                sxData.set(127, 0x80);  // synchronized
                 return "XPOWER 1";
             case 0:
-                SXUtils.setSxData(127, 0);  // synchronized
+                sxData.set(127, 0);// synchronized
                 return "XPOWER 0";
             default:
                 return "";   // invalid value
@@ -335,7 +335,7 @@ public class SXnetSession implements Runnable {
         if (DEBUG) {
             System.out.println("readPowerMessage");
         }
-        if (sxData[127] != 0) {
+        if (sxData.get(127) != 0) {
             return "XPOWER 1";
         } else {
             return "XPOWER 0";
@@ -344,29 +344,6 @@ public class SXnetSession implements Runnable {
 
     }
 
-    /* private void setSXBitMessage(String[] par) {
-        if (par.length < 3) {
-            return;
-        }
-        if (DEBUG) {
-            System.out.println("setSXBitMessage");
-        }
-        SxAbit sxb = getSXAbitFromString(par[1]);
-
-        int data = getByteFromString(par[2]);
-
-        if ((sxb.addr == INVALID_INT) || (data == INVALID_INT)) {
-            return;
-        }
-        if (data == 1) {
-            //set bit
-            SXUtils.setBitSxData(sxb.addr, sxb.bit);
-        } else if (data == 0) {
-            // clear bit
-            SXUtils.clearBitSxData(sxb.addr, sxb.bit);
-        }
-
-    } */
     /**
      * when setting the data for a lanbahn address, there are 3 possible
      * scenarios: A) it is within the SX address range and only has a single bit
@@ -569,7 +546,7 @@ public class SXnetSession implements Runnable {
 
         int sxAddr = lbAddr / 10;
 
-        sxDataCopy[sxAddr] = sxData[sxAddr];
+        sxDataCopy[sxAddr] = sxData.get(sxAddr);
 
         String msg = "X " + sxAddr + " " + sxDataCopy[sxAddr];  // SX Feedback Message
         if (DEBUG) {
@@ -588,8 +565,8 @@ public class SXnetSession implements Runnable {
         boolean first = true;
 
         // report change in power channel
-        if (sxData[127] != sxDataCopy[127]) {
-            sxDataCopy[127] = sxData[127];
+        if (sxData.get(127) != sxDataCopy[127]) {
+            sxDataCopy[127] = sxData.get(127);
             if (sxDataCopy[127] != 0) {
                 msg.append("XPOWER 1");
             } else {
@@ -611,8 +588,8 @@ public class SXnetSession implements Runnable {
 
         // report changes in other channels
         for (int ch = 0; ch < SXMAX; ch++) {
-            if (sxData[ch] != sxDataCopy[ch]) {
-                sxDataCopy[ch] = sxData[ch];
+            if (sxData.get(ch) != sxDataCopy[ch]) {
+                sxDataCopy[ch] = sxData.get(ch);
                 // channel data changed, send update to mobile device 
                 if (!first) {
                     msg.append(";");
@@ -644,7 +621,7 @@ public class SXnetSession implements Runnable {
      */
     private void checkForLanbahnChangesAndSendUpdates() {
         StringBuilder msg = new StringBuilder();
-        int globalPower = sxData[127] & 0x80;
+        int globalPower = (sxData.get(127) & 0x80) ;
         if ((globalPowerCopy != globalPower) && (globalPower != INVALID_INT)) {
             // power state has changed
             globalPowerCopy = globalPower;

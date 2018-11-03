@@ -41,16 +41,14 @@ public class SXUtils {
     }
 
     synchronized static public void setBitSxData(int addr, int bit) {
-        sxData[addr] = setBit(sxData[addr], bit);       
+        sxData.set(addr, setBit(sxData.get(addr), bit));       
     }
 
     synchronized static public void clearBitSxData(int addr, int bit) {
-        sxData[addr] = clearBit(sxData[addr], bit);
+        sxData.set(addr, clearBit(sxData.get(addr), bit));
     }
 
-    synchronized static public void setSxData(int addr, int data) {
-        sxData[addr] = data;
-    }
+
 
     /**
      * is the address a valid SX0 or SX1 address

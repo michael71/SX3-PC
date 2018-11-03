@@ -154,14 +154,14 @@ public class MonitorUI extends javax.swing.JFrame {
         // set adresses
         for (int i = 1; i < COLS; i = i + 2) {
             for (int j = 0; j < ROWS; j++) {
-                if (sxData[count] != oldSxData[count]) {
+                if (sxData.get(count) != oldSxData[count]) {
                     redflag = true;
                 } else {
                     redflag =false;
                 }
-                jTable1.setValueAt(SXBinaryString(sxData[count], redflag), j, i);
+                jTable1.setValueAt(SXBinaryString(sxData.get(count), redflag), j, i);
                 // if (count > 106/2)  System.out.println("S="+SXBinaryString(sxData[count])+".");
-                oldSxData[count] = sxData[count];
+                oldSxData[count] = sxData.get(count);
                 count++;
 
             }

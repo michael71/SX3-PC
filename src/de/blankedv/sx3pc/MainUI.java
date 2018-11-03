@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -109,7 +110,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * contains the complete state of command station
      */
-    public static int[] sxData = new int[N_SX];
+    public static AtomicIntegerArray sxData = new AtomicIntegerArray(N_SX);
     /**
      * locoAddresses ArrayList contains addresses of all locos to be able to
      * generate loco specific feedback messages
@@ -279,7 +280,7 @@ public class MainUI extends javax.swing.JFrame {
         }
 
         // clear all data
-        sxData = new int[N_SX];
+        sxData = new AtomicIntegerArray(N_SX);
         locoAddresses = new ArrayList<>();
         panelElements.clear();
 
@@ -315,9 +316,7 @@ public class MainUI extends javax.swing.JFrame {
         System.exit(0);
     }
 
-    private boolean powerIsOn() {
-        return (sxData[127] & 0x80) != 0; // bit8 of channel 127
-    }
+   
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -627,7 +626,7 @@ public class MainUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Please Conncect First");
             return;
         }
-        if (powerIsOn()) {
+        if ((sxData.get(127) & 0x80) != 0) {
             sxi.switchPowerOff();
         } else {
             sxi.switchPowerOn();
@@ -687,7 +686,7 @@ public class MainUI extends javax.swing.JFrame {
         }
         if (simulation) {
             for (int i = 0; i < SXMAX_USED; i++) {  // nur bis 103, die oberen (=system) Channels werden nicht auf 0 gesetzt
-                sxData[i] = 0;
+                sxData.set(i,0);
             }
         }
     }//GEN-LAST:event_btnResetActionPerformed
@@ -757,11 +756,11 @@ public class MainUI extends javax.swing.JFrame {
         // other sources can switch power off and on, therefor
         // regular update needed 
 
-        if (sxData[127] == 0x00) {
-            btnPowerOnOff.setText("Track Power On");
+        if ((sxData.get(127) & 0x80 ) == 0x00) {
+            btnPowerOnOff.setText("Switch Power On");
             statusIcon.setIcon(red);
         } else {
-            btnPowerOnOff.setText("Track Power Off");
+            btnPowerOnOff.setText("Switch Power Off");
             statusIcon.setIcon(green);
         }
 

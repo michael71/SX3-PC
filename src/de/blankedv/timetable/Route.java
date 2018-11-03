@@ -174,7 +174,7 @@ public class Route extends PanelElement {
 
         for (int sxaddr : sxAddressesToUpdate) {
             if (SXUtils.isValidSXAddress(sxaddr)) {
-                sxi.send2SX(sxaddr, sxData[sxaddr]);
+                sxi.send2SX(sxaddr, sxData.get(sxaddr));
             }
         }
         // TODO unlock turnouts
@@ -291,7 +291,7 @@ public class Route extends PanelElement {
         }
         for (int sxaddr : sxAddressesToUpdate) {
             if (SXUtils.isValidSXAddress(sxaddr)) {
-                sxi.send2SX(sxaddr, sxData[sxaddr]);
+                sxi.send2SX(sxaddr, sxData.get(sxaddr));
             }
         }
         this.setState(RT_ACTIVE);

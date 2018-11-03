@@ -50,14 +50,14 @@ public class SXSimulationInterface extends GenericSXInterface {
     @Override
     public void switchPowerOn() {
 
-        sxData[127] = 128;
+        sxData.set(127, 0x80);
 
     }
 
     @Override
     public void switchPowerOff() {
 
-        sxData[127] = 0;
+        sxData.set(127, 0);
 
     }
 
@@ -85,7 +85,7 @@ public class SXSimulationInterface extends GenericSXInterface {
         // only write commands in simulation
         // convert "signed" byte to unsigned int.
         // (byte is ALLWAYS signed in Java)
-        sxData[data[0] & 0x7F] = toUnsignedInt(data[1]);
+        sxData.set(data[0] & 0x7F, toUnsignedInt(data[1]));
         return true;
     }
 

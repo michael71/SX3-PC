@@ -77,7 +77,7 @@ abstract public class GenericSXInterface {
      * @param data 
      */
     public synchronized boolean sendAccessoryBit(int adr, int bit, int data) {
-        int d = sxData[adr];
+        int d = sxData.get(adr);
         Byte[] b = {(byte) (adr + 128), 0};  // bit 7 muss gesetzt sein zum Schreiben
         if (data == 1) {  // set bit
             d |= (1 << (bit - 1));  // sx bit von 1 bis 8
@@ -113,7 +113,7 @@ abstract public class GenericSXInterface {
             System.out.println("ERROR in sendChannel2SX, adr="+adr+ " is invalid");
             return false;
         }
-        return send2SX(adr, sxData[adr]);
+        return send2SX(adr, sxData.get(adr));
     }
     /**
      * sends a loco control command (always SX0 !) to the SX interface

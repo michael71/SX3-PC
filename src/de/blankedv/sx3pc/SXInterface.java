@@ -343,7 +343,7 @@ public class SXInterface extends GenericSXInterface {
     // address range 0 ..127 / 128 ... 255 
     private synchronized void setSXandUpdatePE(int adr, int data) {
         if (SXUtils.isValidSXAddress(adr)) {
-            sxData[adr] = data;
+            sxData.set(adr,data);
             // if we have a matching lanbahn address (for example a sensor with
             // one bit for free/occ and one bit for inRoute/notInRoute
             // set occupation bit

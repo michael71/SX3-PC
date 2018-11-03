@@ -309,7 +309,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
 
     private void update() {
         // initial werte lesen aus sxData
-        int ld = sxData[lok_adr];
+        int ld = sxData.get(lok_adr);
         speed = (ld & 0x1F);
         horn = ((ld & 0x80) == 0x80);
         licht = ((ld & 0x40) == 0x40);
@@ -345,7 +345,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
     }
     private void speedUp() {
         // initial werte lesen aus sxData
-        int ld = sxData[lok_adr];
+        int ld = sxData.get(lok_adr);
         speed = (ld & 0x1F);
         if (speed < 31) speed = speed+1;
         jSliderSpeed.setValue(speed);
@@ -353,7 +353,7 @@ public class ThrottleUI extends javax.swing.JFrame implements MouseWheelListener
     
     private void speedDown() {
         // initial werte lesen aus sxData
-        int ld = sxData[lok_adr];
+        int ld = sxData.get(lok_adr);
         speed = (ld & 0x1F);
         if (speed > 0) speed = speed-1;
         jSliderSpeed.setValue(speed);

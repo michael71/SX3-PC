@@ -343,7 +343,7 @@ public class AccessoryUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
 
     private void updateSXData() {
-         SXUtils.setSxData(sxadr, sxdata);
+         sxData.set(sxadr, sxdata);
          SXUtils.updatePanelElementsStateFromSX(sxadr,sxdata);
          sxi.send2SX(sxadr, sxdata);
        
@@ -372,7 +372,7 @@ public class AccessoryUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void updateFromSX() {
-        sxdata = sxData[sxadr];
+        sxdata = sxData.get(sxadr);
 
         if ((sxdata & 0x01) == 0x01) { jCheckBox1.setSelected(true);  } else { jCheckBox1.setSelected(false); }
         if ((sxdata & 0x02) == 0x02) { jCheckBox2.setSelected(true);  } else { jCheckBox2.setSelected(false); }
