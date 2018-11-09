@@ -294,6 +294,8 @@ public class SXnetSession implements Runnable {
             return;
         }
         sxData.set(adr, data);  // synchronized
+        Byte[] b = {(byte) (adr + 128), (byte)data};
+        sxi.send(b);
     }
 
     private void setLocoMessage(String[] par) {
@@ -309,8 +311,12 @@ public class SXnetSession implements Runnable {
         if ((adr == INVALID_INT) || (data == INVALID_INT)) {
             return;
         }
-
-        sxData.set(adr, data);  
+        if (DEBUG) {
+            System.out.println("set adr="+adr+" d="+data);
+        }
+        sxData.set(adr, data); 
+        Byte[] b = {(byte) (adr + 128), (byte)data};
+        sxi.send(b);
     }
 
     private String setPower(String[] par) {

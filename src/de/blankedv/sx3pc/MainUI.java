@@ -16,7 +16,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +42,7 @@ public class MainUI extends javax.swing.JFrame {
     /**
      * {@value #VERSION} = program version, displayed in HELP window
      */
-    public static final String VERSION = "2.38 - 10 Oct 2018";
+    public static final String VERSION = "2.39 - 09 Nov 2018";
     public static final String S_XNET_SERVER_REV = "SXnet3 - SX3_PC-" + VERSION;
 
     /**
