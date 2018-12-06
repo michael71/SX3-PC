@@ -363,7 +363,7 @@ public class SXnetSession implements Runnable {
      */
     private String setLanbahnMessage(String[] par) {
         if (DEBUG) {
-            // System.out.println("setLanbahnMessage");
+            System.out.println("setLanbahnMessage");
         }
 
         if (par.length <= 2) {
@@ -371,17 +371,23 @@ public class SXnetSession implements Runnable {
         }
         int lbadr = getLanbahnAddrFromString(par[1]);
         int lbdata = getLanbahnDataFromString(par[2]);
+        if (DEBUG) {
+            System.out.println("lbadr="+lbadr+" lbdata="+lbdata);
+        }
         if ((lbadr == INVALID_INT) || (lbdata == INVALID_INT)) {
             return "ERROR";
         } else {
             // check if we have a matching PanelElement
             ArrayList<PanelElement> peList = PanelElement.getByAddress(lbadr);
             if (peList.isEmpty()) {
+                if (DEBUG) System.out.println("no matching panelElement found");
                 return "ERROR";
             } else {
                 for (PanelElement pe : peList) {
+                    if (DEBUG) System.out.println("found PE with addr="+pe.getAdr());
                     pe.setState(lbdata);
                     pe.updateSXData();
+                    if (DEBUG) System.out.println("new PE state: "+pe.getState());
                 }
                 // update on sx-bus
                 peList.get(0).sendUpdateToSXBus();

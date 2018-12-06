@@ -8,10 +8,10 @@ package de.blankedv.timetable;
 import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.panelElements;
+import static de.blankedv.sx3pc.MainUI.sxData;
 import static de.blankedv.sx3pc.MainUI.sxi;
 import de.blankedv.sx3pc.SXAddrAndBits;
 import de.blankedv.sx3pc.SXUtils;
-import static de.blankedv.timetable.Vars.*;
 import java.util.ArrayList;
 
 /**
@@ -281,6 +281,7 @@ public class PanelElement {
     
      public void sendUpdateToSXBus() {
          SXAddrAndBits sx = SXUtils.lbAddr2SX(adr);
+         if (DEBUG) System.out.println("sendUpd->SXBus lbaddr="+adr+" sxaddr="+sx.sxAddr+" d="+sxData.get(sx.sxAddr));
          if (sx != null) {
                sxi.sendChannel2SX(sx.sxAddr);
          }

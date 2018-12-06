@@ -5,6 +5,7 @@
  */
 package de.blankedv.sx3pc;
 
+import static de.blankedv.sx3pc.MainUI.DEBUG;
 import static de.blankedv.sx3pc.MainUI.INVALID_INT;
 import static de.blankedv.sx3pc.MainUI.SXMAX;
 import static de.blankedv.sx3pc.MainUI.SXMIN;
@@ -41,11 +42,15 @@ public class SXUtils {
     }
 
     synchronized static public void setBitSxData(int addr, int bit) {
-        sxData.set(addr, setBit(sxData.get(addr), bit));       
+        if (DEBUG) System.out.println("setBit addr="+addr+" bit="+bit);
+        sxData.set(addr, setBit(sxData.get(addr), bit));  
+        if (DEBUG) System.out.println("sxData["+addr+"]="+sxData.get(addr));
     }
 
     synchronized static public void clearBitSxData(int addr, int bit) {
+        if (DEBUG) System.out.println("clearBit addr="+addr+" bit="+bit);
         sxData.set(addr, clearBit(sxData.get(addr), bit));
+         if (DEBUG) System.out.println("sxData["+addr+"]="+sxData.get(addr));
     }
 
 
